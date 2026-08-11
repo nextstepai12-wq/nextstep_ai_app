@@ -1,6 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/themes/app_theme.dart';
-import 'package:nextstep_ai_app/shared/services/auth/auth_service.dart';
+import 'package:nextstep_ai_app/shared/services/supabase/supabase_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,8 +13,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
-  
+  final _supabase = SupabaseService();
+
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -24,39 +24,37 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final success = await _authService.login(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
+      // ✅ تسجيل الدخول عبر Supabase
+      final response = await _supabase.signInWithEmail(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
 
-      if (success && mounted) {
-        final role = _authService.currentUserRole;
-        if (role != null) {
-          String route;
-          if (role == 'student') {
-            route = '/student';
-          } else if (role == 'university') {
-            route = '/university';
-          } else if (role == 'admin') {
-            route = '/admin';
-          } else {
-            route = '/student';
-          }
-          Navigator.pushReplacementNamed(context, route);
+      if (response.user != null && mounted) {
+        // ✅ جلب دور المستخدم من جدول profiles (id هو UUID)
+        final userData = await _supabase.getUser(response.user!.id);
+
+        final role = userData?.role ?? 'student';
+
+        // ✅ التوجيه حسب الدور
+        String route;
+        if (role == 'student') {
+          route = '/student';
+        } else if (role == 'university') {
+          route = '/university';
+        } else if (role == 'admin') {
+          route = '/admin';
+        } else {
+          route = '/student';
         }
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('فشل تسجيل الدخول. تحقق من البيانات.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+
+        Navigator.pushReplacementNamed(context, route);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ: ${e.toString()}'),
+            content: Text('❌ ${e.toString().replaceFirst('Exception: ', '')}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -78,24 +76,24 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 20),
-
                 // Logo
                 Image.asset(
                   'assets/images/logo.png',
-                  width: 200,
-                  height: 200,
+                  width: 120,
+                  height: 120,
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) {
                     return Container(
-                      width: 150,
-                      height: 150,
+                      width: 100,
+                      height: 100,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
@@ -109,41 +107,40 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: const Icon(
                         Icons.school,
-                        size: 75,
+                        size: 50,
                         color: Colors.white,
                       ),
                     );
                   },
                 ),
 
-                const SizedBox(height: 4), // تم التغيير من 12 إلى 4
+                const SizedBox(height: 16),
 
-                // Welcome Text
-                Text(
+                const Text(
                   'مرحباً بك مجدداً',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 28,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     height: 1.29,
                     color: AppTheme.primaryContainer,
                   ),
                   textAlign: TextAlign.center,
                 ),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
 
                 Text(
                   'سجل دخولك لتكمل رحلتك الأكاديمية',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w400,
                     height: 1.5,
-                    color: AppTheme.onSurfaceVariant,
+                    color: AppTheme.onSurfaceVariant.withValues(alpha: 0.8),
                   ),
                   textAlign: TextAlign.center,
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
                 // Form
                 Form(
@@ -151,149 +148,191 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     children: [
                       // Email Field
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        textDirection: TextDirection.rtl,
-                        decoration: InputDecoration(
-                          labelText: 'البريد الإلكتروني',
-                          labelStyle: TextStyle(
-                            color: AppTheme.onSurfaceVariant,
-                          ),
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.borderSubtle,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'البريد الإلكتروني',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              height: 1.3,
+                              color: AppTheme.primaryContainer,
                             ),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.borderSubtle,
+                          const SizedBox(height: 6),
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            textDirection: TextDirection.rtl,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.primaryContainer,
                             ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.secondary,
-                              width: 2,
+                            decoration: InputDecoration(
+                              hintText: 'user@school.edu',
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 13,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.mail_outline,
+                                color: AppTheme.onSurfaceVariant,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.borderSubtle,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.borderSubtle,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.secondary,
+                                  width: 2,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 2,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'الرجاء إدخال البريد الإلكتروني';
+                              }
+                              if (!value.contains('@') || !value.contains('.')) {
+                                return 'الرجاء إدخال بريد إلكتروني صحيح';
+                              }
+                              return null;
+                            },
                           ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Colors.red,
-                              width: 2,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'الرجاء إدخال البريد الإلكتروني';
-                          }
-                          if (!value.contains('@')) {
-                            return 'الرجاء إدخال بريد إلكتروني صحيح';
-                          }
-                          return null;
-                        },
+                        ],
                       ),
 
                       const SizedBox(height: 16),
 
                       // Password Field
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        textDirection: TextDirection.rtl,
-                        decoration: InputDecoration(
-                          labelText: 'كلمة المرور',
-                          labelStyle: TextStyle(
-                            color: AppTheme.onSurfaceVariant,
-                          ),
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.borderSubtle,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'كلمة المرور',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              height: 1.3,
+                              color: AppTheme.primaryContainer,
                             ),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.borderSubtle,
+                          const SizedBox(height: 6),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            textDirection: TextDirection.rtl,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.primaryContainer,
                             ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppTheme.secondary,
-                              width: 2,
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(
+                                Icons.lock_outline,
+                                color: AppTheme.onSurfaceVariant,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: AppTheme.onSurfaceVariant,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.borderSubtle,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.borderSubtle,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: AppTheme.secondary,
+                                  width: 2,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 2,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
                             ),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Colors.red,
-                              width: 2,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: AppTheme.onSurfaceVariant,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'الرجاء إدخال كلمة المرور';
+                              }
+                              if (value.length < 6) {
+                                return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                              }
+                              return null;
                             },
                           ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'الرجاء إدخال كلمة المرور';
-                          }
-                          if (value.length < 6) {
-                            return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
-                          }
-                          return null;
-                        },
+                        ],
                       ),
 
                       const SizedBox(height: 8),
 
                       // Forgot Password
- // Forgot Password
-Align(
-  alignment: Alignment.centerRight,
-  child: TextButton(
-    onPressed: () {
-      Navigator.pushNamed(context, '/forget-password');
-    },
-    style: TextButton.styleFrom(
-      foregroundColor: AppTheme.secondary,
-      textStyle: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        height: 1.14,
-      ),
-    ),
-    child: const Text('نسيت كلمة المرور؟'),
-  ),
-),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/forget-password');
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppTheme.secondary,
+                            textStyle: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              height: 1.14,
+                            ),
+                          ),
+                          child: const Text('نسيت كلمة المرور؟'),
+                        ),
+                      ),
 
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 16),
 
                       // Login Button
                       SizedBox(
@@ -305,10 +344,10 @@ Align(
                             backgroundColor: AppTheme.primary,
                             foregroundColor: AppTheme.onPrimary,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             elevation: 4,
-                            shadowColor: AppTheme.primary.withOpacity(0.15),
+                            shadowColor: AppTheme.primary.withValues(alpha: 0.15),
                           ),
                           child: _isLoading
                               ? const SizedBox(
@@ -316,7 +355,7 @@ Align(
                                   width: 24,
                                   child: CircularProgressIndicator(
                                     color: Colors.white,
-                                    strokeWidth: 2,
+                                    strokeWidth: 2.5,
                                   ),
                                 )
                               : const Row(
@@ -325,15 +364,15 @@ Align(
                                     Text(
                                       'تسجيل الدخول',
                                       style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        height: 1.14,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.2,
                                       ),
                                     ),
                                     SizedBox(width: 8),
                                     Icon(
-                                      Icons.arrow_forward,
-                                      size: 18,
+                                      Icons.arrow_forward_rounded,
+                                      size: 20,
                                       color: Colors.white,
                                     ),
                                   ],
@@ -344,7 +383,7 @@ Align(
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
                 // Register Link
                 Row(
@@ -355,28 +394,33 @@ Align(
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        height: 1.43,
+                        height: 1.5,
                         color: AppTheme.onSurfaceVariant,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/register');
+                    const SizedBox(width: 4),
+                    InkWell(
+                      onTap: () {
+                        Navigator.pushReplacementNamed(context, '/register');
                       },
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppTheme.secondary,
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          height: 1.14,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Text(
+                          'إنشاء حساب جديد',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            height: 1.5,
+                            color: AppTheme.secondary,
+                            decoration: TextDecoration.underline,
+                            decorationColor: AppTheme.secondary.withValues(alpha: 0.3),
+                          ),
                         ),
                       ),
-                      child: const Text('إنشاء حساب'),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 20),
               ],
             ),
           ),

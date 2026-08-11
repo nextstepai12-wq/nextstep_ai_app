@@ -5,13 +5,10 @@ part 'user_model.g.dart';
 @JsonSerializable()
 class UserModel {
   @JsonKey(name: 'id')
-  final int? id;
+  final String id;
 
-  @JsonKey(name: 'name')
-  final String? name;
-
-  @JsonKey(name: 'email')
-  final String email;
+  @JsonKey(name: 'full_name')
+  final String? fullName;
 
   @JsonKey(name: 'role')
   final String? role;
@@ -19,28 +16,25 @@ class UserModel {
   @JsonKey(name: 'university_id')
   final int? universityId;
 
-  @JsonKey(name: 'phone')
-  final String? phone;
-
-  @JsonKey(name: 'email_verified_at')
-  final DateTime? emailVerifiedAt;
-
   @JsonKey(name: 'created_at')
   final DateTime? createdAt;
 
   @JsonKey(name: 'updated_at')
   final DateTime? updatedAt;
 
+  // البريد الإلكتروني غير مخزّن في جدول profiles؛
+  // يُمرَّر يدويًا من auth.currentUser.email عند الحاجة
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final String? email;
+
   UserModel({
-    this.id,
-    this.name,
-    required this.email,
+    required this.id,
+    this.fullName,
     this.role,
     this.universityId,
-    this.phone,
-    this.emailVerifiedAt,
     this.createdAt,
     this.updatedAt,
+    this.email,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
@@ -48,28 +42,23 @@ class UserModel {
 
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
 
-  // ✅ نسخة من الملف بدون التوكنات الحساسة
   UserModel copyWith({
-    int? id,
-    String? name,
-    String? email,
+    String? id,
+    String? fullName,
     String? role,
     int? universityId,
-    String? phone,
-    DateTime? emailVerifiedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? email,
   }) {
     return UserModel(
       id: id ?? this.id,
-      name: name ?? this.name,
-      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
       role: role ?? this.role,
       universityId: universityId ?? this.universityId,
-      phone: phone ?? this.phone,
-      emailVerifiedAt: emailVerifiedAt ?? this.emailVerifiedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      email: email ?? this.email,
     );
   }
 
@@ -79,7 +68,8 @@ class UserModel {
   bool get isAdmin => role == 'admin';
 
   // ✅ الحصول على اسم العرض
-  String get displayName => name ?? email.split('@').first;
+  String get displayName =>
+      fullName ?? email?.split('@').first ?? 'مستخدم';
 
   // ✅ الحصول على المسار الرئيسي حسب الدور
   String get homeRoute {

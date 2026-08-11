@@ -8,15 +8,16 @@ import 'package:nextstep_ai_app/features/auth/presentation/screens/forget_passwo
 import 'package:nextstep_ai_app/features/student/presentation/screens/student_home_screen.dart';
 import 'package:nextstep_ai_app/features/university/presentation/screens/university_home_screen.dart';
 import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_home_screen.dart';
+import 'package:nextstep_ai_app/features/auth/presentation/screens/terms_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ✅ تهيئة Supabase
-  await Supabase.initialize(
-    url: 'https://ylcotywynpebivixeeyp.supabase.co',
-    anonKey: 'sb_publishable_IFBgkRsq09UpmvgiQo70ig_FQ4Ff4UF',
-  );
+await Supabase.initialize(
+  url: 'https://raevfbjqxgrikyxnkcta.supabase.co', // ⬅️ تأكد من هذا الرابط
+  anonKey: 'sb_publishable_VBD0w2P4YFcjDafSTk8INQ_KThs3KIR', // ⬅️ المفتاح الجديد
+);
 
   runApp(const MyApp());
 }
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         '/student': (context) => const StudentHomeScreen(),
         '/university': (context) => const UniversityHomeScreen(),
         '/admin': (context) => const AdminHomeScreen(),
+        '/terms': (context) => const TermsScreen(),
       },
     );
   }

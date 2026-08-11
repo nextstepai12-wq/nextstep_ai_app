@@ -1,6 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:nextstep_ai_app/core/themes/app_theme.dart';
+import 'package:nextstep_ai_app/shared/services/supabase/supabase_service.dart';
+import 'package:nextstep_ai_app/shared/models/student_profile_model.dart';
+import 'package:nextstep_ai_app/features/auth/presentation/screens/terms_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,6 +15,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen>
     with SingleTickerProviderStateMixin {
   String _selectedPath = 'tawjihi';
+  bool _agreedToTerms = false;
 
   // Controllers
   final _fullNameController = TextEditingController();
@@ -42,6 +46,9 @@ class _RegisterScreenState extends State<RegisterScreen>
   double _passwordStrength = 0.0;
   String _passwordStrengthText = '';
   Color _passwordStrengthColor = Colors.grey;
+
+  // Supabase
+  final SupabaseService _supabase = SupabaseService();
 
   @override
   void initState() {
@@ -130,26 +137,95 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('يرجى الموافقة على الشروط والأحكام'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      // 1️⃣ إنشاء حساب في Supabase Auth
+      final authResponse = await _supabase.signUpWithEmail(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        userMetadata: {
+          'full_name': _fullNameController.text.trim(),
+          'role': 'student',
+        },
+      );
+
+      if (authResponse.user == null) {
+        throw Exception('فشل إنشاء الحساب');
+      }
+
+      final userId = int.parse(authResponse.user!.id);
+
+      // 2️⃣ إنشاء ملف الطالب في جدول student_profiles
+      await _supabase.upsertStudentProfile(
+        StudentProfileModel(
+          userId: userId,
+          studentType: _selectedPath,
+          phone: _selectedPhoneCode! + _phoneController.text.trim(),
+          highSchoolScore: _selectedPath == 'tawjihi'
+              ? double.tryParse(_gpaController.text)
+              : null,
+          highSchoolBranchId: _selectedPath == 'tawjihi'
+              ? _getBranchId(_selectedBranch)
+              : null,
+          currentUniversityId: _selectedPath == 'university'
+              ? int.tryParse(_universityController.text)
+              : null,
+          currentMajorId: _selectedPath == 'university'
+              ? int.tryParse(_majorController.text)
+              : null,
+          academicYear: _selectedYear,
+          gpa: _selectedPath == 'university'
+              ? double.tryParse(_gpaController.text)
+              : null,
+        ),
+      );
 
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ تم إنشاء الحساب بنجاح!'),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pushReplacementNamed(context, '/login');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ: ${e.toString()}'),
+            content: Text('❌ ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  int? _getBranchId(String? branch) {
+    switch (branch) {
+      case 'scientific':
+        return 1;
+      case 'literary':
+        return 2;
+      case 'commercial':
+        return 3;
+      case 'industrial':
+        return 4;
+      default:
+        return null;
     }
   }
 
@@ -174,7 +250,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     _buildPathSelection(),
                     const SizedBox(height: 24),
                     _buildForm(),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     _buildFooter(),
                   ],
                 ),
@@ -189,13 +265,12 @@ class _RegisterScreenState extends State<RegisterScreen>
   Widget _buildHeader() {
     return Column(
       children: [
-        // Logo - مكبر
         Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primary.withOpacity(0.15),
+                color: AppTheme.primary.withValues(alpha: 0.15),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -203,7 +278,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           ),
           child: Image.asset(
             'assets/images/logo.png',
-            width: 130, // تكبير من 90 إلى 130
+            width: 130,
             height: 130,
             fit: BoxFit.contain,
             errorBuilder: (_, __, ___) {
@@ -211,7 +286,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                 width: 110,
                 height: 110,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
@@ -222,7 +297,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                   borderRadius: BorderRadius.circular(25),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primary.withOpacity(0.3),
+                      color: AppTheme.primary.withValues(alpha: 0.3),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
@@ -237,9 +312,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             },
           ),
         ),
-
-        const SizedBox(height: 8), // تقليل المسافة من 16 إلى 8
-
+        const SizedBox(height: 8),
         const Text(
           'إنشاء حساب جديد',
           style: TextStyle(
@@ -251,16 +324,14 @@ class _RegisterScreenState extends State<RegisterScreen>
           ),
           textAlign: TextAlign.center,
         ),
-
-        const SizedBox(height: 4), // تقليل المسافة من 8 إلى 4
-
+        const SizedBox(height: 4),
         Text(
           'اختر مسارك الأكاديمي للحصول على توجيه مخصص',
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w400,
             height: 1.5,
-            color: AppTheme.onSurfaceVariant.withOpacity(0.8),
+            color: AppTheme.onSurfaceVariant.withValues(alpha: 0.8),
           ),
           textAlign: TextAlign.center,
         ),
@@ -323,12 +394,12 @@ class _RegisterScreenState extends State<RegisterScreen>
         boxShadow: isSelected
             ? [
                 BoxShadow(
-                  color: const Color(0xFF003E2C).withOpacity(0.08),
+                  color: const Color(0xFF003E2C).withValues(alpha: 0.08),
                   blurRadius: 12,
                   spreadRadius: 2,
                 ),
               ]
-            : [],
+            : const [],
       ),
       child: InkWell(
         onTap: onTap,
@@ -341,7 +412,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF003E2C).withOpacity(0.1)
+                    ? const Color(0xFF003E2C).withValues(alpha: 0.1)
                     : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -385,10 +456,10 @@ class _RegisterScreenState extends State<RegisterScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.borderSubtle.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.borderSubtle.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 30,
             spreadRadius: 5,
           ),
@@ -428,143 +499,10 @@ class _RegisterScreenState extends State<RegisterScreen>
               },
             ),
             const SizedBox(height: 14),
-// Phone Section - رمز الدولة في الأعلى ورقم الهاتف في الأسفل
-Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Text(
-      'رقم الهاتف',
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        height: 1.3,
-        color: AppTheme.primaryContainer,
-      ),
-    ),
-    const SizedBox(height: 6),
-    
-    // رمز الدولة في الأعلى
-    DropdownButtonFormField<String>(
-      value: _selectedPhoneCode,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppTheme.borderSubtle,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppTheme.borderSubtle,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppTheme.secondary,
-            width: 2,
-          ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-        prefixIcon: const Icon(
-          Icons.phone_outlined,
-          color: AppTheme.onSurfaceVariant,
-        ),
-      ),
-      items: const [
-        DropdownMenuItem(value: '+970', child: Text('+970 فلسطين')),
-        DropdownMenuItem(value: '+972', child: Text('+972 إسرائيل')),
-        DropdownMenuItem(value: '+962', child: Text('+962 الأردن')),
-        DropdownMenuItem(value: '+966', child: Text('+966 السعودية')),
-        DropdownMenuItem(value: '+971', child: Text('+971 الإمارات')),
-        DropdownMenuItem(value: '+961', child: Text('+961 لبنان')),
-        DropdownMenuItem(value: '+963', child: Text('+963 سوريا')),
-        DropdownMenuItem(value: '+964', child: Text('+964 العراق')),
-        DropdownMenuItem(value: '+965', child: Text('+965 الكويت')),
-        DropdownMenuItem(value: '+968', child: Text('+968 عُمان')),
-        DropdownMenuItem(value: '+974', child: Text('+974 قطر')),
-        DropdownMenuItem(value: '+973', child: Text('+973 البحرين')),
-        DropdownMenuItem(value: '+20', child: Text('+20 مصر')),
-        DropdownMenuItem(value: '+212', child: Text('+212 المغرب')),
-        DropdownMenuItem(value: '+216', child: Text('+216 تونس')),
-        DropdownMenuItem(value: '+213', child: Text('+213 الجزائر')),
-        DropdownMenuItem(value: '+249', child: Text('+249 السودان')),
-        DropdownMenuItem(value: '+967', child: Text('+967 اليمن')),
-      ],
-      onChanged: (value) {
-        setState(() {
-          _selectedPhoneCode = value;
-        });
-      },
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: AppTheme.primaryContainer,
-      ),
-    ),
-    
-    const SizedBox(height: 10),
-    
-    // رقم الهاتف في الأسفل
-    TextFormField(
-      controller: _phoneController,
-      keyboardType: TextInputType.phone,
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.left,
-      style: const TextStyle(
-        fontSize: 14,
-        color: AppTheme.primaryContainer,
-      ),
-      decoration: InputDecoration(
-        hintText: '599 000 000',
-        hintStyle: TextStyle(
-          color: Colors.grey.shade400,
-          fontSize: 13,
-        ),
-        prefixIcon: const Icon(
-          Icons.phone_android_outlined,
-          color: AppTheme.onSurfaceVariant,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.borderSubtle),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.borderSubtle),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.secondary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'الرجاء إدخال رقم الهاتف';
-        }
-        if (value.length < 9) {
-          return 'رقم الهاتف غير صحيح';
-        }
-        return null;
-      },
-    ),
-  ],
-),
+            _buildPhoneSection(),
             if (_selectedPath == 'tawjihi') ...[
               const SizedBox(height: 14),
-              _buildBranchDropdown(), // تغيير إلى Dropdown
+              _buildBranchDropdown(),
               const SizedBox(height: 14),
               _buildAnimatedTextField(
                 controller: _gpaController,
@@ -666,6 +604,127 @@ Column(
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPhoneSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'رقم الهاتف',
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            height: 1.3,
+            color: AppTheme.primaryContainer,
+          ),
+        ),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          initialValue: _selectedPhoneCode,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppTheme.borderSubtle),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppTheme.borderSubtle),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppTheme.secondary, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            prefixIcon: const Icon(
+              Icons.phone_outlined,
+              color: AppTheme.onSurfaceVariant,
+            ),
+          ),
+          items: const [
+            DropdownMenuItem(value: '+970', child: Text('+970 فلسطين')),
+            DropdownMenuItem(value: '+972', child: Text('+972 إسرائيل')),
+            DropdownMenuItem(value: '+962', child: Text('+962 الأردن')),
+            DropdownMenuItem(value: '+966', child: Text('+966 السعودية')),
+            DropdownMenuItem(value: '+971', child: Text('+971 الإمارات')),
+            DropdownMenuItem(value: '+961', child: Text('+961 لبنان')),
+            DropdownMenuItem(value: '+963', child: Text('+963 سوريا')),
+            DropdownMenuItem(value: '+964', child: Text('+964 العراق')),
+            DropdownMenuItem(value: '+965', child: Text('+965 الكويت')),
+            DropdownMenuItem(value: '+968', child: Text('+968 عُمان')),
+            DropdownMenuItem(value: '+974', child: Text('+974 قطر')),
+            DropdownMenuItem(value: '+973', child: Text('+973 البحرين')),
+            DropdownMenuItem(value: '+20', child: Text('+20 مصر')),
+            DropdownMenuItem(value: '+212', child: Text('+212 المغرب')),
+            DropdownMenuItem(value: '+216', child: Text('+216 تونس')),
+            DropdownMenuItem(value: '+213', child: Text('+213 الجزائر')),
+            DropdownMenuItem(value: '+249', child: Text('+249 السودان')),
+            DropdownMenuItem(value: '+967', child: Text('+967 اليمن')),
+          ],
+          onChanged: (value) {
+            setState(() {
+              _selectedPhoneCode = value;
+            });
+          },
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.primaryContainer,
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextFormField(
+          controller: _phoneController,
+          keyboardType: TextInputType.phone,
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.left,
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppTheme.primaryContainer,
+          ),
+          decoration: InputDecoration(
+            hintText: '599 000 000',
+            hintStyle: TextStyle(
+              color: Colors.grey.shade400,
+              fontSize: 13,
+            ),
+            prefixIcon: const Icon(
+              Icons.phone_android_outlined,
+              color: AppTheme.onSurfaceVariant,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppTheme.borderSubtle),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppTheme.borderSubtle),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppTheme.secondary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'الرجاء إدخال رقم الهاتف';
+            }
+            if (value.length < 9) {
+              return 'رقم الهاتف غير صحيح';
+            }
+            return null;
+          },
+        ),
+      ],
     );
   }
 
@@ -831,7 +890,6 @@ Column(
     );
   }
 
-  // ✅ Dropdown للفرع الدراسي بدلاً من الأزرار
   Widget _buildBranchDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -847,7 +905,7 @@ Column(
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: _selectedBranch,
+          initialValue: _selectedBranch,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -875,22 +933,10 @@ Column(
             style: TextStyle(color: Colors.grey),
           ),
           items: const [
-            DropdownMenuItem(
-              value: 'scientific',
-              child: Text('علمي'),
-            ),
-            DropdownMenuItem(
-              value: 'literary',
-              child: Text('أدبي'),
-            ),
-            DropdownMenuItem(
-              value: 'commercial',
-              child: Text('ريادة وأعمال'),
-            ),
-            DropdownMenuItem(
-              value: 'industrial',
-              child: Text('صناعي'),
-            ),
+            DropdownMenuItem(value: 'scientific', child: Text('علمي')),
+            DropdownMenuItem(value: 'literary', child: Text('أدبي')),
+            DropdownMenuItem(value: 'commercial', child: Text('ريادة وأعمال')),
+            DropdownMenuItem(value: 'industrial', child: Text('صناعي')),
           ],
           onChanged: (value) {
             setState(() {
@@ -927,7 +973,7 @@ Column(
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: _selectedYear,
+          initialValue: _selectedYear,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -988,7 +1034,7 @@ Column(
       height: 56,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
@@ -998,7 +1044,7 @@ Column(
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -1050,17 +1096,62 @@ Column(
   Widget _buildFooter() {
     return Column(
       children: [
-        Text(
-          'بالتسجيل، أنت توافق على الشروط والأحكام',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            height: 1.5,
-            color: AppTheme.onSurfaceVariant.withOpacity(0.7),
-          ),
-          textAlign: TextAlign.center,
+        // ✅ موافقة على الشروط والأحكام مع رابط
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Checkbox(
+              value: _agreedToTerms,
+              onChanged: (value) {
+                setState(() {
+                  _agreedToTerms = value ?? false;
+                });
+              },
+              activeColor: AppTheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            Flexible(
+              child: GestureDetector(
+                onTap: () async {
+                  final result = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TermsScreen(),
+                    ),
+                  );
+                  if (result == true) {
+                    setState(() {
+                      _agreedToTerms = true;
+                    });
+                  }
+                },
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.onSurfaceVariant.withValues(alpha: 0.7),
+                    ),
+                    children: const [
+                      TextSpan(text: 'أوافق على '),
+                      TextSpan(
+                        text: 'الشروط والأحكام',
+                        style: TextStyle(
+                          color: AppTheme.secondary,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
+        // ✅ رابط تسجيل الدخول
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -1089,7 +1180,7 @@ Column(
                     height: 1.5,
                     color: AppTheme.secondary,
                     decoration: TextDecoration.underline,
-                    decorationColor: AppTheme.secondary.withOpacity(0.3),
+                    decorationColor: AppTheme.secondary.withValues(alpha: 0.3),
                   ),
                 ),
               ),

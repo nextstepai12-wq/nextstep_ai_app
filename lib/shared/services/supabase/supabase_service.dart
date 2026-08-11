@@ -59,14 +59,14 @@ class SupabaseService {
   }
 
   // ============================================================
-  //  المستخدمين (Users)
+  //  المستخدمين (Users / Profiles)
   // ============================================================
 
-  // 👤 الحصول على بيانات المستخدم
-  Future<UserModel?> getUser(int userId) async {
+  // 👤 الحصول على بيانات المستخدم (من جدول profiles، id هو UUID)
+  Future<UserModel?> getUser(String userId) async {
     try {
       final response = await client
-          .from('users')
+          .from('profiles')
           .select()
           .eq('id', userId)
           .maybeSingle();
@@ -82,7 +82,7 @@ class SupabaseService {
   // 👤 الحصول على المستخدم الحالي من قاعدة البيانات
   Future<UserModel?> getCurrentUserData() async {
     if (currentUser == null) return null;
-    return await getUser(int.parse(currentUser!.id));
+    return await getUser(currentUser!.id);
   }
 
   // ============================================================

@@ -11,7 +11,7 @@ class StudentProfileModel {
   final int userId;
 
   @JsonKey(name: 'student_type')
-  final String studentType; // 'tawjihi' or 'university'
+  final String studentType;
 
   @JsonKey(name: 'birth_date')
   final DateTime? birthDate;
@@ -33,6 +33,9 @@ class StudentProfileModel {
 
   @JsonKey(name: 'academic_level')
   final String? academicLevel;
+
+  @JsonKey(name: 'academic_year')  // ✅ إضافة هذا الحقل
+  final String? academicYear;
 
   @JsonKey(name: 'gpa')
   final double? gpa;
@@ -60,6 +63,7 @@ class StudentProfileModel {
     this.currentUniversityId,
     this.currentMajorId,
     this.academicLevel,
+    this.academicYear,  // ✅ إضافة هذا الحقل
     this.gpa,
     this.phone,
     this.city,
@@ -72,7 +76,6 @@ class StudentProfileModel {
 
   Map<String, dynamic> toJson() => _$StudentProfileModelToJson(this);
 
-  // ✅ نسخة مع بيانات محدثة
   StudentProfileModel copyWith({
     int? id,
     int? userId,
@@ -84,6 +87,7 @@ class StudentProfileModel {
     int? currentUniversityId,
     int? currentMajorId,
     String? academicLevel,
+    String? academicYear,  // ✅ إضافة هذا الحقل
     double? gpa,
     String? phone,
     String? city,
@@ -101,6 +105,7 @@ class StudentProfileModel {
       currentUniversityId: currentUniversityId ?? this.currentUniversityId,
       currentMajorId: currentMajorId ?? this.currentMajorId,
       academicLevel: academicLevel ?? this.academicLevel,
+      academicYear: academicYear ?? this.academicYear,  // ✅ إضافة هذا الحقل
       gpa: gpa ?? this.gpa,
       phone: phone ?? this.phone,
       city: city ?? this.city,
@@ -109,22 +114,18 @@ class StudentProfileModel {
     );
   }
 
-  // ✅ التحقق من نوع الطالب
   bool get isTawjihi => studentType == 'tawjihi';
   bool get isUniversityStudent => studentType == 'university';
 
-  // ✅ الحصول على اسم الطالب
   String get studentTypeLabel {
     return isTawjihi ? 'طالب توجيهي' : 'طالب جامعي';
   }
 
-  // ✅ تنسيق المعدل
   String get formattedGpa {
     if (gpa == null) return 'غير محدد';
     return gpa!.toStringAsFixed(2);
   }
 
-  // ✅ تنسيق درجة الثانوية
   String get formattedHighSchoolScore {
     if (highSchoolScore == null) return 'غير محدد';
     return highSchoolScore!.toStringAsFixed(2);
