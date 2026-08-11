@@ -24,7 +24,6 @@ class SupabaseService {
   //  المصادقة (Auth)
   // ============================================================
 
-  // 🔐 تسجيل الدخول
   Future<AuthResponse> signInWithEmail({
     required String email,
     required String password,
@@ -35,7 +34,6 @@ class SupabaseService {
     );
   }
 
-  // 📝 التسجيل
   Future<AuthResponse> signUpWithEmail({
     required String email,
     required String password,
@@ -48,12 +46,10 @@ class SupabaseService {
     );
   }
 
-  // 🚪 تسجيل الخروج
   Future<void> signOut() async {
     await auth.signOut();
   }
 
-  // 🔄 إعادة تعيين كلمة المرور
   Future<void> resetPassword(String email) async {
     await auth.resetPasswordForEmail(email);
   }
@@ -62,7 +58,6 @@ class SupabaseService {
   //  المستخدمين (Users / Profiles)
   // ============================================================
 
-  // 👤 الحصول على بيانات المستخدم (من جدول profiles، id هو UUID)
   Future<UserModel?> getUser(String userId) async {
     try {
       final response = await client
@@ -79,18 +74,16 @@ class SupabaseService {
     }
   }
 
-  // 👤 الحصول على المستخدم الحالي من قاعدة البيانات
   Future<UserModel?> getCurrentUserData() async {
     if (currentUser == null) return null;
     return await getUser(currentUser!.id);
   }
 
   // ============================================================
-  //  الطلاب (Student Profiles)
+  //  الطلاب (Student Profiles) — user_id الآن UUID
   // ============================================================
 
-  // 📊 الحصول على ملف الطالب
-  Future<StudentProfileModel?> getStudentProfile(int userId) async {
+  Future<StudentProfileModel?> getStudentProfile(String userId) async {
     try {
       final response = await client
           .from('student_profiles')
@@ -106,7 +99,6 @@ class SupabaseService {
     }
   }
 
-  // 💾 إنشاء أو تحديث ملف الطالب
   Future<void> upsertStudentProfile(StudentProfileModel profile) async {
     await client.from('student_profiles').upsert(profile.toJson());
   }
@@ -115,7 +107,6 @@ class SupabaseService {
   //  الجامعات (Universities)
   // ============================================================
 
-  // 🏛️ الحصول على جميع الجامعات
   Future<List<UniversityModel>> getUniversities() async {
     try {
       final response = await client
@@ -130,7 +121,6 @@ class SupabaseService {
     }
   }
 
-  // 🏛️ الحصول على جامعة محددة
   Future<UniversityModel?> getUniversity(int universityId) async {
     try {
       final response = await client
@@ -151,7 +141,6 @@ class SupabaseService {
   //  التخصصات (Majors)
   // ============================================================
 
-  // 📚 الحصول على جميع التخصصات
   Future<List<MajorModel>> getMajors() async {
     try {
       final response = await client
@@ -166,7 +155,6 @@ class SupabaseService {
     }
   }
 
-  // 📚 الحصول على تخصصات جامعة محددة
   Future<List<MajorModel>> getMajorsByUniversity(int universityId) async {
     try {
       final response = await client
@@ -182,7 +170,6 @@ class SupabaseService {
     }
   }
 
-  // 📚 الحصول على تخصص محدد
   Future<MajorModel?> getMajor(int majorId) async {
     try {
       final response = await client
@@ -203,7 +190,6 @@ class SupabaseService {
   //  أسئلة الاستبيان (Survey Questions)
   // ============================================================
 
-  // 📝 الحصول على جميع أسئلة الاستبيان النشطة
   Future<List<SurveyQuestionModel>> getActiveSurveyQuestions() async {
     try {
       final response = await client
@@ -219,7 +205,6 @@ class SupabaseService {
     }
   }
 
-  // 📝 الحصول على أسئلة حسب الاهتمام
   Future<List<SurveyQuestionModel>> getSurveyQuestionsByInterest(int interestId) async {
     try {
       final response = await client

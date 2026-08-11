@@ -8,7 +8,7 @@ class StudentProfileModel {
   final int? id;
 
   @JsonKey(name: 'user_id')
-  final int userId;
+  final String userId;
 
   @JsonKey(name: 'student_type')
   final String studentType;
@@ -34,7 +34,7 @@ class StudentProfileModel {
   @JsonKey(name: 'academic_level')
   final String? academicLevel;
 
-  @JsonKey(name: 'academic_year')  // ✅ إضافة هذا الحقل
+  @JsonKey(name: 'academic_year')
   final String? academicYear;
 
   @JsonKey(name: 'gpa')
@@ -63,7 +63,7 @@ class StudentProfileModel {
     this.currentUniversityId,
     this.currentMajorId,
     this.academicLevel,
-    this.academicYear,  // ✅ إضافة هذا الحقل
+    this.academicYear,
     this.gpa,
     this.phone,
     this.city,
@@ -78,7 +78,7 @@ class StudentProfileModel {
 
   StudentProfileModel copyWith({
     int? id,
-    int? userId,
+    String? userId,
     String? studentType,
     DateTime? birthDate,
     double? highSchoolScore,
@@ -87,7 +87,7 @@ class StudentProfileModel {
     int? currentUniversityId,
     int? currentMajorId,
     String? academicLevel,
-    String? academicYear,  // ✅ إضافة هذا الحقل
+    String? academicYear,
     double? gpa,
     String? phone,
     String? city,
@@ -105,7 +105,7 @@ class StudentProfileModel {
       currentUniversityId: currentUniversityId ?? this.currentUniversityId,
       currentMajorId: currentMajorId ?? this.currentMajorId,
       academicLevel: academicLevel ?? this.academicLevel,
-      academicYear: academicYear ?? this.academicYear,  // ✅ إضافة هذا الحقل
+      academicYear: academicYear ?? this.academicYear,
       gpa: gpa ?? this.gpa,
       phone: phone ?? this.phone,
       city: city ?? this.city,

@@ -9,7 +9,7 @@ part of 'student_profile_model.dart';
 StudentProfileModel _$StudentProfileModelFromJson(Map<String, dynamic> json) =>
     StudentProfileModel(
       id: (json['id'] as num?)?.toInt(),
-      userId: (json['user_id'] as num).toInt(),
+      userId: json['user_id'] as String,
       studentType: json['student_type'] as String,
       birthDate: json['birth_date'] == null
           ? null

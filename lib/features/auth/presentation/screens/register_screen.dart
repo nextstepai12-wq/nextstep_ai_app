@@ -17,7 +17,6 @@ class _RegisterScreenState extends State<RegisterScreen>
   String _selectedPath = 'tawjihi';
   bool _agreedToTerms = false;
 
-  // Controllers
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -27,7 +26,6 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _universityController = TextEditingController();
   final _majorController = TextEditingController();
 
-  // Selected values
   String? _selectedBranch;
   String? _selectedYear;
   String? _selectedPhoneCode = '+970';
@@ -37,17 +35,14 @@ class _RegisterScreenState extends State<RegisterScreen>
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  // Animation
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  // Password strength
   double _passwordStrength = 0.0;
   String _passwordStrengthText = '';
   Color _passwordStrengthColor = Colors.grey;
 
-  // Supabase
   final SupabaseService _supabase = SupabaseService();
 
   @override
@@ -56,32 +51,25 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 650),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOut,
-      ),
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
+      begin: const Offset(0, 0.06),
       end: Offset.zero,
     ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOut,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
 
     _passwordController.addListener(_updatePasswordStrength);
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _animationController.forward();
-      }
+      if (mounted) _animationController.forward();
     });
   }
 
@@ -106,16 +94,16 @@ class _RegisterScreenState extends State<RegisterScreen>
       _passwordStrength = strength;
       if (strength <= 0.25) {
         _passwordStrengthText = 'ضعيفة';
-        _passwordStrengthColor = Colors.red;
+        _passwordStrengthColor = const Color(0xFFDC2626);
       } else if (strength <= 0.5) {
         _passwordStrengthText = 'متوسطة';
-        _passwordStrengthColor = Colors.orange;
+        _passwordStrengthColor = const Color(0xFFF97316);
       } else if (strength <= 0.75) {
         _passwordStrengthText = 'جيدة';
-        _passwordStrengthColor = Colors.blue;
+        _passwordStrengthColor = const Color(0xFF3B82F6);
       } else {
         _passwordStrengthText = 'قوية جداً';
-        _passwordStrengthColor = Colors.green;
+        _passwordStrengthColor = const Color(0xFF22C55E);
       }
     });
   }
@@ -138,12 +126,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_agreedToTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('يرجى الموافقة على الشروط والأحكام'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      _showSnack('يرجى الموافقة على الشروط والأحكام', const Color(0xFFF97316));
       return;
     }
 
@@ -164,7 +147,8 @@ class _RegisterScreenState extends State<RegisterScreen>
         throw Exception('فشل إنشاء الحساب');
       }
 
-      final userId = int.parse(authResponse.user!.id);
+      // ✅ user.id هو UUID (String) — لا حاجة لأي تحويل
+      final userId = authResponse.user!.id;
 
       // 2️⃣ إنشاء ملف الطالب في جدول student_profiles
       await _supabase.upsertStudentProfile(
@@ -192,26 +176,42 @@ class _RegisterScreenState extends State<RegisterScreen>
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ تم إنشاء الحساب بنجاح!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        _showSnack('تم إنشاء الحساب بنجاح!', const Color(0xFF22C55E),
+            icon: Icons.check_circle_outline_rounded);
         Navigator.pushReplacementNamed(context, '/login');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showSnack(e.toString().replaceFirst('Exception: ', ''),
+            const Color(0xFFDC2626));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _showSnack(String message, Color color, {IconData? icon}) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          backgroundColor: color,
+          content: Row(
+            children: [
+              Icon(icon ?? Icons.error_outline_rounded,
+                  color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(message,
+                    style: const TextStyle(color: Colors.white, fontSize: 13)),
+              ),
+            ],
+          ),
+        ),
+      );
   }
 
   int? _getBranchId(String? branch) {
@@ -231,107 +231,146 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Directionality(
-          textDirection: TextDirection.rtl,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: Column(
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: 12),
-                    _buildPathSelection(),
-                    const SizedBox(height: 24),
-                    _buildForm(),
-                    const SizedBox(height: 24),
-                    _buildFooter(),
-                  ],
+      backgroundColor: const Color(0xFFF6F7FB),
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Stack(
+          children: [
+            _buildBackgroundDecor(size),
+            SafeArea(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
+                      children: [
+                        _buildHeader(),
+                        const SizedBox(height: 20),
+                        _buildPathSelection(),
+                        const SizedBox(height: 20),
+                        _buildForm(),
+                        const SizedBox(height: 20),
+                        _buildFooter(),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
+  // ============================================================
+  //  خلفية زخرفية
+  // ============================================================
+  Widget _buildBackgroundDecor(Size size) {
+    return Stack(
+      children: [
+        Positioned(
+          top: -size.width * 0.35,
+          left: -size.width * 0.3,
+          child: Container(
+            width: size.width * 0.85,
+            height: size.width * 0.85,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.primary.withValues(alpha: 0.14),
+                  AppTheme.primaryContainer.withValues(alpha: 0.04),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: -size.width * 0.4,
+          right: -size.width * 0.3,
+          child: Container(
+            width: size.width * 0.8,
+            height: size.width * 0.8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.secondary.withValues(alpha: 0.1),
+                  AppTheme.secondary.withValues(alpha: 0.02),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  //  الرأس
+  // ============================================================
   Widget _buildHeader() {
     return Column(
       children: [
         Container(
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [AppTheme.primary, AppTheme.primaryContainer],
+            ),
+            borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primary.withValues(alpha: 0.15),
-                blurRadius: 30,
-                spreadRadius: 5,
+                color: AppTheme.primary.withValues(alpha: 0.3),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: Image.asset(
-            'assets/images/logo.png',
-            width: 130,
-            height: 130,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) {
-              return Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppTheme.primary,
-                      AppTheme.primaryContainer,
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primary.withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.school,
-                  size: 55,
-                  color: Colors.white,
-                ),
-              );
-            },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: Image.asset(
+              'assets/images/logo.png',
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const Icon(
+                Icons.school_rounded,
+                size: 38,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         const Text(
           'إنشاء حساب جديد',
           style: TextStyle(
             fontSize: 24,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             height: 1.3,
             color: AppTheme.primaryContainer,
-            letterSpacing: -0.5,
+            letterSpacing: -0.3,
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           'اختر مسارك الأكاديمي للحصول على توجيه مخصص',
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w400,
             height: 1.5,
-            color: AppTheme.onSurfaceVariant.withValues(alpha: 0.8),
+            color: AppTheme.onSurfaceVariant.withValues(alpha: 0.75),
           ),
           textAlign: TextAlign.center,
         ),
@@ -339,6 +378,9 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
+  // ============================================================
+  //  اختيار المسار
+  // ============================================================
   Widget _buildPathSelection() {
     return Row(
       children: [
@@ -346,13 +388,9 @@ class _RegisterScreenState extends State<RegisterScreen>
           child: _buildPathCard(
             title: 'طالب توجيهي',
             subtitle: 'للذين يتطلعون للالتحاق بالجامعة',
-            icon: Icons.school_outlined,
+            icon: Icons.school_rounded,
             isSelected: _selectedPath == 'tawjihi',
-            onTap: () {
-              setState(() {
-                _selectedPath = 'tawjihi';
-              });
-            },
+            onTap: () => setState(() => _selectedPath = 'tawjihi'),
           ),
         ),
         const SizedBox(width: 12),
@@ -360,13 +398,9 @@ class _RegisterScreenState extends State<RegisterScreen>
           child: _buildPathCard(
             title: 'طالب جامعي',
             subtitle: 'لتطوير مسارك الأكاديمي والمهني',
-            icon: Icons.local_library_outlined,
+            icon: Icons.local_library_rounded,
             isSelected: _selectedPath == 'university',
-            onTap: () {
-              setState(() {
-                _selectedPath = 'university';
-              });
-            },
+            onTap: () => setState(() => _selectedPath = 'university'),
           ),
         ),
       ],
@@ -380,67 +414,76 @@ class _RegisterScreenState extends State<RegisterScreen>
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFFF0F7FF) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isSelected ? const Color(0xFF003E2C) : AppTheme.borderSubtle,
-          width: isSelected ? 2 : 1,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppTheme.primary, AppTheme.primaryContainer],
+                )
+              : null,
+          color: isSelected ? null : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : const Color(0xFFECEDF3),
+            width: 1.4,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? AppTheme.primary.withValues(alpha: 0.28)
+                  : Colors.black.withValues(alpha: 0.02),
+              blurRadius: isSelected ? 20 : 10,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        boxShadow: isSelected
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF003E2C).withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-              ]
-            : const [],
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(6),
+            Container(
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF003E2C).withValues(alpha: 0.1)
-                    : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : AppTheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                color: isSelected ? const Color(0xFF003E2C) : Colors.grey.shade500,
+                color: isSelected ? Colors.white : AppTheme.primary,
                 size: 22,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               title,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 height: 1.3,
-                color: isSelected ? const Color(0xFF003E2C) : AppTheme.primaryContainer,
+                color: isSelected ? Colors.white : AppTheme.primaryContainer,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 3),
             Text(
               subtitle,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 10.5,
                 fontWeight: FontWeight.w400,
                 height: 1.3,
-                color: Colors.grey.shade500,
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.85)
+                    : Colors.grey.shade500,
               ),
               textAlign: TextAlign.center,
             ),
@@ -450,18 +493,21 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
+  // ============================================================
+  //  الفورم (Glass Card)
+  // ============================================================
   Widget _buildForm() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.borderSubtle.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 30,
-            spreadRadius: 5,
+            color: AppTheme.primaryContainer.withValues(alpha: 0.06),
+            blurRadius: 36,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -469,52 +515,44 @@ class _RegisterScreenState extends State<RegisterScreen>
         key: _formKey,
         child: Column(
           children: [
-            _buildAnimatedTextField(
+            _buildTextField(
               controller: _fullNameController,
               label: 'الاسم الكامل',
               hint: 'أدخل اسمك الرباعي',
-              icon: Icons.person_outline,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'الرجاء إدخال الاسم الكامل';
-                }
-                return null;
-              },
+              icon: Icons.person_outline_rounded,
+              validator: (v) =>
+                  (v == null || v.isEmpty) ? 'الرجاء إدخال الاسم الكامل' : null,
             ),
-            const SizedBox(height: 14),
-            _buildAnimatedTextField(
+            const SizedBox(height: 16),
+            _buildTextField(
               controller: _emailController,
               label: 'البريد الإلكتروني',
               hint: 'user@school.edu',
-              icon: Icons.mail_outline,
+              icon: Icons.mail_outline_rounded,
               keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'الرجاء إدخال البريد الإلكتروني';
-                }
-                if (!value.contains('@') || !value.contains('.')) {
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'الرجاء إدخال البريد الإلكتروني';
+                if (!v.contains('@') || !v.contains('.')) {
                   return 'الرجاء إدخال بريد إلكتروني صحيح';
                 }
                 return null;
               },
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             _buildPhoneSection(),
             if (_selectedPath == 'tawjihi') ...[
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               _buildBranchDropdown(),
-              const SizedBox(height: 14),
-              _buildAnimatedTextField(
+              const SizedBox(height: 16),
+              _buildTextField(
                 controller: _gpaController,
                 label: 'المعدل المتوقع (%)',
                 hint: '90.5',
                 icon: Icons.analytics_outlined,
                 keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'الرجاء إدخال المعدل';
-                  }
-                  final gpa = double.tryParse(value);
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'الرجاء إدخال المعدل';
+                  final gpa = double.tryParse(v);
                   if (gpa == null || gpa < 50 || gpa > 100) {
                     return 'المعدل بين 50 و 100';
                   }
@@ -523,83 +561,58 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
             ],
             if (_selectedPath == 'university') ...[
-              const SizedBox(height: 14),
-              _buildAnimatedTextField(
+              const SizedBox(height: 16),
+              _buildTextField(
                 controller: _universityController,
                 label: 'الجامعة الحالية',
                 hint: 'أدخل اسم جامعتك',
                 icon: Icons.business_outlined,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'الرجاء إدخال اسم الجامعة';
-                  }
-                  return null;
-                },
+                validator: (v) =>
+                    (v == null || v.isEmpty) ? 'الرجاء إدخال اسم الجامعة' : null,
               ),
-              const SizedBox(height: 14),
-              _buildAnimatedTextField(
+              const SizedBox(height: 16),
+              _buildTextField(
                 controller: _majorController,
                 label: 'التخصص',
                 hint: 'أدخل تخصصك',
                 icon: Icons.book_outlined,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'الرجاء إدخال التخصص';
-                  }
-                  return null;
-                },
+                validator: (v) =>
+                    (v == null || v.isEmpty) ? 'الرجاء إدخال التخصص' : null,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               _buildYearDropdown(),
             ],
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             _buildPasswordField(
               controller: _passwordController,
               label: 'كلمة المرور',
-              icon: Icons.lock_outline,
+              icon: Icons.lock_outline_rounded,
               obscureText: _obscurePassword,
-              onToggle: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'الرجاء إدخال كلمة المرور';
-                }
-                if (value.length < 6) {
-                  return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
-                }
+              onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'الرجاء إدخال كلمة المرور';
+                if (v.length < 6) return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
                 return null;
               },
               showStrength: true,
-              strength: _passwordStrength,
-              strengthText: _passwordStrengthText,
-              strengthColor: _passwordStrengthColor,
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             _buildPasswordField(
               controller: _confirmPasswordController,
               label: 'تأكيد كلمة المرور',
-              icon: Icons.lock_reset_outlined,
+              icon: Icons.lock_reset_rounded,
               obscureText: _obscureConfirmPassword,
-              onToggle: () {
-                setState(() {
-                  _obscureConfirmPassword = !_obscureConfirmPassword;
-                });
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'الرجاء تأكيد كلمة المرور';
-                }
-                if (value != _passwordController.text) {
+              onToggle: () => setState(
+                  () => _obscureConfirmPassword = !_obscureConfirmPassword),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'الرجاء تأكيد كلمة المرور';
+                if (v != _passwordController.text) {
                   return 'كلمة المرور غير متطابقة';
                 }
                 return null;
               },
-              showStrength: false,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 26),
             _buildRegisterButton(),
           ],
         ),
@@ -607,40 +620,172 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
+  // ============================================================
+  //  عناصر مساعدة موحّدة للحقول
+  // ============================================================
+  InputDecoration _fieldDecoration({
+    required String hint,
+    required IconData icon,
+    Widget? suffix,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+      hintTextDirection: TextDirection.rtl,
+      filled: true,
+      fillColor: const Color(0xFFF7F8FB),
+      prefixIcon: Icon(icon, color: AppTheme.onSurfaceVariant, size: 21),
+      suffixIcon: suffix,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFECEDF3), width: 1.4),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppTheme.secondary, width: 1.8),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.6),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.8),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+    );
+  }
+
+  Widget _fieldLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          height: 1.3,
+          color: AppTheme.primaryContainer,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _fieldLabel(label),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          textDirection: TextDirection.rtl,
+          textAlign: TextAlign.right,
+          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
+          decoration: _fieldDecoration(hint: hint, icon: icon),
+          validator: validator,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required bool obscureText,
+    required VoidCallback onToggle,
+    required String? Function(String?)? validator,
+    bool showStrength = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _fieldLabel(label),
+        TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.right,
+          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
+          decoration: _fieldDecoration(
+            hint: '••••••••',
+            icon: icon,
+            suffix: IconButton(
+              icon: Icon(
+                obscureText
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
+                color: AppTheme.onSurfaceVariant,
+                size: 20,
+              ),
+              onPressed: onToggle,
+            ),
+          ),
+          validator: validator,
+          onChanged: showStrength ? (_) => setState(() {}) : null,
+        ),
+        if (showStrength && controller.text.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: AnimatedFractionallySizedBox(
+                    duration: const Duration(milliseconds: 250),
+                    widthFactor: 1,
+                    child: LinearProgressIndicator(
+                      value: _passwordStrength,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(_passwordStrengthColor),
+                      minHeight: 5,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                _passwordStrengthText,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: _passwordStrengthColor,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+InputDecoration _buildDropdownDecoration({required IconData icon}) {
+  return _fieldDecoration(hint: '', icon: icon);
+}
+
   Widget _buildPhoneSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'رقم الهاتف',
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            height: 1.3,
-            color: AppTheme.primaryContainer,
-          ),
-        ),
-        const SizedBox(height: 6),
+        _fieldLabel('رقم الهاتف'),
         DropdownButtonFormField<String>(
           initialValue: _selectedPhoneCode,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.secondary, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            prefixIcon: const Icon(
-              Icons.phone_outlined,
-              color: AppTheme.onSurfaceVariant,
-            ),
+          decoration: _fieldDecoration(
+            hint: 'رمز الدولة',
+            icon: Icons.public_rounded,
           ),
           items: const [
             DropdownMenuItem(value: '+970', child: Text('+970 فلسطين')),
@@ -662,230 +807,30 @@ class _RegisterScreenState extends State<RegisterScreen>
             DropdownMenuItem(value: '+249', child: Text('+249 السودان')),
             DropdownMenuItem(value: '+967', child: Text('+967 اليمن')),
           ],
-          onChanged: (value) {
-            setState(() {
-              _selectedPhoneCode = value;
-            });
-          },
+          onChanged: (value) => setState(() => _selectedPhoneCode = value),
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: AppTheme.primaryContainer,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         TextFormField(
           controller: _phoneController,
           keyboardType: TextInputType.phone,
           textDirection: TextDirection.ltr,
           textAlign: TextAlign.left,
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppTheme.primaryContainer,
+          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
+          decoration: _fieldDecoration(
+            hint: '599 000 000',
+            icon: Icons.phone_android_rounded,
           ),
-          decoration: InputDecoration(
-            hintText: '599 000 000',
-            hintStyle: TextStyle(
-              color: Colors.grey.shade400,
-              fontSize: 13,
-            ),
-            prefixIcon: const Icon(
-              Icons.phone_android_outlined,
-              color: AppTheme.onSurfaceVariant,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.secondary, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'الرجاء إدخال رقم الهاتف';
-            }
-            if (value.length < 9) {
-              return 'رقم الهاتف غير صحيح';
-            }
+          validator: (v) {
+            if (v == null || v.isEmpty) return 'الرجاء إدخال رقم الهاتف';
+            if (v.length < 9) return 'رقم الهاتف غير صحيح';
             return null;
           },
         ),
-      ],
-    );
-  }
-
-  Widget _buildAnimatedTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            height: 1.3,
-            color: AppTheme.primaryContainer,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          textDirection: TextDirection.rtl,
-          textAlign: TextAlign.right,
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppTheme.primaryContainer,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Colors.grey.shade400,
-              fontSize: 13,
-            ),
-            hintTextDirection: TextDirection.rtl,
-            prefixIcon: Icon(icon, color: AppTheme.onSurfaceVariant),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.secondary, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-          ),
-          validator: validator,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPasswordField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required bool obscureText,
-    required VoidCallback onToggle,
-    required String? Function(String?)? validator,
-    bool showStrength = false,
-    double strength = 0.0,
-    String strengthText = '',
-    Color strengthColor = Colors.grey,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            height: 1.3,
-            color: AppTheme.primaryContainer,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          textDirection: TextDirection.rtl,
-          textAlign: TextAlign.right,
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppTheme.primaryContainer,
-          ),
-          decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: AppTheme.onSurfaceVariant),
-            suffixIcon: IconButton(
-              icon: Icon(
-                obscureText ? Icons.visibility_off : Icons.visibility,
-                color: AppTheme.onSurfaceVariant,
-              ),
-              onPressed: onToggle,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.secondary, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-          ),
-          validator: validator,
-        ),
-        if (showStrength && controller.text.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: strength,
-                    backgroundColor: Colors.grey.shade200,
-                    valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
-                    minHeight: 4,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                strengthText,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: strengthColor,
-                ),
-              ),
-            ],
-          ),
-        ],
       ],
     );
   }
@@ -894,43 +839,12 @@ class _RegisterScreenState extends State<RegisterScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'الفرع الدراسي',
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            height: 1.3,
-            color: AppTheme.primaryContainer,
-          ),
-        ),
-        const SizedBox(height: 6),
+        _fieldLabel('الفرع الدراسي'),
         DropdownButtonFormField<String>(
           initialValue: _selectedBranch,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.secondary, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-            prefixIcon: const Icon(
-              Icons.school_outlined,
-              color: AppTheme.onSurfaceVariant,
-            ),
-          ),
-          hint: const Text(
-            'اختر الفرع الدراسي',
-            style: TextStyle(color: Colors.grey),
+          decoration: _fieldDecoration(
+            hint: 'اختر الفرع الدراسي',
+            icon: Icons.school_outlined,
           ),
           items: const [
             DropdownMenuItem(value: 'scientific', child: Text('علمي')),
@@ -938,21 +852,10 @@ class _RegisterScreenState extends State<RegisterScreen>
             DropdownMenuItem(value: 'commercial', child: Text('ريادة وأعمال')),
             DropdownMenuItem(value: 'industrial', child: Text('صناعي')),
           ],
-          onChanged: (value) {
-            setState(() {
-              _selectedBranch = value;
-            });
-          },
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'الرجاء اختيار الفرع الدراسي';
-            }
-            return null;
-          },
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppTheme.primaryContainer,
-          ),
+          onChanged: (value) => setState(() => _selectedBranch = value),
+          validator: (v) =>
+              (v == null || v.isEmpty) ? 'الرجاء اختيار الفرع الدراسي' : null,
+          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
         ),
       ],
     );
@@ -962,43 +865,12 @@ class _RegisterScreenState extends State<RegisterScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'السنة الدراسية',
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            height: 1.3,
-            color: AppTheme.primaryContainer,
-          ),
-        ),
-        const SizedBox(height: 6),
+        _fieldLabel('السنة الدراسية'),
         DropdownButtonFormField<String>(
           initialValue: _selectedYear,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.borderSubtle),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: AppTheme.secondary, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-            prefixIcon: const Icon(
-              Icons.calendar_today_outlined,
-              color: AppTheme.onSurfaceVariant,
-            ),
-          ),
-          hint: const Text(
-            'اختر السنة',
-            style: TextStyle(color: Colors.grey),
+          decoration: _fieldDecoration(
+            hint: 'اختر السنة',
+            icon: Icons.calendar_today_rounded,
           ),
           items: const [
             DropdownMenuItem(value: '1', child: Text('السنة الأولى')),
@@ -1007,88 +879,77 @@ class _RegisterScreenState extends State<RegisterScreen>
             DropdownMenuItem(value: '4', child: Text('السنة الرابعة')),
             DropdownMenuItem(value: '5', child: Text('خريج')),
           ],
-          onChanged: (value) {
-            setState(() {
-              _selectedYear = value;
-            });
-          },
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'الرجاء اختيار السنة الدراسية';
-            }
-            return null;
-          },
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppTheme.primaryContainer,
-          ),
+          onChanged: (value) => setState(() => _selectedYear = value),
+          validator: (v) =>
+              (v == null || v.isEmpty) ? 'الرجاء اختيار السنة الدراسية' : null,
+          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
         ),
       ],
     );
   }
 
   Widget _buildRegisterButton() {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+    return SizedBox(
       width: double.infinity,
       height: 56,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primary,
-            AppTheme.primaryContainer,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppTheme.primary, AppTheme.primaryContainer],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary.withValues(alpha: 0.32),
+              blurRadius: 22,
+              offset: const Offset(0, 10),
+            ),
           ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.3),
-            blurRadius: 20,
-            spreadRadius: 2,
+        child: ElevatedButton(
+          onPressed: _isLoading ? null : _register,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : _register,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            child: _isLoading
+                ? const SizedBox(
+                    key: ValueKey('loading'),
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.4,
+                    ),
+                  )
+                : const Row(
+                    key: ValueKey('label'),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'إنشاء الحساب',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          height: 1.2,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Icon(Icons.arrow_forward_rounded,
+                          size: 20, color: Colors.white),
+                    ],
+                  ),
           ),
         ),
-        child: _isLoading
-            ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'إنشاء الحساب',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 20,
-                    color: Colors.white,
-                  ),
-                ],
-              ),
       ),
     );
   }
@@ -1096,96 +957,103 @@ class _RegisterScreenState extends State<RegisterScreen>
   Widget _buildFooter() {
     return Column(
       children: [
-        // ✅ موافقة على الشروط والأحكام مع رابط
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Checkbox(
-              value: _agreedToTerms,
-              onChanged: (value) {
-                setState(() {
-                  _agreedToTerms = value ?? false;
-                });
-              },
-              activeColor: AppTheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFECEDF3), width: 1.2),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Checkbox(
+                value: _agreedToTerms,
+                onChanged: (value) =>
+                    setState(() => _agreedToTerms = value ?? false),
+                activeColor: AppTheme.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
               ),
-            ),
-            Flexible(
-              child: GestureDetector(
-                onTap: () async {
-                  final result = await Navigator.push<bool>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const TermsScreen(),
-                    ),
-                  );
-                  if (result == true) {
-                    setState(() {
-                      _agreedToTerms = true;
-                    });
-                  }
-                },
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.onSurfaceVariant.withValues(alpha: 0.7),
-                    ),
-                    children: const [
-                      TextSpan(text: 'أوافق على '),
-                      TextSpan(
-                        text: 'الشروط والأحكام',
-                        style: TextStyle(
-                          color: AppTheme.secondary,
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                        ),
+              Flexible(
+                child: GestureDetector(
+                  onTap: () async {
+                    final result = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TermsScreen(),
                       ),
-                    ],
+                    );
+                    if (result == true) {
+                      setState(() => _agreedToTerms = true);
+                    }
+                  },
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.onSurfaceVariant.withValues(alpha: 0.8),
+                      ),
+                      children: const [
+                        TextSpan(text: 'أوافق على '),
+                        TextSpan(
+                          text: 'الشروط والأحكام',
+                          style: TextStyle(
+                            color: AppTheme.secondary,
+                            fontWeight: FontWeight.w700,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
-        // ✅ رابط تسجيل الدخول
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'هل لديك حساب بالفعل؟',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                height: 1.5,
-                color: AppTheme.onSurfaceVariant,
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFECEDF3), width: 1.2),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'هل لديك حساب بالفعل؟',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
+                  color: AppTheme.onSurfaceVariant,
+                ),
               ),
-            ),
-            const SizedBox(width: 4),
-            InkWell(
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Text(
-                  'سجل دخولك هنا',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    height: 1.5,
-                    color: AppTheme.secondary,
-                    decoration: TextDecoration.underline,
-                    decorationColor: AppTheme.secondary.withValues(alpha: 0.3),
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  child: Text(
+                    'سجل دخولك هنا',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      height: 1.5,
+                      color: AppTheme.secondary,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppTheme.secondary.withValues(alpha: 0.3),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
