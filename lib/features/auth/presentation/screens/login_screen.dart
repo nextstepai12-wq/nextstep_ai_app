@@ -130,39 +130,348 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ============================================================
-  //  عرض رسالة خطأ مخصصة
-  // ============================================================
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.error_outline_rounded, color: Colors.red.shade700, size: 28),
-            const SizedBox(width: 12),
-            const Text(
-              'حدث خطأ',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-        content: Text(
-          message,
-          style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('حسناً'),
-          ),
-        ],
-        actionsAlignment: MainAxisAlignment.center,
+// ============================================================
+//  عرض رسالة خطأ مخصصة (منبثقة احترافية)
+// ============================================================
+void _showErrorDialog(String message) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierColor: Colors.black.withValues(alpha: 0.4),
+    builder: (context) => Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(32),
       ),
-    );
-  }
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      child: TweenAnimationBuilder(
+        tween: Tween<double>(begin: 0.7, end: 1.0),
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutBack,
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: value,
+            child: Opacity(
+              opacity: value,
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 400),
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      blurRadius: 60,
+                      spreadRadius: 20,
+                      offset: const Offset(0, 30),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // ✅ أيقونة الخطأ مع تأثير نبض
+                    TweenAnimationBuilder(
+                      tween: Tween<double>(begin: 1.0, end: 1.08),
+                      duration: const Duration(milliseconds: 1000),
+                      curve: Curves.easeInOut,
+                      builder: (context, scale, child) {
+                        return Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Color(0xFFDC2626),
+                                  Color(0xFFEF4444),
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFDC2626)
+                                      .withValues(alpha: 0.25),
+                                  blurRadius: 40,
+                                  spreadRadius: 15,
+                                ),
+                              ],
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 48,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
 
+                    // ✅ العنوان الرئيسي
+                    const Text(
+                      'فشل تسجيل الدخول',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.primaryContainer,
+                        letterSpacing: -0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 6),
+
+                    // ✅ وصف فرعي (تم إزالة const من Text)
+                    Text(
+                      'نعتذر، حدث خطأ أثناء محاولة تسجيل الدخول',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade500, // ✅ غير const
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ✅ الرسالة الرئيسية - بطاقة خطأ
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.red.shade50,
+                            Colors.red.shade100.withValues(alpha: 0.5),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.red.shade200,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline_rounded,
+                            size: 22,
+                            color: Colors.red.shade700,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                fontSize: 14,
+                                height: 1.5,
+                                color: Colors.red.shade800,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ✅ نصائح للمستخدم - بطاقة ذكية
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.amber.shade50,
+                            Colors.orange.shade50,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.amber.shade200,
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.shade100,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.lightbulb_outline_rounded,
+                                  size: 16,
+                                  color: Colors.amber.shade700,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'نصيحة',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.amber.shade800,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 30),
+                            child: Text(
+                              _getSuggestion(message),
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                color: Colors.amber.shade800,
+                                fontWeight: FontWeight.w500,
+                                height: 1.6,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    // ✅ أزرار الإجراءات
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.primaryContainer,
+                              side: BorderSide(color: Colors.grey.shade300),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: const Text(
+                              'إلغاء',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _login();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              elevation: 0,
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.refresh_rounded,
+                                  size: 20,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'إعادة المحاولة',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // ✅ رابط الدعم الفني
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'لا تزال تواجه مشكلة؟',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/contact-us');
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppTheme.secondary,
+                            textStyle: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text('تواصل مع الدعم'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    ),
+  );
+}
+
+// ============================================================
+//  نصائح ذكية حسب نوع الخطأ
+// ============================================================
+String _getSuggestion(String errorMessage) {
+  if (errorMessage.contains('Invalid login credentials')) {
+    return 'تأكد من صحة البريد الإلكتروني وكلمة المرور. يمكنك استخدام "نسيت كلمة المرور" لإعادة تعيينها.';
+  } else if (errorMessage.contains('network') || errorMessage.contains('connection')) {
+    return 'يبدو أن هناك مشكلة في الاتصال بالإنترنت. تأكد من تشغيل الواي فاي أو بيانات الجوال.';
+  } else if (errorMessage.contains('email')) {
+    return 'تأكد من إدخال البريد الإلكتروني بشكل صحيح (مثال: user@domain.com)';
+  } else if (errorMessage.contains('password')) {
+    return 'كلمة المرور يجب أن تكون 8 أحرف على الأقل وتحتوي على حروف وأرقام ورموز.';
+  } else if (errorMessage.contains('timeout')) {
+    return 'انتهت مهلة الاتصال. قد يكون الاتصال بطيئاً، حاول مرة أخرى بعد قليل.';
+  } else if (errorMessage.contains('server')) {
+    return 'يبدو أن هناك مشكلة في الخادم. نعمل على حلها، يرجى المحاولة بعد قليل.';
+  } else {
+    return 'يرجى التحقق من بياناتك والمحاولة مرة أخرى. إذا استمرت المشكلة، فريق الدعم جاهز لمساعدتك.';
+  }
+}
   // ============================================================
   //  تحديد المسار حسب الدور
   // ============================================================
@@ -184,6 +493,8 @@ class _LoginScreenState extends State<LoginScreen>
   // ============================================================
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
+
+
 
     final hasInternet = await _checkInternet();
     if (!hasInternet) {

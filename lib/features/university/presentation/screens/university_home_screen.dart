@@ -10,7 +10,8 @@ class UniversityHomeScreen extends StatefulWidget {
   State<UniversityHomeScreen> createState() => _UniversityHomeScreenState();
 }
 
-class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
+class _UniversityHomeScreenState extends State<UniversityHomeScreen>
+    with SingleTickerProviderStateMixin {
   final SupabaseService _supabase = SupabaseService();
 
   String _userName = 'الجامعة';
@@ -20,7 +21,10 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
-  // بيانات وهمية للعرض
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
   final List<Map<String, dynamic>> _recentStudents = [
     {'name': 'أحمد محمد', 'major': 'هندسة حاسوب', 'status': 'جديد'},
     {'name': 'سارة أحمد', 'major': 'الذكاء الاصطناعي', 'status': 'مكتمل'},
@@ -37,10 +41,30 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
   @override
   void initState() {
     super.initState();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.05),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+    );
+
     _loadUniversityData();
   }
 
   Future<void> _loadUniversityData() async {
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -65,9 +89,7 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
           });
         }
 
-        // جلب بيانات الجامعة
         try {
-          // TODO: استدعاء API لجلب بيانات الجامعة
           _universityData = {
             'name': 'الجامعة الإسلامية',
             'location': 'غزة، فلسطين',
@@ -81,16 +103,19 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
           });
         } catch (_) {}
       }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'تعذّر تحميل البيانات';
-      });
-    } finally {
+
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
+        _animationController.forward();
       }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'تعذّر تحميل البيانات';
+        _isLoading = false;
+      });
     }
   }
 
@@ -103,6 +128,12 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -110,76 +141,84 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
         backgroundColor: const Color(0xFFF7F8FA),
         appBar: _buildAppBar(),
         drawer: _buildDrawer(),
-        body: _buildBody(),
+        body: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppTheme.primary,
+                ),
+              )
+            : _errorMessage != null
+                ? _buildErrorState()
+                : FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: RefreshIndicator(
+                        onRefresh: _loadUniversityData,
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildWelcomeSection(),
+                              const SizedBox(height: 24),
+                              _buildStatsSection(),
+                              const SizedBox(height: 28),
+                              _buildQuickActionsSection(),
+                              const SizedBox(height: 28),
+                              _buildProgramsSection(),
+                              const SizedBox(height: 28),
+                              _buildRecentStudentsSection(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
       ),
     );
   }
 
   // ============================================================
-  //  الجسم الرئيسي
+  //  Error State
   // ============================================================
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: AppTheme.primary,
-        ),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline_rounded,
-                  size: 56, color: Colors.grey.shade400),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 56,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 14,
               ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _loadUniversityData,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('إعادة المحاولة'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _loadUniversityData,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('إعادة المحاولة'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadUniversityData,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildWelcomeSection(),
-            const SizedBox(height: 24),
-            _buildStatsSection(),
-            const SizedBox(height: 28),
-            _buildQuickActionsSection(),
-            const SizedBox(height: 28),
-            _buildProgramsSection(),
-            const SizedBox(height: 28),
-            _buildRecentStudentsSection(),
+            ),
           ],
         ),
       ),
@@ -191,35 +230,28 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
   // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF6F7FB),
       elevation: 0,
-      title: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppTheme.primary, AppTheme.primaryContainer],
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Center(
-              child: Icon(Icons.business, size: 20, color: Colors.white),
-            ),
+      title: const Center(
+        child: Text(
+          'NextStep AI',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.primaryContainer,
+            letterSpacing: -0.3,
           ),
-          const SizedBox(width: 10),
-          const Text(
-            'NextStep AI',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.primaryContainer,
-            ),
+        ),
+      ),
+      centerTitle: true,
+      leading: Builder(
+        builder: (context) => IconButton(
+          icon: const Icon(
+            Icons.menu_rounded,
+            color: AppTheme.primaryContainer,
           ),
-        ],
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
       ),
       actions: [
         IconButton(
@@ -227,158 +259,176 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
             Icons.notifications_outlined,
             color: AppTheme.primaryContainer,
           ),
-          onPressed: () {},
+          onPressed: () =>
+              Navigator.pushNamed(context, '/university/notifications'),
         ),
       ],
-      leading: Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(Icons.menu_rounded, color: AppTheme.primaryContainer),
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
-      ),
     );
   }
 
   // ============================================================
   //  Drawer
   // ============================================================
-  Widget _buildDrawer() {
-    return Drawer(
-      child: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppTheme.primary, AppTheme.primaryContainer],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
-                ),
+ Widget _buildDrawer() {
+  return Drawer(
+    child: SafeArea(
+      child: Column(
+        children: [
+          // Header مع بيانات الجامعة
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppTheme.primary, AppTheme.primaryContainer],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.business, size: 32, color: Colors.white),
-                    ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _userName.isNotEmpty ? _userName : 'الجامعة',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                  child: const Center(
+                    child: Icon(Icons.business, size: 32, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _userName.isNotEmpty ? _userName : 'الجامعة',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _userEmail.isNotEmpty ? _userEmail : '',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'جامعة',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _userEmail.isNotEmpty ? _userEmail : '',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'جامعة',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  _buildDrawerItem(
-                    icon: Icons.home_rounded,
-                    title: 'الرئيسية',
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.school_rounded,
-                    title: 'التخصصات',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/university/programs');
-                    },
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.analytics_rounded,
-                    title: 'التحليلات',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/university/analytics');
-                    },
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.people_rounded,
-                    title: 'الطلاب',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/university/students');
-                    },
-                  ),
-                  const Divider(),
-                  _buildDrawerItem(
-                    icon: Icons.person_rounded,
-                    title: 'الملف الشخصي',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/university/profile');
-                    },
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.settings_rounded,
-                    title: 'الإعدادات',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/university/settings');
-                    },
-                  ),
-                ],
-              ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                // ✅ 1. الرئيسية
+                _buildDrawerItem(
+                  icon: Icons.home_rounded,
+                  title: 'الرئيسية',
+                  onTap: () => Navigator.pop(context),
+                ),
+                
+                // ✅ 2. التخصصات
+                _buildDrawerItem(
+                  icon: Icons.school_rounded,
+                  title: 'التخصصات',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/university/programs');
+                  },
+                ),
+                
+                // ✅ 3. الكليات
+                _buildDrawerItem(
+                  icon: Icons.business_rounded,
+                  title: 'الكليات',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/university/faculties');
+                  },
+                ),
+                
+                // ✅ 4. التحليلات
+                _buildDrawerItem(
+                  icon: Icons.analytics_rounded,
+                  title: 'التحليلات',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/university/analytics');
+                  },
+                ),
+                
+                // ✅ 5. الطلاب
+                _buildDrawerItem(
+                  icon: Icons.people_rounded,
+                  title: 'الطلاب',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/university/students');
+                  },
+                ),
+                
+                const Divider(),
+                
+                // ✅ 6. الملف الشخصي
+                _buildDrawerItem(
+                  icon: Icons.person_rounded,
+                  title: 'الملف الشخصي',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/university/profile');
+                  },
+                ),
+                
+                // ✅ 7. الإعدادات
+                _buildDrawerItem(
+                  icon: Icons.settings_rounded,
+                  title: 'الإعدادات',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/university/settings');
+                  },
+                ),
+              ],
             ),
-            const Divider(height: 1),
-            _buildDrawerItem(
-              icon: Icons.logout_rounded,
-              title: 'تسجيل الخروج',
-              color: Colors.red,
-              onTap: _logout,
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
+          ),
+          const Divider(height: 1),
+          // ✅ 8. تسجيل الخروج
+          _buildDrawerItem(
+            icon: Icons.logout_rounded,
+            title: 'تسجيل الخروج',
+            color: Colors.red,
+            onTap: _logout,
+          ),
+          const SizedBox(height: 12),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDrawerItem({
     required IconData icon,
@@ -410,7 +460,7 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
   // ============================================================
   Widget _buildWelcomeSection() {
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -440,7 +490,7 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
                     color: Colors.white.withValues(alpha: 0.85),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   _userName.isNotEmpty ? _userName : 'الجامعة',
                   style: const TextStyle(
@@ -472,14 +522,39 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
             ),
           ),
           Container(
-            width: 72,
-            height: 72,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF4FC3F7),
+                  Color(0xFF0288D1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0288D1).withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-            child: const Center(
-              child: Icon(Icons.business_rounded, size: 36, color: Colors.white),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.business_rounded,
+                  size: 36,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
         ],
@@ -575,69 +650,99 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
   // ============================================================
   //  Quick Actions Section
   // ============================================================
-  Widget _buildQuickActionsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'إدارة سريعة',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: AppTheme.primaryContainer,
+Widget _buildQuickActionsSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'إدارة سريعة',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w800,
+          color: AppTheme.primaryContainer,
+        ),
+      ),
+      const SizedBox(height: 14),
+      Row(
+        children: [
+          Expanded(
+            child: _buildQuickActionCard(
+              icon: Icons.add_rounded,
+              title: 'إضافة تخصص',
+              subtitle: 'تخصص جديد',
+              color: const Color(0xFF3B82F6),
+              onTap: () =>
+                  Navigator.pushNamed(context, '/university/add-program'),
+            ),
           ),
-        ),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: _buildQuickActionCard(
-                icon: Icons.add_rounded,
-                title: 'إضافة تخصص',
-                subtitle: 'تخصص جديد',
-                color: const Color(0xFF3B82F6),
-                onTap: () => Navigator.pushNamed(context, '/university/add-program'),
-              ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildQuickActionCard(
+              icon: Icons.business_rounded, // ✅ تغيير من analytics إلى business
+              title: 'الكليات',
+              subtitle: 'إدارة الكليات',
+              color: const Color(0xFFA855F7),
+              onTap: () =>
+                  Navigator.pushNamed(context, '/university/faculties'),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildQuickActionCard(
-                icon: Icons.analytics_rounded,
-                title: 'التقارير',
-                subtitle: 'عرض التحليلات',
-                color: const Color(0xFF22C55E),
-                onTap: () => Navigator.pushNamed(context, '/university/analytics'),
-              ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          Expanded(
+            child: _buildQuickActionCard(
+              icon: Icons.analytics_rounded,
+              title: 'التقارير',
+              subtitle: 'عرض التحليلات',
+              color: const Color(0xFF22C55E),
+              onTap: () =>
+                  Navigator.pushNamed(context, '/university/analytics'),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildQuickActionCard(
-                icon: Icons.people_rounded,
-                title: 'الطلاب',
-                subtitle: 'إدارة الطلاب',
-                color: const Color(0xFFA855F7),
-                onTap: () => Navigator.pushNamed(context, '/university/students'),
-              ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildQuickActionCard(
+              icon: Icons.people_rounded,
+              title: 'الطلاب',
+              subtitle: 'إدارة الطلاب',
+              color: const Color(0xFFA855F7),
+              onTap: () =>
+                  Navigator.pushNamed(context, '/university/students'),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildQuickActionCard(
-                icon: Icons.settings_rounded,
-                title: 'الإعدادات',
-                subtitle: 'تخصيص الجامعة',
-                color: const Color(0xFFF97316),
-                onTap: () => Navigator.pushNamed(context, '/university/settings'),
-              ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          Expanded(
+            child: _buildQuickActionCard(
+              icon: Icons.settings_rounded,
+              title: 'الإعدادات',
+              subtitle: 'تخصيص الجامعة',
+              color: const Color(0xFFF97316),
+              onTap: () =>
+                  Navigator.pushNamed(context, '/university/settings'),
             ),
-          ],
-        ),
-      ],
-    );
-  }
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildQuickActionCard(
+              icon: Icons.person_rounded,
+              title: 'الملف الشخصي',
+              subtitle: 'عرض بياناتي',
+              color: const Color(0xFF3B82F6),
+              onTap: () =>
+                  Navigator.pushNamed(context, '/university/profile'),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
 
   Widget _buildQuickActionCard({
     required IconData icon,
@@ -693,8 +798,11 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded,
-                size: 14, color: Colors.grey.shade400),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: Colors.grey.shade400,
+            ),
           ],
         ),
       ),
@@ -720,7 +828,8 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/university/programs'),
+              onPressed: () =>
+                  Navigator.pushNamed(context, '/university/programs'),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.secondary,
                 textStyle: const TextStyle(
@@ -773,8 +882,11 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Center(
-              child: Icon(Icons.school_rounded,
-                  color: AppTheme.primary, size: 22),
+              child: Icon(
+                Icons.school_rounded,
+                color: AppTheme.primary,
+                size: 22,
+              ),
             ),
           ),
           const SizedBox(width: 14),
@@ -841,7 +953,8 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/university/students'),
+              onPressed: () =>
+                  Navigator.pushNamed(context, '/university/students'),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.secondary,
                 textStyle: const TextStyle(

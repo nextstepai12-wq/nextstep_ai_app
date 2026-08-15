@@ -27,6 +27,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   }
 
   Future<void> _loadUserData() async {
+    // ✅ التحقق من mounted قبل setState
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -36,6 +39,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       // ✅ 1. تحميل البيانات من TokenManager
       final cachedData = await TokenManager.getUserData();
       if (cachedData['name'] != null && cachedData['name']!.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _userName = cachedData['name'] ?? 'طالب';
           _userEmail = cachedData['email'] ?? '';
@@ -48,6 +52,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       if (user != null) {
         final userData = await _supabase.getUser(user.id);
         if (userData != null) {
+          if (!mounted) return;
           setState(() {
             _userName = userData.displayName;
             _userEmail = user.email ?? '';
@@ -59,6 +64,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         try {
           final profile = await _supabase.getStudentProfile(user.id);
           if (profile != null) {
+            if (!mounted) return;
             setState(() {
               _profileData = {
                 'student_type': profile.studentType,
@@ -72,6 +78,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         } catch (_) {}
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'تعذّر تحميل البيانات';
       });
@@ -177,55 +184,42 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   // ============================================================
   //  AppBar
   // ============================================================
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      title: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppTheme.primary, AppTheme.primaryContainer],
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Center(
-              child: Icon(Icons.school, size: 20, color: Colors.white),
-            ),
-          ),
-          const SizedBox(width: 10),
-          const Text(
-            'NextStep AI',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.primaryContainer,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(
-            Icons.notifications_outlined,
-            color: AppTheme.primaryContainer,
-          ),
-          onPressed: () {},
+AppBar _buildAppBar() {
+  return AppBar(
+    backgroundColor: const Color(0xFFF6F7FB),
+    elevation: 0,
+    leading: Builder(
+      builder: (context) => IconButton(
+        icon: const Icon(
+          Icons.menu_rounded,
+          color: AppTheme.primaryContainer,
         ),
-      ],
-      leading: Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(Icons.menu_rounded, color: AppTheme.primaryContainer),
-          onPressed: () => Scaffold.of(context).openDrawer(),
+        onPressed: () => Scaffold.of(context).openDrawer(),
+      ),
+    ),
+    title: const Center(
+      child: Text(
+        'NextStep AI',
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          color: AppTheme.primaryContainer,
+          letterSpacing: -0.3,
         ),
       ),
-    );
-  }
+    ),
+    centerTitle: true,
+    actions: [
+      IconButton(
+        icon: const Icon(
+          Icons.notifications_outlined,
+          color: AppTheme.primaryContainer,
+        ),
+        onPressed: () => Navigator.pushNamed(context, '/notifications'),
+      ),
+    ],
+  );
+}
 
   // ============================================================
   //  Drawer
@@ -396,86 +390,105 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   // ============================================================
   //  Welcome Section
   // ============================================================
-  Widget _buildWelcomeSection() {
-    final isUniversityStudent = _profileData?['student_type'] == 'university';
+Widget _buildWelcomeSection() {
+  final isUniversityStudent = _profileData?['student_type'] == 'university';
 
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppTheme.primary, AppTheme.primaryContainer],
+  return Container(
+    padding: const EdgeInsets.all(22),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color.fromARGB(138, 0, 32, 69), AppTheme.primaryContainer],
+      ),
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: [
+        BoxShadow(
+          color: AppTheme.primary.withValues(alpha: 0.25),
+          blurRadius: 24,
+          offset: const Offset(0, 10),
         ),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.25),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'مرحباً بك 👋',
+      ],
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'مرحباً بك 👋',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _userName.isNotEmpty ? _userName : 'طالب',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  isUniversityStudent ? 'طالب جامعي' : 'طالب توجيهي',
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white.withValues(alpha: 0.95),
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  _userName.isNotEmpty ? _userName : 'طالب',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    isUniversityStudent ? 'طالب جامعي' : 'طالب توجيهي',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white.withValues(alpha: 0.95),
-                    ),
-                  ),
-                ),
-              ],
+              ),
+            ],
+          ),
+        ),
+        // ✅ الشعار مع خلفية بيضاء
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            color: Colors.white, // ✅ خلفية بيضاء
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.asset(
+              'assets/images/logo.png',
+              width: 60,
+              height: 60,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const Icon(
+                Icons.school_rounded,
+                size: 36,
+                color: AppTheme.primary,
+              ),
             ),
           ),
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: const Center(
-              child: Icon(Icons.school_rounded, size: 36, color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   // ============================================================
   //  Stats Section

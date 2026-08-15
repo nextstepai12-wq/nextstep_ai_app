@@ -1,16 +1,16 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/themes/app_theme.dart';
 import 'package:nextstep_ai_app/shared/services/supabase/supabase_service.dart';
 import 'package:nextstep_ai_app/shared/services/auth/token_manager.dart';
 
-class AdminHomeScreen extends StatefulWidget {
-  const AdminHomeScreen({super.key});
+class AdminDashboardScreen extends StatefulWidget {
+  const AdminDashboardScreen({super.key});
 
   @override
-  State<AdminHomeScreen> createState() => _AdminHomeScreenState();
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
-class _AdminHomeScreenState extends State<AdminHomeScreen>
+class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     with SingleTickerProviderStateMixin {
   final SupabaseService _supabase = SupabaseService();
 
@@ -19,7 +19,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
   bool _isLoading = true;
   String? _errorMessage;
 
-  // بيانات إحصائيات
+  // بيانات إحصائيات وهمية
   final Map<String, dynamic> _stats = {
     'users': 1250,
     'universities': 24,
@@ -27,73 +27,61 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
     'faculties': 18,
   };
 
-  final List<Map<String, dynamic>> _quickActions = [
-    {
-      'icon': Icons.person_add_rounded,
-      'title': 'إضافة مستخدم',
-      'subtitle': 'طالب أو جامعة',
-      'color': const Color(0xFF3B82F6),
-      'route': '/admin/users/add',
-    },
-    {
-      'icon': Icons.business_rounded,
-      'title': 'إضافة جامعة',
-      'subtitle': 'جامعة جديدة',
-      'color': const Color(0xFF22C55E),
-      'route': '/admin/universities/add',
-    },
-    {
-      'icon': Icons.school_rounded,
-      'title': 'إضافة تخصص',
-      'subtitle': 'تخصص جديد',
-      'color': const Color(0xFF8B5CF6),
-      'route': '/admin/programs/add',
-    },
-    {
-      'icon': Icons.analytics_rounded,
-      'title': 'التقارير',
-      'subtitle': 'عرض الإحصائيات',
-      'color': const Color(0xFFF97316),
-      'route': '/admin/reports',
-    },
-  ];
-
   final List<Map<String, dynamic>> _recentUsers = [
     {
       'name': 'أحمد محمد',
       'email': 'ahmed@university.edu',
-      'role': 'طالب',
+      'role': 'student',
       'time': 'منذ 5 دقائق',
       'status': 'نشط',
     },
     {
       'name': 'الجامعة الإسلامية',
       'email': 'info@iugaza.edu',
-      'role': 'جامعة',
+      'role': 'university',
       'time': 'منذ ساعة',
       'status': 'نشط',
     },
     {
       'name': 'سارة أحمد',
       'email': 'sara@university.edu',
-      'role': 'طالب',
+      'role': 'student',
       'time': 'منذ 3 ساعات',
       'status': 'نشط',
     },
-  ];
-
-  final List<Map<String, dynamic>> _latestUniversities = [
     {
       'name': 'جامعة الأزهر',
-      'location': 'غزة، فلسطين',
-      'students': 3200,
-      'status': 'نشط',
+      'email': 'info@azhar.edu',
+      'role': 'university',
+      'time': 'منذ يوم',
+      'status': 'قيد الانتظار',
+    },
+  ];
+
+  final List<Map<String, dynamic>> _quickActions = [
+    {
+      'icon': Icons.person_add_rounded,
+      'title': 'إضافة مستخدم',
+      'color': const Color(0xFF3B82F6),
+      'route': '/admin/users/add',
     },
     {
-      'name': 'جامعة القدس',
-      'location': 'القدس، فلسطين',
-      'students': 2800,
-      'status': 'قيد الانتظار',
+      'icon': Icons.business_rounded,
+      'title': 'إضافة جامعة',
+      'color': const Color(0xFF22C55E),
+      'route': '/admin/universities/add',
+    },
+    {
+      'icon': Icons.school_rounded,
+      'title': 'إضافة تخصص',
+      'color': const Color(0xFF8B5CF6),
+      'route': '/admin/programs/add',
+    },
+    {
+      'icon': Icons.analytics_rounded,
+      'title': 'التقارير',
+      'color': const Color(0xFFF97316),
+      'route': '/admin/reports',
     },
   ];
 
@@ -216,10 +204,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
                               const SizedBox(height: 28),
                               _buildQuickActions(),
                               const SizedBox(height: 28),
-                              _buildRecentUsers(),
-                              const SizedBox(height: 20),
-                              _buildLatestUniversities(),
-                              const SizedBox(height: 20),
+                              _buildRecentActivity(),
                             ],
                           ),
                         ),
@@ -695,7 +680,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
             return _buildQuickActionCard(
               icon: action['icon'],
               title: action['title'],
-              subtitle: action['subtitle'],
               color: action['color'],
               onTap: () {
                 Navigator.pushNamed(context, action['route']);
@@ -710,7 +694,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
   Widget _buildQuickActionCard({
     required IconData icon,
     required String title,
-    required String subtitle,
     required Color color,
     required VoidCallback onTap,
   }) {
@@ -747,16 +730,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
               title,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.primaryContainer,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey.shade500,
               ),
               textAlign: TextAlign.center,
             ),
@@ -766,7 +741,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
     );
   }
 
-  Widget _buildRecentUsers() {
+  Widget _buildRecentActivity() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -774,7 +749,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'أحدث المستخدمين',
+              'أحدث النشاطات',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -795,12 +770,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
           ],
         ),
         const SizedBox(height: 12),
-        ..._recentUsers.map((user) => _buildUserItem(user)),
+        ..._recentUsers.map((user) => _buildActivityItem(user)),
       ],
     );
   }
 
-  Widget _buildUserItem(Map<String, dynamic> user) {
+  Widget _buildActivityItem(Map<String, dynamic> user) {
     Color statusColor;
     switch (user['status']) {
       case 'نشط':
@@ -861,35 +836,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
                     color: AppTheme.primaryContainer,
                   ),
                 ),
-                Row(
-                  children: [
-                    Text(
-                      user['email'],
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        user['role'],
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.primary,
-                        ),
-                      ),
-                    ),
-                  ],
+                Text(
+                  user['email'],
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                  ),
                 ),
               ],
             ),
@@ -918,154 +870,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
               const SizedBox(height: 4),
               Text(
                 user['time'],
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey.shade500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLatestUniversities() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'أحدث الجامعات',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.primaryContainer,
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/admin/universities'),
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.secondary,
-                textStyle: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              child: const Text('عرض الكل'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ..._latestUniversities.map((uni) => _buildUniversityItem(uni)),
-      ],
-    );
-  }
-
-  Widget _buildUniversityItem(Map<String, dynamic> uni) {
-    Color statusColor;
-    switch (uni['status']) {
-      case 'نشط':
-        statusColor = Colors.green;
-        break;
-      case 'قيد الانتظار':
-        statusColor = Colors.orange;
-        break;
-      default:
-        statusColor = Colors.grey;
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFF22C55E).withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.business_rounded,
-                size: 20,
-                color: Color(0xFF22C55E),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  uni['name'],
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.primaryContainer,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on_rounded,
-                      size: 12,
-                      color: Colors.grey.shade500,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      uni['location'],
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  uni['status'],
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${uni['students']} طالب',
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.grey.shade500,
