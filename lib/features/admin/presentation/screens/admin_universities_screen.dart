@@ -1,5 +1,9 @@
-﻿import 'package:flutter/material.dart';
+﻿// lib/features/admin/presentation/screens/admin_universities_screen.dart
+import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/themes/app_theme.dart';
+import 'package:nextstep_ai_app/core/storage/hive_storage.dart';
+import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_add_university_screen.dart';
+import 'package:nextstep_ai_app/shared/services/supabase/supabase_service.dart';
 
 class AdminUniversitiesScreen extends StatefulWidget {
   const AdminUniversitiesScreen({super.key});
@@ -18,72 +22,83 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
   bool _isLoading = true;
   String _searchQuery = '';
   String _selectedFilter = 'الكل';
+  String? _errorMessage;
+
+  List<Map<String, dynamic>> _universities = [];
 
   final List<String> _filterOptions = ['الكل', 'نشط', 'قيد الانتظار', 'محظور'];
 
-  // بيانات الجامعات الوهمية (تُستبدل لاحقًا باستدعاء فعلي من Supabase)
-  final List<Map<String, dynamic>> _universities = [
-    {
-      'id': 1,
-      'name': 'الجامعة الإسلامية',
-      'location': 'غزة، فلسطين',
-      'students_count': 1250,
-      'programs_count': 24,
-      'status': 'نشط',
-      'created_at': '2026-08-01',
-      'email': 'info@iugaza.edu',
-      'phone': '+970 8 1234567',
-      'website': 'https://iugaza.edu.ps',
-    },
-    {
-      'id': 2,
-      'name': 'جامعة الأزهر',
-      'location': 'غزة، فلسطين',
-      'students_count': 980,
-      'programs_count': 18,
-      'status': 'نشط',
-      'created_at': '2026-08-03',
-      'email': 'info@azhar.edu',
-      'phone': '+970 8 2345678',
-      'website': 'https://azhar.edu',
-    },
-    {
-      'id': 3,
-      'name': 'جامعة القدس',
-      'location': 'القدس، فلسطين',
-      'students_count': 2100,
-      'programs_count': 32,
-      'status': 'قيد الانتظار',
-      'created_at': '2026-08-05',
-      'email': 'info@quds.edu',
-      'phone': '+970 2 3456789',
-      'website': 'https://quds.edu',
-    },
-    {
-      'id': 4,
-      'name': 'جامعة الأقصى',
-      'location': 'غزة، فلسطين',
-      'students_count': 750,
-      'programs_count': 12,
-      'status': 'نشط',
-      'created_at': '2026-08-07',
-      'email': 'info@aqsa.edu',
-      'phone': '+970 8 4567890',
-      'website': 'https://aqsa.edu',
-    },
-    {
-      'id': 5,
-      'name': 'جامعة بيرزيت',
-      'location': 'رام الله، فلسطين',
-      'students_count': 1800,
-      'programs_count': 28,
-      'status': 'قيد الانتظار',
-      'created_at': '2026-08-09',
-      'email': 'info@birzeit.edu',
-      'phone': '+970 2 5678901',
-      'website': 'https://birzeit.edu',
-    },
-  ];
+  // ============================================================
+  //  دوال مساعدة للتعامل مع البيانات
+  // ============================================================
+
+  String _getStatusDisplay(String? status) {
+    switch (status) {
+      case 'active':
+        return 'نشط';
+      case 'pending':
+        return 'قيد الانتظار';
+      case 'inactive':
+        return 'محظور';
+      default:
+        return status ?? 'نشط';
+    }
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status) {
+      case 'active':
+        return const Color(0xFF22C55E);
+      case 'pending':
+        return const Color(0xFFF97316);
+      case 'inactive':
+        return const Color(0xFFDC2626);
+      default:
+        return const Color(0xFF22C55E);
+    }
+  }
+
+  String _formatDate(dynamic date) {
+    if (date == null) return '-';
+    try {
+      if (date is String) {
+        try {
+          final parsed = DateTime.parse(date);
+          return '${parsed.year}-${parsed.month.toString().padLeft(2, '0')}-${parsed.day.toString().padLeft(2, '0')}';
+        } catch (_) {
+          return date.split('T')[0];
+        }
+      }
+      if (date is DateTime) {
+        return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      }
+      return date.toString().split(' ')[0];
+    } catch (_) {
+      return '-';
+    }
+  }
+
+  String _extractEmail(String? contactInfo) {
+    if (contactInfo == null || contactInfo.isEmpty) return '-';
+    try {
+      final emailRegex = RegExp(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}');
+      final match = emailRegex.firstMatch(contactInfo);
+      return match?.group(0) ?? contactInfo;
+    } catch (_) {
+      return contactInfo;
+    }
+  }
+
+  String _extractPhone(String? contactInfo) {
+    if (contactInfo == null || contactInfo.isEmpty) return '-';
+    try {
+      final phoneRegex = RegExp(r'(\+?[0-9]{1,3}[- ]?)?\(?[0-9]{1,4}\)?[- ]?[0-9]{1,4}[- ]?[0-9]{1,4}');
+      final match = phoneRegex.firstMatch(contactInfo);
+      return match?.group(0) ?? contactInfo;
+    } catch (_) {
+      return contactInfo;
+    }
+  }
 
   List<Map<String, dynamic>> get _filteredUniversities {
     var filtered = _universities;
@@ -91,19 +106,200 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
       filtered = filtered.where((uni) {
-        final name = (uni['name'] as String).toLowerCase();
-        final location = (uni['location'] as String).toLowerCase();
-        return name.contains(query) || location.contains(query);
+        final name = (uni['name'] ?? '').toString().toLowerCase();
+        final location = (uni['location'] ?? '').toString().toLowerCase();
+        final description = (uni['description'] ?? '').toString().toLowerCase();
+        return name.contains(query) ||
+            location.contains(query) ||
+            description.contains(query);
       }).toList();
     }
 
     if (_selectedFilter != 'الكل') {
-      filtered = filtered.where((uni) => uni['status'] == _selectedFilter).toList();
+      filtered = filtered.where((uni) {
+        final status = (uni['status'] ?? 'active').toString();
+        final statusDisplay = _getStatusDisplay(status);
+        return statusDisplay == _selectedFilter || status == _selectedFilter;
+      }).toList();
     }
 
     return filtered;
   }
 
+  // ============================================================
+  //  تحميل الجامعات من Supabase
+  // ============================================================
+  Future<void> _loadUniversities() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      debugPrint('🔄 جاري جلب الجامعات من Supabase...');
+
+      final supabase = SupabaseService();
+
+      // ✅ جلب الجامعات من Supabase
+      final response = await supabase.client
+          .from('universities')
+          .select('*')
+          .order('name');
+
+      if (response != null && response.isNotEmpty) {
+        final universities = List<Map<String, dynamic>>.from(response);
+
+        debugPrint('📊 عدد الجامعات من Supabase: ${universities.length}');
+
+        // ✅ حفظ في Hive
+        try {
+          await HiveStorage.saveData('universities_cache', 'universities', universities);
+          debugPrint('✅ تم حفظ ${universities.length} جامعة في Hive');
+        } catch (e) {
+          debugPrint('⚠️ فشل حفظ في Hive: $e');
+        }
+
+        if (mounted) {
+          setState(() {
+            _universities = universities;
+            _isLoading = false;
+            _errorMessage = null;
+          });
+          debugPrint('✅ تم تحديث الواجهة بـ ${_universities.length} جامعة');
+        }
+      } else {
+        // ✅ محاولة قراءة من Hive
+        try {
+          final cached = await HiveStorage.getData('universities_cache', 'universities');
+          if (cached != null && (cached as List).isNotEmpty) {
+            debugPrint('✅ تم تحميل ${cached.length} جامعة من Hive');
+            if (mounted) {
+              setState(() {
+                _universities = List<Map<String, dynamic>>.from(cached);
+                _isLoading = false;
+                _errorMessage = 'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
+              });
+            }
+            return;
+          }
+        } catch (_) {}
+
+        if (mounted) {
+          setState(() {
+            _universities = [];
+            _isLoading = false;
+            _errorMessage = 'لا توجد جامعات في النظام';
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ خطأ في جلب الجامعات: $e');
+
+      // ✅ محاولة قراءة من Hive
+      try {
+        final cached = await HiveStorage.getData('universities_cache', 'universities');
+        if (cached != null && (cached as List).isNotEmpty) {
+          debugPrint('✅ تم تحميل ${cached.length} جامعة من Hive');
+          if (mounted) {
+            setState(() {
+              _universities = List<Map<String, dynamic>>.from(cached);
+              _isLoading = false;
+              _errorMessage = 'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
+            });
+          }
+          return;
+        }
+      } catch (_) {}
+
+      if (mounted) {
+        setState(() {
+          _universities = [];
+          _isLoading = false;
+          _errorMessage = 'فشل تحميل الجامعات: ${e.toString()}';
+        });
+      }
+    }
+  }
+
+  // ============================================================
+  //  تحديث البيانات
+  // ============================================================
+  Future<void> _refreshUniversities() async {
+    await _loadUniversities();
+  }
+
+  // ============================================================
+  //  التنقل لصفحة إضافة جامعة
+  // ============================================================
+  Future<void> _goToAddUniversity() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AdminAddUniversityScreen(),
+      ),
+    );
+
+    if (result == true && mounted) {
+      _showSnackBar('✅ تم إضافة الجامعة بنجاح');
+      _loadUniversities();
+    }
+  }
+
+  // ============================================================
+  //  التنقل لتعديل جامعة
+  // ============================================================
+  Future<void> _goToEditUniversity(Map<String, dynamic> university) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AdminAddUniversityScreen(
+          isEditing: true,
+          universityData: university,
+        ),
+      ),
+    );
+
+    if (result == true && mounted) {
+      _showSnackBar('✅ تم تحديث بيانات الجامعة');
+      _loadUniversities();
+    }
+  }
+
+  // ============================================================
+  //  حذف جامعة
+  // ============================================================
+  Future<void> _deleteUniversity(Map<String, dynamic> university) async {
+    try {
+      final supabase = SupabaseService();
+
+      await supabase.client
+          .from('universities')
+          .delete()
+          .eq('id', university['id']);
+
+      final cached = await HiveStorage.getData('universities_cache', 'universities');
+      if (cached != null) {
+        final List<Map<String, dynamic>> updatedUniversities =
+            List<Map<String, dynamic>>.from(cached);
+        updatedUniversities.removeWhere((u) => u['id'].toString() == university['id'].toString());
+        await HiveStorage.saveData('universities_cache', 'universities', updatedUniversities);
+      }
+
+      setState(() {
+        _universities.removeWhere((u) => u['id'].toString() == university['id'].toString());
+      });
+
+      _showSnackBar('✅ تم حذف الجامعة بنجاح', Colors.green);
+    } catch (e) {
+      _showSnackBar('❌ خطأ: ${e.toString()}', Colors.red);
+    }
+  }
+
+  // ============================================================
+  //  دورة الحياة
+  // ============================================================
   @override
   void initState() {
     super.initState();
@@ -122,28 +318,13 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
 
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        _animationController.forward();
-      }
-    });
+    _loadUniversities();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
-  }
-
-  // ============================================================
-  //  التنقل الموحّد لصفحة إضافة جامعة (صفحة كاملة، وليست ديالوج)
-  // ============================================================
-  Future<void> _goToAddUniversity() async {
-    final created = await Navigator.pushNamed(context, '/admin/universities/add');
-    if (created == true && mounted) {
-      // TODO: استدعاء دالة إعادة تحميل الجامعات من Supabase
-    }
   }
 
   @override
@@ -160,28 +341,77 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                 opacity: _fadeAnimation,
                 child: SlideTransition(
                   position: _slideAnimation,
-                  child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      _buildSliverHeader(),
-                      SliverToBoxAdapter(child: _buildStatsRow()),
-                      SliverToBoxAdapter(child: _buildSearchAndFilter()),
-                      _filteredUniversities.isEmpty
-                          ? SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: _buildEmptyState(),
-                            )
-                          : SliverPadding(
-                              padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                              sliver: SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) =>
-                                      _buildUniversityCard(_filteredUniversities[index]),
-                                  childCount: _filteredUniversities.length,
+                  child: RefreshIndicator(
+                    onRefresh: _refreshUniversities,
+                    child: CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      slivers: [
+                        _buildSliverHeader(),
+                        if (_errorMessage != null)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: _errorMessage!.contains('غير متصل')
+                                      ? Colors.orange.withValues(alpha: 0.1)
+                                      : Colors.red.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _errorMessage!.contains('غير متصل')
+                                        ? Colors.orange.shade300
+                                        : Colors.red.shade300,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      _errorMessage!.contains('غير متصل')
+                                          ? Icons.wifi_off_rounded
+                                          : Icons.error_outline_rounded,
+                                      color: _errorMessage!.contains('غير متصل')
+                                          ? Colors.orange.shade700
+                                          : Colors.red.shade700,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _errorMessage!,
+                                        style: TextStyle(
+                                          color: _errorMessage!.contains('غير متصل')
+                                              ? Colors.orange.shade700
+                                              : Colors.red.shade700,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                    ],
+                          ),
+                        SliverToBoxAdapter(child: _buildStatsRow()),
+                        SliverToBoxAdapter(child: _buildSearchAndFilter()),
+                        _filteredUniversities.isEmpty
+                            ? SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: _buildEmptyState(),
+                              )
+                            : SliverPadding(
+                                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                                sliver: SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) =>
+                                        _buildUniversityCard(_filteredUniversities[index]),
+                                    childCount: _filteredUniversities.length,
+                                  ),
+                                ),
+                              ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -191,7 +421,7 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
   }
 
   // ============================================================
-  //  رأس متدرّج — أخضر (هوية بصرية مخصصة لقسم الجامعات)
+  //  رأس الصفحة
   // ============================================================
   Widget _buildSliverHeader() {
     return SliverAppBar(
@@ -208,6 +438,11 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
           icon: const Icon(Icons.add_business_rounded, color: Colors.white),
           onPressed: _goToAddUniversity,
           tooltip: 'إضافة جامعة',
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+          onPressed: _refreshUniversities,
+          tooltip: 'تحديث',
         ),
         const SizedBox(width: 4),
       ],
@@ -236,12 +471,18 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
   }
 
   // ============================================================
-  //  شريط الإحصائيات السريعة
+  //  شريط الإحصائيات
   // ============================================================
   Widget _buildStatsRow() {
     final total = _universities.length;
-    final active = _universities.where((u) => u['status'] == 'نشط').length;
-    final pending = _universities.where((u) => u['status'] == 'قيد الانتظار').length;
+    final active = _universities.where((u) {
+      final status = (u['status'] ?? 'active').toString();
+      return status == 'active' || status == 'نشط';
+    }).length;
+    final pending = _universities.where((u) {
+      final status = (u['status'] ?? '').toString();
+      return status == 'pending' || status == 'قيد الانتظار';
+    }).length;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -394,12 +635,14 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
   //  بطاقة جامعة
   // ============================================================
   Widget _buildUniversityCard(Map<String, dynamic> university) {
-    final statusColor = switch (university['status']) {
-      'نشط' => const Color(0xFF22C55E),
-      'قيد الانتظار' => const Color(0xFFF97316),
-      'محظور' => const Color(0xFFDC2626),
-      _ => Colors.grey,
-    };
+    final status = (university['status'] ?? 'active').toString();
+    final statusDisplay = _getStatusDisplay(status);
+    final statusColor = _getStatusColor(status);
+
+    final studentCount = university['students_count'] ?? 0;
+    final programCount = university['programs_count'] ?? 0;
+    final location = (university['location'] ?? '').toString();
+    final description = (university['description'] ?? '').toString();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -446,7 +689,7 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            university['name'],
+                            university['name'] ?? '',
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -462,7 +705,7 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  university['location'],
+                                  location.isNotEmpty ? location : 'لا يوجد موقع',
                                   style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -484,7 +727,7 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            university['status'],
+                            statusDisplay,
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
@@ -494,7 +737,7 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${university['students_count']} طالب',
+                          '$studentCount طالب',
                           style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
                         ),
                       ],
@@ -508,6 +751,18 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                     ),
                   ],
                 ),
+                if (description.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 8,
@@ -515,19 +770,21 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                   children: [
                     _buildInfoChip(
                       icon: Icons.school_rounded,
-                      label: '${university['programs_count']} تخصص',
+                      label: '$programCount تخصص',
                       color: const Color(0xFF3B82F6),
                     ),
-                    _buildInfoChip(
-                      icon: Icons.email_rounded,
-                      label: university['email'],
-                      color: const Color(0xFFF97316),
-                    ),
-                    _buildInfoChip(
-                      icon: Icons.phone_rounded,
-                      label: university['phone'],
-                      color: const Color(0xFF22C55E),
-                    ),
+                    if (university['email'] != null && university['email'] != '')
+                      _buildInfoChip(
+                        icon: Icons.email_rounded,
+                        label: university['email'],
+                        color: const Color(0xFFF97316),
+                      ),
+                    if (university['phone'] != null && university['phone'] != '')
+                      _buildInfoChip(
+                        icon: Icons.phone_rounded,
+                        label: university['phone'],
+                        color: const Color(0xFF22C55E),
+                      ),
                   ],
                 ),
               ],
@@ -638,14 +895,9 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                 icon: Icons.edit_rounded,
                 title: 'تعديل',
                 color: const Color(0xFF3B82F6),
-                onTap: () async {
+                onTap: () {
                   Navigator.pop(context);
-                  final updated = await Navigator.pushNamed(
-                    context,
-                    '/admin/universities/edit',
-                    arguments: university,
-                  );
-                  if (updated == true) _showSnackBar('تم تحديث بيانات الجامعة');
+                  _goToEditUniversity(university);
                 },
               ),
               _buildOptionTile(
@@ -664,7 +916,14 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     );
   }
 
+  // ============================================================
+  //  عرض تفاصيل الجامعة
+  // ============================================================
   void _showUniversityDetails(Map<String, dynamic> university) {
+    final status = (university['status'] ?? 'active').toString();
+    final statusDisplay = _getStatusDisplay(status);
+    final statusColor = _getStatusColor(status);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -715,7 +974,7 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          university['name'],
+                          university['name'] ?? '',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -723,22 +982,39 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                           ),
                         ),
                         Text(
-                          university['location'],
+                          university['location'] ?? 'لا يوجد موقع',
                           style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
                         ),
                       ],
                     ),
                   ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      statusDisplay,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: statusColor,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
-              _buildDetailRow('البريد الإلكتروني', university['email']),
-              _buildDetailRow('رقم الهاتف', university['phone']),
-              _buildDetailRow('الموقع الإلكتروني', university['website'] ?? '-'),
-              _buildDetailRow('عدد الطلاب', university['students_count'].toString()),
-              _buildDetailRow('عدد التخصصات', university['programs_count'].toString()),
-              _buildDetailRow('الحالة', university['status']),
-              _buildDetailRow('تاريخ الإنشاء', university['created_at']),
+              _buildDetailRow('الوصف', university['description'] ?? '-'),
+              _buildDetailRow('الموقع', university['location'] ?? '-'),
+              _buildDetailRow('البريد الإلكتروني', university['email'] ?? '-'),
+              _buildDetailRow('رقم الهاتف', university['phone'] ?? '-'),
+              _buildDetailRow('الموقع الإلكتروني', university['website_url'] ?? '-'),
+              _buildDetailRow('عدد الطلاب', (university['students_count'] ?? 0).toString()),
+              _buildDetailRow('عدد التخصصات', (university['programs_count'] ?? 0).toString()),
+              _buildDetailRow('الحالة', statusDisplay),
+              _buildDetailRow('تاريخ الإنشاء', _formatDate(university['created_at'])),
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -757,14 +1033,9 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () async {
+                      onPressed: () {
                         Navigator.pop(context);
-                        final updated = await Navigator.pushNamed(
-                          context,
-                          '/admin/universities/edit',
-                          arguments: university,
-                        );
-                        if (updated == true) _showSnackBar('تم تحديث بيانات الجامعة');
+                        _goToEditUniversity(university);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF22C55E),
@@ -799,20 +1070,45 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
             ),
           ),
           Expanded(
-            child: Text(value, style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant)),
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant),
+            ),
           ),
         ],
       ),
     );
   }
 
+  // ============================================================
+  //  نافذة تأكيد الحذف
+  // ============================================================
   void _showDeleteDialog(Map<String, dynamic> university) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('حذف الجامعة'),
-        content: Text('هل أنت متأكد من رغبتك في حذف ${university['name']}؟'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('هل أنت متأكد من رغبتك في حذف:'),
+            const SizedBox(height: 8),
+            Text(
+              '${university['name']}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'هذا الإجراء لا يمكن التراجع عنه',
+              style: TextStyle(color: Colors.red.shade300, fontSize: 12),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -821,7 +1117,7 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _showSnackBar('تم حذف الجامعة بنجاح');
+              _deleteUniversity(university);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
@@ -849,7 +1145,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     );
   }
 
-  void _showSnackBar(String message) {
+  void _showSnackBar(String message, [Color? color]) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -857,16 +1154,24 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          backgroundColor: const Color(0xFF22C55E),
+          backgroundColor: color ?? const Color(0xFF22C55E),
           content: Row(
             children: [
-              const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
+              Icon(
+                color == Colors.red ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(message, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                child: Text(
+                  message,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                ),
               ),
             ],
           ),
+          duration: const Duration(seconds: 2),
         ),
       );
   }

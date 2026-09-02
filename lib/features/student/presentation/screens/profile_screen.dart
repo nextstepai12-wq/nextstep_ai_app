@@ -65,69 +65,72 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Future<void> _loadProfileData() async {
-    if (!mounted) return;
+  if (!mounted) return;
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
 
-    try {
-      final cachedData = await TokenManager.getUserData();
-      if (cachedData['name'] != null && cachedData['name']!.isNotEmpty) {
-        _userName = cachedData['name']!;
-        _nameController.text = _userName;
-        _userEmail = cachedData['email'] ?? '';
-        _userRole = cachedData['role'] ?? 'student';
-        _userId = cachedData['userId'] ?? '';
+  try {
+    final cachedData = await TokenManager.getUserData();
+    if (cachedData['name'] != null && cachedData['name']!.isNotEmpty) {
+      _userName = cachedData['name']!;
+      _nameController.text = _userName;
+      _userEmail = cachedData['email'] ?? '';
+      _userRole = cachedData['role'] ?? 'student';
+      _userId = cachedData['userId'] ?? '';
+    }
+
+    final user = _supabase.currentUser;
+    if (user != null) {
+      final userData = await _supabase.getUser(user.id);
+      if (userData != null) {
+        setState(() {
+          _userName = userData.displayName;
+          _userEmail = user.email ?? '';
+          _userRole = userData.role ?? 'student';
+          _nameController.text = _userName;
+        });
       }
 
-      final user = _supabase.currentUser;
-      if (user != null) {
-        final userData = await _supabase.getUser(user.id);
-        if (userData != null) {
+      try {
+        // ✅ استخدام الدالة الجديدة getStudentProfileByUuid
+        final profile = await _supabase.getStudentProfileByUuid(user.id);
+        if (profile != null) {
           setState(() {
-            _userName = userData.displayName;
-            _userEmail = user.email ?? '';
-            _userRole = userData.role ?? 'student';
-            _nameController.text = _userName;
+            _phone = profile.phone ?? '';
+            _city = profile.city ?? '';
+            _studentType = profile.studentType ?? 'tawjihi';
+            _highSchoolScore = profile.highSchoolScore?.toString() ?? '';
+            _gpa = profile.gpa?.toString() ?? '';
+            _university = profile.currentUniversityId?.toString() ?? '';
+            _major = profile.currentMajorId?.toString() ?? '';
+            _academicYear = profile.academicLevel ?? ''; // ✅ استخدم academicLevel
+            _phoneController.text = _phone;
+            _cityController.text = _city;
           });
         }
-
-        try {
-          final profile = await _supabase.getStudentProfile(user.id);
-          if (profile != null) {
-            setState(() {
-              _phone = profile.phone ?? '';
-              _city = profile.city ?? '';
-              _studentType = profile.studentType ?? 'tawjihi';
-              _highSchoolScore = profile.highSchoolScore?.toString() ?? '';
-              _gpa = profile.gpa?.toString() ?? '';
-              _university = profile.currentUniversityId?.toString() ?? '';
-              _major = profile.currentMajorId?.toString() ?? '';
-              _academicYear = profile.academicYear ?? '';
-              _phoneController.text = _phone;
-              _cityController.text = _city;
-            });
-          }
-        } catch (_) {}
-      }
-
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _animationController.forward();
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'تعذّر تحميل البيانات';
-          _isLoading = false;
-        });
+      } catch (e) {
+        debugPrint('❌ خطأ في جلب ملف الطالب: $e');
       }
     }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _animationController.forward();
+      });
+    }
+  } catch (e) {
+    if (mounted) {
+      setState(() {
+        _errorMessage = 'تعذّر تحميل البيانات';
+        _isLoading = false;
+      });
+    }
   }
+}
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;

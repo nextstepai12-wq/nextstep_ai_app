@@ -1,3 +1,5 @@
+// lib/shared/models/student_profile_model.dart
+
 import 'package:json_annotation/json_annotation.dart';
 
 part 'student_profile_model.g.dart';
@@ -8,7 +10,7 @@ class StudentProfileModel {
   final int? id;
 
   @JsonKey(name: 'user_id')
-  final String userId;
+  final String userId; // ✅ String (سنحولها إلى int عند الإرسال)
 
   @JsonKey(name: 'student_type')
   final String studentType;
@@ -32,10 +34,7 @@ class StudentProfileModel {
   final int? currentMajorId;
 
   @JsonKey(name: 'academic_level')
-  final String? academicLevel;
-
-  @JsonKey(name: 'academic_year')
-  final String? academicYear;
+  final String? academicLevel; // ✅ استخدم academicLevel
 
   @JsonKey(name: 'gpa')
   final double? gpa;
@@ -63,7 +62,6 @@ class StudentProfileModel {
     this.currentUniversityId,
     this.currentMajorId,
     this.academicLevel,
-    this.academicYear,
     this.gpa,
     this.phone,
     this.city,
@@ -87,7 +85,6 @@ class StudentProfileModel {
     int? currentUniversityId,
     int? currentMajorId,
     String? academicLevel,
-    String? academicYear,
     double? gpa,
     String? phone,
     String? city,
@@ -105,7 +102,6 @@ class StudentProfileModel {
       currentUniversityId: currentUniversityId ?? this.currentUniversityId,
       currentMajorId: currentMajorId ?? this.currentMajorId,
       academicLevel: academicLevel ?? this.academicLevel,
-      academicYear: academicYear ?? this.academicYear,
       gpa: gpa ?? this.gpa,
       phone: phone ?? this.phone,
       city: city ?? this.city,

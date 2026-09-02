@@ -1,5 +1,14 @@
+// lib/features/admin/presentation/screens/admin_dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/themes/app_theme.dart';
+import 'package:nextstep_ai_app/core/storage/hive_storage.dart';
+import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_notifications_screen.dart';
+import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_users_screen.dart';
+import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_universities_screen.dart';
+import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_programs_screen.dart';
+import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_reports_screen.dart';
+import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_settings_screen.dart';
+import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_llm_usage_screen.dart';
 import 'package:nextstep_ai_app/shared/services/supabase/supabase_service.dart';
 import 'package:nextstep_ai_app/shared/services/auth/token_manager.dart';
 
@@ -18,6 +27,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   String _adminEmail = '';
   bool _isLoading = true;
   String? _errorMessage;
+  int _unreadNotifications = 0;
 
   // بيانات إحصائيات وهمية
   final Map<String, dynamic> _stats = {
@@ -109,8 +119,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
 
     _loadAdminData();
+    _loadUnreadNotifications();
   }
 
+  // ============================================================
+  //  تحميل بيانات المدير
+  // ============================================================
   Future<void> _loadAdminData() async {
     if (!mounted) return;
 
@@ -152,6 +166,48 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         _isLoading = false;
       });
     }
+  }
+
+  // ============================================================
+  //  تحميل عدد الإشعارات غير المقروءة
+  // ============================================================
+  Future<void> _loadUnreadNotifications() async {
+    try {
+      final cached =
+          await HiveStorage.getData('notifications_cache', 'notifications');
+      if (cached != null && cached.isNotEmpty) {
+        final notifications = List<Map<String, dynamic>>.from(cached);
+        final unread =
+            notifications.where((n) => n['status'] == 'غير مقروء').length;
+        setState(() {
+          _unreadNotifications = unread;
+        });
+      }
+    } catch (e) {
+      // تجاهل الأخطاء
+    }
+  }
+
+  // ============================================================
+  //  التنقل لصفحة الإشعارات ✅
+  // ============================================================
+  void _goToNotifications() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AdminNotificationsScreen(),
+      ),
+    ).then((_) {
+      // عند العودة من صفحة الإشعارات، تحديث العدد
+      _loadUnreadNotifications();
+    });
+  }
+
+  // ============================================================
+  //  التنقل للصفحات ✅
+  // ============================================================
+  void _navigateTo(String route) {
+    Navigator.pushNamed(context, route);
   }
 
   Future<void> _logout() async {
@@ -215,6 +271,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
+  // ============================================================
+  //  AppBar مع زر الإشعارات ✅
+  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: const Color(0xFFF6F7FB),
@@ -241,17 +300,50 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(
-            Icons.notifications_outlined,
-            color: AppTheme.primaryContainer,
-          ),
-          onPressed: () => Navigator.pushNamed(context, '/admin/notifications'),
+        // ✅ زر الإشعارات مع عداد
+        Stack(
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.notifications_outlined,
+                color: AppTheme.primaryContainer,
+              ),
+              onPressed: _goToNotifications,
+            ),
+            if (_unreadNotifications > 0)
+              Positioned(
+                right: 4,
+                top: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    _unreadNotifications > 9 ? '9+' : '$_unreadNotifications',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
         ),
       ],
     );
   }
 
+  // ============================================================
+  //  القائمة الجانبية ✅
+  // ============================================================
   Widget _buildDrawer() {
     return Drawer(
       child: SafeArea(
@@ -343,7 +435,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     title: 'المستخدمين',
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.pushNamed(context, '/admin/users');
+                      _navigateTo('/admin/users');
                     },
                   ),
                   _buildDrawerItem(
@@ -351,7 +443,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     title: 'الجامعات',
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.pushNamed(context, '/admin/universities');
+                      _navigateTo('/admin/universities');
                     },
                   ),
                   _buildDrawerItem(
@@ -359,7 +451,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     title: 'التخصصات',
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.pushNamed(context, '/admin/programs');
+                      _navigateTo('/admin/programs');
                     },
                   ),
                   _buildDrawerItem(
@@ -367,10 +459,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     title: 'التقارير',
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.pushNamed(context, '/admin/reports');
+                      _navigateTo('/admin/reports');
                     },
                   ),
-                  const Divider(),
+                  // في admin_dashboard_screen.dart - قائمة _buildDrawer
                   _buildDrawerItem(
                     icon: Icons.person_rounded,
                     title: 'الملف الشخصي',
@@ -380,11 +472,58 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     },
                   ),
                   _buildDrawerItem(
+                    icon: Icons.notifications_rounded,
+                    title: 'الإشعارات',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _goToNotifications();
+                    },
+                    trailing: _unreadNotifications > 0
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              '$_unreadNotifications',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        : null,
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.auto_awesome_rounded,
+                    title: 'استخدام الذكاء',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _navigateTo('/admin/llm-usage');
+                    },
+                  ),
+                  const Divider(),
+                  _buildDrawerItem(
+                    icon: Icons.person_rounded,
+                    title: 'الملف الشخصي',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _navigateTo('/admin/profile');
+                    },
+                  ),
+                  _buildDrawerItem(
                     icon: Icons.settings_rounded,
                     title: 'الإعدادات',
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.pushNamed(context, '/admin/settings');
+                      _navigateTo('/admin/settings');
                     },
                   ),
                 ],
@@ -409,6 +548,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     required String title,
     required VoidCallback onTap,
     Color? color,
+    Widget? trailing,
   }) {
     return ListTile(
       leading: Icon(icon, color: color ?? AppTheme.primary, size: 24),
@@ -420,12 +560,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           color: color ?? AppTheme.primaryContainer,
         ),
       ),
+      trailing: trailing ??
+          Icon(
+            Icons.arrow_forward_ios_rounded,
+            size: 16,
+            color: Colors.grey.shade400,
+          ),
       onTap: onTap,
-      trailing: Icon(
-        Icons.arrow_forward_ios_rounded,
-        size: 16,
-        color: Colors.grey.shade400,
-      ),
     );
   }
 
@@ -682,7 +823,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               title: action['title'],
               color: action['color'],
               onTap: () {
-                Navigator.pushNamed(context, action['route']);
+                _navigateTo(action['route']);
               },
             );
           }).toList(),
@@ -757,7 +898,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/admin/users'),
+              onPressed: () => _navigateTo('/admin/users'),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.secondary,
                 textStyle: const TextStyle(

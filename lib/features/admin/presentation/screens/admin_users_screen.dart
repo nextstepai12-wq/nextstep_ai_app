@@ -1,5 +1,9 @@
-﻿import 'package:flutter/material.dart';
+﻿// lib/features/admin/presentation/screens/admin_users_screen.dart
+import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/themes/app_theme.dart';
+import 'package:nextstep_ai_app/core/storage/hive_storage.dart';
+import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_add_user_screen.dart';
+import 'package:nextstep_ai_app/shared/services/supabase/supabase_service.dart';
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -17,72 +21,86 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
   bool _isLoading = true;
   String _searchQuery = '';
   String _selectedFilter = 'الكل';
+  String? _errorMessage;
 
-  final List<String> _filterOptions = ['الكل', 'طلاب', 'جامعات', 'إدارة'];
+  List<Map<String, dynamic>> _users = [];
 
-  // بيانات المستخدمين الوهمية (تُستبدل لاحقًا باستدعاء فعلي من Supabase)
-  final List<Map<String, dynamic>> _users = [
-    {
-      'id': 1,
-      'name': 'أحمد محمد',
-      'email': 'ahmed@university.edu',
-      'role': 'student',
-      'status': 'نشط',
-      'created_at': '2026-08-10',
-      'last_login': '2026-08-14',
-      'university': 'الجامعة الإسلامية',
-    },
-    {
-      'id': 2,
-      'name': 'الجامعة الإسلامية',
-      'email': 'info@iugaza.edu',
-      'role': 'university',
-      'status': 'نشط',
-      'created_at': '2026-08-09',
-      'last_login': '2026-08-14',
-      'university': '-',
-    },
-    {
-      'id': 3,
-      'name': 'سارة أحمد',
-      'email': 'sara@university.edu',
-      'role': 'student',
-      'status': 'نشط',
-      'created_at': '2026-08-08',
-      'last_login': '2026-08-13',
-      'university': 'جامعة الأزهر',
-    },
-    {
-      'id': 4,
-      'name': 'جامعة الأزهر',
-      'email': 'info@azhar.edu',
-      'role': 'university',
-      'status': 'قيد الانتظار',
-      'created_at': '2026-08-07',
-      'last_login': '2026-08-12',
-      'university': '-',
-    },
-    {
-      'id': 5,
-      'name': 'مدير النظام',
-      'email': 'admin@nextstep.ai',
-      'role': 'admin',
-      'status': 'نشط',
-      'created_at': '2026-08-01',
-      'last_login': '2026-08-14',
-      'university': '-',
-    },
-    {
-      'id': 6,
-      'name': 'محمد خالد',
-      'email': 'mohammed@university.edu',
-      'role': 'student',
-      'status': 'غير نشط',
-      'created_at': '2026-08-06',
-      'last_login': '2026-08-10',
-      'university': 'جامعة القدس',
-    },
-  ];
+  final List<String> _filterOptions = const ['الكل', 'طلاب', 'جامعات', 'إدارة'];
+
+  // ============================================================
+  //  دوال مساعدة
+  // ============================================================
+  String _getRoleLabel(String role) {
+    switch (role) {
+      case 'student':
+        return 'طالب';
+      case 'university':
+        return 'جامعة';
+      case 'admin':
+        return 'إدارة';
+      default:
+        return role;
+    }
+  }
+
+  String _getRoleFilterValue(String filter) {
+    switch (filter) {
+      case 'طلاب':
+        return 'student';
+      case 'جامعات':
+        return 'university';
+      case 'إدارة':
+        return 'admin';
+      default:
+        return '';
+    }
+  }
+
+  Color _getRoleColor(String role) {
+    switch (role) {
+      case 'student':
+        return const Color(0xFF3B82F6);
+      case 'university':
+        return const Color(0xFF22C55E);
+      case 'admin':
+        return const Color(0xFF8B5CF6);
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getRoleIcon(String role) {
+    switch (role) {
+      case 'student':
+        return Icons.school_rounded;
+      case 'university':
+        return Icons.business_rounded;
+      case 'admin':
+        return Icons.admin_panel_settings_rounded;
+      default:
+        return Icons.person_rounded;
+    }
+  }
+
+  String _formatDate(dynamic date) {
+    if (date == null) return '-';
+    try {
+      if (date is String) {
+        try {
+          final parsed = DateTime.parse(date);
+          return '${parsed.year}-${parsed.month.toString().padLeft(2, '0')}-${parsed.day.toString().padLeft(2, '0')}';
+        } catch (_) {
+          return date.split('T')[0];
+        }
+      }
+      if (date is DateTime) {
+        return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      }
+      return date.toString().split(' ')[0];
+    } catch (_) {
+      return '-';
+    }
+  }
 
   List<Map<String, dynamic>> get _filteredUsers {
     var filtered = _users;
@@ -90,25 +108,170 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
       filtered = filtered.where((user) {
-        final name = (user['name'] as String).toLowerCase();
-        final email = (user['email'] as String).toLowerCase();
+        final name = (user['name'] ?? '').toString().toLowerCase();
+        final email = (user['email'] ?? '').toString().toLowerCase();
         return name.contains(query) || email.contains(query);
       }).toList();
     }
 
     if (_selectedFilter != 'الكل') {
-      final roleMap = switch (_selectedFilter) {
-        'طلاب' => 'student',
-        'جامعات' => 'university',
-        'إدارة' => 'admin',
-        _ => '',
-      };
-      filtered = filtered.where((user) => user['role'] == roleMap).toList();
+      final roleFilter = _getRoleFilterValue(_selectedFilter);
+      filtered = filtered.where((user) {
+        final role = (user['role'] ?? '').toString();
+        return role == roleFilter;
+      }).toList();
     }
 
     return filtered;
   }
 
+// lib/features/admin/presentation/screens/admin_users_screen.dart
+
+// ============================================================
+//  جلب المستخدمين باستخدام Admin API
+// ============================================================
+Future<void> _loadUsers() async {
+  if (!mounted) return;
+
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+
+  try {
+    debugPrint('🔄 جاري جلب المستخدمين من Supabase Auth...');
+
+    // ✅ استخدام Admin API عبر SupabaseService
+    final users = await SupabaseService().getAuthUsers();
+
+    debugPrint('📊 عدد المستخدمين من Auth: ${users.length}');
+
+    if (users.isNotEmpty) {
+      // ✅ حفظ في Hive
+      try {
+        await HiveStorage.saveData('users_cache', 'users', users);
+        debugPrint('✅ تم حفظ ${users.length} مستخدم في Hive');
+      } catch (e) {
+        debugPrint('⚠️ فشل حفظ في Hive: $e');
+      }
+
+      if (mounted) {
+        setState(() {
+          _users = users;
+          _isLoading = false;
+          _errorMessage = null;
+        });
+        debugPrint('✅ تم تحديث الواجهة بـ ${_users.length} مستخدم');
+      }
+    } else {
+      // ✅ محاولة قراءة من Hive
+      try {
+        final cached = await HiveStorage.getData('users_cache', 'users');
+        if (cached != null && (cached as List).isNotEmpty) {
+          debugPrint('✅ تم تحميل ${cached.length} مستخدم من Hive');
+          if (mounted) {
+            setState(() {
+              _users = List<Map<String, dynamic>>.from(cached);
+              _isLoading = false;
+              _errorMessage = 'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
+            });
+          }
+          return;
+        }
+      } catch (_) {}
+
+      if (mounted) {
+        setState(() {
+          _users = [];
+          _isLoading = false;
+          _errorMessage = 'لا يوجد مستخدمين مسجلين في النظام';
+        });
+      }
+    }
+  } catch (e) {
+    debugPrint('❌ خطأ في جلب المستخدمين: $e');
+
+    // ✅ محاولة قراءة من Hive
+    try {
+      final cached = await HiveStorage.getData('users_cache', 'users');
+      if (cached != null && (cached as List).isNotEmpty) {
+        debugPrint('✅ تم تحميل ${cached.length} مستخدم من Hive');
+        if (mounted) {
+          setState(() {
+            _users = List<Map<String, dynamic>>.from(cached);
+            _isLoading = false;
+            _errorMessage = 'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
+          });
+        }
+        return;
+      }
+    } catch (_) {}
+
+    if (mounted) {
+      setState(() {
+        _users = [];
+        _isLoading = false;
+        _errorMessage = 'فشل تحميل المستخدمين: ${e.toString()}';
+      });
+    }
+  }
+}
+  // ============================================================
+  //  تحديث البيانات
+  // ============================================================
+  Future<void> _refreshUsers() async {
+    await _loadUsers();
+  }
+
+  // ============================================================
+  //  التنقل لصفحة إضافة مستخدم
+  // ============================================================
+  Future<void> _goToAddUser() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AdminAddUserScreen(),
+      ),
+    );
+
+    if (result == true && mounted) {
+      _showSnackBar('✅ تم إضافة المستخدم بنجاح');
+      _loadUsers();
+    }
+  }
+
+  // ============================================================
+  //  حذف مستخدم من Auth
+  // ============================================================
+ // lib/features/admin/presentation/screens/admin_users_screen.dart
+
+Future<void> _deleteUser(Map<String, dynamic> user) async {
+  try {
+    // ✅ استخدام Admin API لحذف المستخدم
+    await SupabaseService().deleteAuthUser(user['id']);
+
+    // حذف من Hive
+    final cached = await HiveStorage.getData('users_cache', 'users');
+    if (cached != null) {
+      final List<Map<String, dynamic>> updatedUsers =
+          List<Map<String, dynamic>>.from(cached);
+      updatedUsers.removeWhere((u) => u['id'].toString() == user['id'].toString());
+      await HiveStorage.saveData('users_cache', 'users', updatedUsers);
+    }
+
+    setState(() {
+      _users.removeWhere((u) => u['id'].toString() == user['id'].toString());
+    });
+
+    _showSnackBar('✅ تم حذف المستخدم بنجاح', Colors.green);
+  } catch (e) {
+    _showSnackBar('❌ خطأ: ${e.toString()}', Colors.red);
+  }
+}
+
+  // ============================================================
+  //  دورة الحياة
+  // ============================================================
   @override
   void initState() {
     super.initState();
@@ -127,12 +290,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
 
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        _animationController.forward();
-      }
-    });
+    _loadUsers();
   }
 
   @override
@@ -142,18 +300,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
   }
 
   // ============================================================
-  //  التنقل الموحّد لصفحة إضافة مستخدم (صفحة كاملة، وليست ديالوج)
+  //  بناء الواجهة
   // ============================================================
-  Future<void> _goToAddUser() async {
-    final created = await Navigator.pushNamed(context, '/admin/users/add');
-    // إذا رجعت الصفحة بـ true (تم الإنشاء بنجاح) نقدر نحدّث القائمة هنا لاحقًا
-    if (created == true && mounted) {
-      // TODO: استدعاء دالة إعادة تحميل المستخدمين من Supabase
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    debugPrint('🔨 بناء الواجهة - عدد المستخدمين: ${_users.length}');
+    debugPrint('🔨 حالة التحميل: $_isLoading');
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -166,28 +319,79 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                 opacity: _fadeAnimation,
                 child: SlideTransition(
                   position: _slideAnimation,
-                  child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      _buildSliverHeader(),
-                      SliverToBoxAdapter(child: _buildStatsRow()),
-                      SliverToBoxAdapter(child: _buildSearchAndFilter()),
-                      _filteredUsers.isEmpty
-                          ? SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: _buildEmptyState(),
-                            )
-                          : SliverPadding(
-                              padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                              sliver: SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) =>
-                                      _buildUserCard(_filteredUsers[index]),
-                                  childCount: _filteredUsers.length,
+                  child: RefreshIndicator(
+                    onRefresh: _refreshUsers,
+                    child: CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      slivers: [
+                        _buildSliverHeader(),
+                        if (_errorMessage != null)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: _errorMessage!.contains('غير متصل')
+                                      ? Colors.orange.withValues(alpha: 0.1)
+                                      : Colors.red.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _errorMessage!.contains('غير متصل')
+                                        ? Colors.orange.shade300
+                                        : Colors.red.shade300,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      _errorMessage!.contains('غير متصل')
+                                          ? Icons.wifi_off_rounded
+                                          : Icons.error_outline_rounded,
+                                      color: _errorMessage!.contains('غير متصل')
+                                          ? Colors.orange.shade700
+                                          : Colors.red.shade700,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _errorMessage!,
+                                        style: TextStyle(
+                                          color: _errorMessage!.contains(
+                                                  'غير متصل')
+                                              ? Colors.orange.shade700
+                                              : Colors.red.shade700,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                    ],
+                          ),
+                        SliverToBoxAdapter(child: _buildStatsRow()),
+                        SliverToBoxAdapter(child: _buildSearchAndFilter()),
+                        _filteredUsers.isEmpty
+                            ? SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: _buildEmptyState(),
+                              )
+                            : SliverPadding(
+                                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                                sliver: SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) =>
+                                        _buildUserCard(_filteredUsers[index]),
+                                    childCount: _filteredUsers.length,
+                                  ),
+                                ),
+                              ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -197,7 +401,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
   }
 
   // ============================================================
-  //  رأس متدرّج بنفس الهوية البصرية (splash / login)
+  //  رأس الصفحة
   // ============================================================
   Widget _buildSliverHeader() {
     return SliverAppBar(
@@ -214,6 +418,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
           icon: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white),
           onPressed: _goToAddUser,
           tooltip: 'إضافة مستخدم',
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+          onPressed: _refreshUsers,
+          tooltip: 'تحديث',
         ),
         const SizedBox(width: 4),
       ],
@@ -242,12 +451,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
   }
 
   // ============================================================
-  //  شريط الإحصائيات السريعة
+  //  شريط الإحصائيات
   // ============================================================
   Widget _buildStatsRow() {
     final total = _users.length;
-    final active = _users.where((u) => u['status'] == 'نشط').length;
-    final inactive = _users.where((u) => u['status'] == 'غير نشط').length;
+    final students = _users.where((u) => u['role'] == 'student').length;
+    final universities = _users.where((u) => u['role'] == 'university').length;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -277,19 +486,19 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
           Container(width: 1, height: 32, color: Colors.grey.shade200),
           Expanded(
             child: _buildStatItem(
-              label: 'نشط',
-              value: active.toString(),
-              icon: Icons.check_circle_rounded,
-              color: const Color(0xFF22C55E),
+              label: 'طلاب',
+              value: students.toString(),
+              icon: Icons.school_rounded,
+              color: const Color(0xFF3B82F6),
             ),
           ),
           Container(width: 1, height: 32, color: Colors.grey.shade200),
           Expanded(
             child: _buildStatItem(
-              label: 'غير نشط',
-              value: inactive.toString(),
-              icon: Icons.cancel_rounded,
-              color: const Color(0xFFDC2626),
+              label: 'جامعات',
+              value: universities.toString(),
+              icon: Icons.business_rounded,
+              color: const Color(0xFF22C55E),
             ),
           ),
         ],
@@ -400,22 +609,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
   //  بطاقة مستخدم
   // ============================================================
   Widget _buildUserCard(Map<String, dynamic> user) {
-    final statusColor = switch (user['status']) {
-      'نشط' => const Color(0xFF22C55E),
-      'غير نشط' => const Color(0xFFDC2626),
-      _ => const Color(0xFFF97316),
-    };
+    final role = (user['role'] ?? 'student').toString();
+    final roleColor = _getRoleColor(role);
+    final roleLabel = _getRoleLabel(role);
+    final roleIcon = _getRoleIcon(role);
 
-    final roleColor = switch (user['role']) {
-      'student' => const Color(0xFF3B82F6),
-      'university' => const Color(0xFF22C55E),
-      'admin' => const Color(0xFF8B5CF6),
-      _ => Colors.grey,
-    };
-
-    final roleLabel = _getRoleLabel(user['role']);
-    final String initial = (user['name'] as String).isNotEmpty
-        ? (user['name'] as String)[0]
+    final String initial = (user['name'] ?? '?').toString().isNotEmpty
+        ? (user['name'] ?? '?')[0]
         : '?';
 
     return Container(
@@ -470,7 +670,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            user['name'],
+                            user['name'] ?? '',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -488,19 +688,26 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                   color: roleColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Text(
-                                  roleLabel,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: roleColor,
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(roleIcon, size: 10, color: roleColor),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      roleLabel,
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w600,
+                                        color: roleColor,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  user['email'],
+                                  user['email'] ?? '',
                                   style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -516,21 +723,38 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: statusColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            user['status'],
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
-                              color: statusColor,
+                        if (user['email_confirmed'] == true)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Text(
+                              'موثق',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.green,
+                              ),
+                            ),
+                          )
+                        else
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Text(
+                              'غير موثق',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.orange,
+                              ),
                             ),
                           ),
-                        ),
                         const SizedBox(height: 4),
                         IconButton(
                           icon: Icon(Icons.more_vert_rounded, color: Colors.grey.shade400),
@@ -543,26 +767,17 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                     ),
                   ],
                 ),
-                if (user['role'] == 'student' && user['university'] != '-') ...[
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Icon(Icons.school_rounded, size: 14, color: Colors.grey.shade500),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          'الجامعة: ${user['university']}',
-                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(
-                        'آخر دخول: ${user['last_login']}',
-                        style: TextStyle(fontSize: 10, color: Colors.grey.shade400),
-                      ),
-                    ],
-                  ),
-                ],
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today_rounded, size: 12, color: Colors.grey.shade500),
+                    const SizedBox(width: 4),
+                    Text(
+                      'تاريخ الإنشاء: ${_formatDate(user['created_at'])}',
+                      style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -571,6 +786,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
+  // ============================================================
+  //  حالة فارغة
+  // ============================================================
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -602,6 +820,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
+  // ============================================================
+  //  زر الإضافة
+  // ============================================================
   Widget _buildFAB() {
     return FloatingActionButton.extended(
       onPressed: _goToAddUser,
@@ -644,7 +865,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                 color: const Color(0xFF3B82F6),
                 onTap: () {
                   Navigator.pop(context);
-                  _showSnackBar('تم التعديل');
+                  _goToEditUser(user);
                 },
               ),
               _buildOptionTile(
@@ -663,10 +884,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
+  // ============================================================
+  //  عرض تفاصيل المستخدم
+  // ============================================================
   void _showUserDetails(Map<String, dynamic> user) {
-    final String initial = (user['name'] as String).isNotEmpty
-        ? (user['name'] as String)[0]
+    final String initial = (user['name'] ?? '?').toString().isNotEmpty
+        ? (user['name'] ?? '?')[0]
         : '?';
+
+    final role = (user['role'] ?? 'student').toString();
+    final roleColor = _getRoleColor(role);
 
     showModalBottomSheet(
       context: context,
@@ -707,16 +934,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: AppTheme.primary.withValues(alpha: 0.08),
+                      color: roleColor.withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Text(
                         initial,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.primary,
+                          color: roleColor,
                         ),
                       ),
                     ),
@@ -727,7 +954,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user['name'],
+                          user['name'] ?? '',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -735,21 +962,37 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                           ),
                         ),
                         Text(
-                          user['email'],
+                          user['email'] ?? '',
                           style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
                         ),
                       ],
                     ),
                   ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: user['email_confirmed'] == true
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.orange.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      user['email_confirmed'] == true ? 'موثق' : 'غير موثق',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: user['email_confirmed'] == true ? Colors.green : Colors.orange,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
-              _buildDetailRow('الدور', _getRoleLabel(user['role'])),
-              _buildDetailRow('الحالة', user['status']),
-              _buildDetailRow('تاريخ الإنشاء', user['created_at']),
-              _buildDetailRow('آخر دخول', user['last_login']),
-              if (user['role'] == 'student' && user['university'] != '-')
-                _buildDetailRow('الجامعة', user['university']),
+              _buildDetailRow('الدور', _getRoleLabel(role)),
+              _buildDetailRow('البريد الإلكتروني', user['email'] ?? '-'),
+              _buildDetailRow('تاريخ الإنشاء', _formatDate(user['created_at'])),
+              _buildDetailRow('آخر دخول', _formatDate(user['last_login'])),
+              _buildDetailRow('توثيق البريد', user['email_confirmed'] == true ? 'نعم' : 'لا'),
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -770,7 +1013,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        _showSnackBar('تم التعديل');
+                        _goToEditUser(user);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
@@ -806,7 +1049,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
           ),
           Expanded(
             child: Text(
-              value,
+              value.isNotEmpty ? value : '-',
               style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant),
             ),
           ),
@@ -815,22 +1058,55 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  String _getRoleLabel(String role) {
-    return switch (role) {
-      'student' => 'طالب',
-      'university' => 'جامعة',
-      'admin' => 'إدارة',
-      _ => role,
-    };
+  // ============================================================
+  //  التنقل لتعديل مستخدم
+  // ============================================================
+  Future<void> _goToEditUser(Map<String, dynamic> user) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AdminAddUserScreen(
+          isEditing: true,
+          userData: user,
+        ),
+      ),
+    );
+
+    if (result == true && mounted) {
+      _showSnackBar('✅ تم تحديث بيانات المستخدم', Colors.green);
+      _loadUsers();
+    }
   }
 
+  // ============================================================
+  //  نافذة تأكيد الحذف
+  // ============================================================
   void _showDeleteDialog(Map<String, dynamic> user) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('حذف المستخدم'),
-        content: Text('هل أنت متأكد من رغبتك في حذف ${user['name']}؟'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('هل أنت متأكد من رغبتك في حذف:'),
+            const SizedBox(height: 8),
+            Text(
+              '${user['name']}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'هذا الإجراء لا يمكن التراجع عنه',
+              style: TextStyle(color: Colors.red.shade300, fontSize: 12),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -839,7 +1115,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _showSnackBar('تم حذف المستخدم بنجاح');
+              _deleteUser(user);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
@@ -854,6 +1130,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
+  // ============================================================
+  //  مكونات مساعدة
+  // ============================================================
   Widget _buildOptionTile({
     required IconData icon,
     required String title,
@@ -867,7 +1146,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  void _showSnackBar(String message) {
+  void _showSnackBar(String message, [Color? color]) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -875,16 +1155,24 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          backgroundColor: const Color(0xFF22C55E),
+          backgroundColor: color ?? const Color(0xFF22C55E),
           content: Row(
             children: [
-              const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
+              Icon(
+                color == Colors.red ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(message, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                child: Text(
+                  message,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                ),
               ),
             ],
           ),
+          duration: const Duration(seconds: 2),
         ),
       );
   }

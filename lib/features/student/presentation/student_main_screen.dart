@@ -1,3 +1,4 @@
+// lib/features/student/presentation/student_main_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/themes/app_theme.dart';
 import 'package:nextstep_ai_app/features/student/presentation/screens/student_home_screen.dart';
@@ -6,8 +7,14 @@ import 'package:nextstep_ai_app/features/student/presentation/screens/recommenda
 import 'package:nextstep_ai_app/features/student/presentation/screens/chat_screen.dart';
 import 'package:nextstep_ai_app/features/student/presentation/screens/profile_screen.dart';
 
+/// ============================================================
+///  الشاشة الرئيسية للطالب - تحتوي على BottomNavigationBar
+/// ============================================================
 class StudentMainScreen extends StatefulWidget {
   const StudentMainScreen({super.key});
+
+  // ✅ ✅ ✅ نقل tabNotifier إلى هنا (خارج الـ State)
+  static final ValueNotifier<int> tabNotifier = ValueNotifier<int>(0);
 
   @override
   State<StudentMainScreen> createState() => _StudentMainScreenState();
@@ -50,6 +57,28 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // ✅ الوصول إلى tabNotifier عبر الـ Widget
+    StudentMainScreen.tabNotifier.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    StudentMainScreen.tabNotifier.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    final newIndex = StudentMainScreen.tabNotifier.value;
+    if (newIndex != _currentIndex && newIndex >= 0 && newIndex < _screens.length) {
+      setState(() {
+        _currentIndex = newIndex;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -60,6 +89,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
           onTap: (index) {
             setState(() {
               _currentIndex = index;
+              StudentMainScreen.tabNotifier.value = index;
             });
           },
           type: BottomNavigationBarType.fixed,

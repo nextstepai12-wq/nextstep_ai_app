@@ -14,7 +14,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen>
     with SingleTickerProviderStateMixin {
-  String _selectedPath = 'tawjihi';
+  String _selectedPath = 'new_student';
   bool _agreedToTerms = false;
 
   final _fullNameController = TextEditingController();
@@ -123,73 +123,75 @@ class _RegisterScreenState extends State<RegisterScreen>
     super.dispose();
   }
 
-  Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (!_agreedToTerms) {
-      _showSnack('يرجى الموافقة على الشروط والأحكام', const Color(0xFFF97316));
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      // 1️⃣ إنشاء حساب في Supabase Auth
-      final authResponse = await _supabase.signUpWithEmail(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-        userMetadata: {
-          'full_name': _fullNameController.text.trim(),
-          'role': 'student',
-        },
-      );
-
-      if (authResponse.user == null) {
-        throw Exception('فشل إنشاء الحساب');
-      }
-
-      // ✅ user.id هو UUID (String) — لا حاجة لأي تحويل
-      final userId = authResponse.user!.id;
-
-      // 2️⃣ إنشاء ملف الطالب في جدول student_profiles
-      await _supabase.upsertStudentProfile(
-        StudentProfileModel(
-          userId: userId,
-          studentType: _selectedPath,
-          phone: _selectedPhoneCode! + _phoneController.text.trim(),
-          highSchoolScore: _selectedPath == 'tawjihi'
-              ? double.tryParse(_gpaController.text)
-              : null,
-          highSchoolBranchId: _selectedPath == 'tawjihi'
-              ? _getBranchId(_selectedBranch)
-              : null,
-          currentUniversityId: _selectedPath == 'university'
-              ? int.tryParse(_universityController.text)
-              : null,
-          currentMajorId: _selectedPath == 'university'
-              ? int.tryParse(_majorController.text)
-              : null,
-          academicYear: _selectedYear,
-          gpa: _selectedPath == 'university'
-              ? double.tryParse(_gpaController.text)
-              : null,
-        ),
-      );
-
-      if (mounted) {
-        _showSnack('تم إنشاء الحساب بنجاح!', const Color(0xFF22C55E),
-            icon: Icons.check_circle_outline_rounded);
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    } catch (e) {
-      if (mounted) {
-        _showSnack(e.toString().replaceFirst('Exception: ', ''),
-            const Color(0xFFDC2626));
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+Future<void> _register() async {
+  if (!_formKey.currentState!.validate()) return;
+  if (!_agreedToTerms) {
+    _showSnack('يرجى الموافقة على الشروط والأحكام', const Color(0xFFF97316));
+    return;
   }
 
+  setState(() => _isLoading = true);
+
+  try {
+        debugPrint('📊 _selectedPath = $_selectedPath');
+
+    // 1️⃣ إنشاء حساب في Supabase Auth
+    final authResponse = await _supabase.signUpWithEmail(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      userMetadata: {
+        'full_name': _fullNameController.text.trim(),
+        'role': 'student',
+      },
+    );
+
+    if (authResponse.user == null) {
+      throw Exception('فشل إنشاء الحساب');
+    }
+
+    // ✅ user.id هو UUID (String)
+    final userId = authResponse.user!.id;
+
+    // 2️⃣ إنشاء ملف الطالب في جدول student_profiles
+    // ✅ نستخدم الدالة الجديدة upsertStudentProfileWithUuid
+    await _supabase.upsertStudentProfileWithUuid(
+      StudentProfileModel(
+        userId: userId, // ✅ String (سيتم تحويله إلى int داخل الدالة)
+        studentType: _selectedPath,
+        phone: _selectedPhoneCode! + _phoneController.text.trim(),
+        highSchoolScore: _selectedPath == 'new_student'
+            ? double.tryParse(_gpaController.text)
+            : null,
+        highSchoolBranchId: _selectedPath == 'new_student'
+            ? _getBranchId(_selectedBranch)
+            : null,
+        currentUniversityId: _selectedPath == 'university_student'
+            ? int.tryParse(_universityController.text)
+            : null,
+        currentMajorId: _selectedPath == 'university_student'
+            ? int.tryParse(_majorController.text)
+            : null,
+        academicLevel: _selectedYear, // ✅ استخدم academicLevel بدلاً من academicYear
+        gpa: _selectedPath == 'university_student'
+            ? double.tryParse(_gpaController.text)
+            : null,
+      ),
+    );
+
+    if (mounted) {
+      _showSnack('تم إنشاء الحساب بنجاح!', const Color(0xFF22C55E),
+          icon: Icons.check_circle_outline_rounded);
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  } catch (e) {
+    if (mounted) {
+      _showSnack(e.toString().replaceFirst('Exception: ', ''),
+          const Color(0xFFDC2626));
+    }
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
+  }
+}
   void _showSnack(String message, Color color, {IconData? icon}) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -381,31 +383,31 @@ class _RegisterScreenState extends State<RegisterScreen>
   // ============================================================
   //  اختيار المسار
   // ============================================================
-  Widget _buildPathSelection() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildPathCard(
-            title: 'طالب توجيهي',
-            subtitle: 'للذين يتطلعون للالتحاق بالجامعة',
-            icon: Icons.school_rounded,
-            isSelected: _selectedPath == 'tawjihi',
-            onTap: () => setState(() => _selectedPath = 'tawjihi'),
-          ),
+Widget _buildPathSelection() {
+  return Row(
+    children: [
+      Expanded(
+        child: _buildPathCard(
+          title: 'طالب توجيهي',
+          subtitle: 'للذين يتطلعون للالتحاق بالجامعة',
+          icon: Icons.school_rounded,
+          isSelected: _selectedPath == 'new_student',
+          onTap: () => setState(() => _selectedPath = 'new_student'),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildPathCard(
-            title: 'طالب جامعي',
-            subtitle: 'لتطوير مسارك الأكاديمي والمهني',
-            icon: Icons.local_library_rounded,
-            isSelected: _selectedPath == 'university',
-            onTap: () => setState(() => _selectedPath = 'university'),
-          ),
+      ),
+      const SizedBox(width: 12),
+      Expanded(
+        child: _buildPathCard(
+          title: 'طالب جامعي',
+          subtitle: 'لتطوير مسارك الأكاديمي والمهني',
+          icon: Icons.local_library_rounded,
+          isSelected: _selectedPath == 'university_student',  // ✅ تم التصحيح
+          onTap: () => setState(() => _selectedPath = 'university_student'),  // ✅ تم التصحيح
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
   Widget _buildPathCard({
     required String title,
@@ -540,7 +542,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             ),
             const SizedBox(height: 16),
             _buildPhoneSection(),
-            if (_selectedPath == 'tawjihi') ...[
+            if (_selectedPath == 'new_student') ...[
               const SizedBox(height: 16),
               _buildBranchDropdown(),
               const SizedBox(height: 16),
@@ -560,7 +562,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                 },
               ),
             ],
-            if (_selectedPath == 'university') ...[
+            if (_selectedPath == 'university_student') ...[
               const SizedBox(height: 16),
               _buildTextField(
                 controller: _universityController,

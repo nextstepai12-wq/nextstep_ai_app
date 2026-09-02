@@ -1,5 +1,8 @@
+// lib/features/admin/presentation/screens/admin_programs_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/themes/app_theme.dart';
+import 'package:nextstep_ai_app/features/admin/data/models/program_model.dart';
+import 'package:nextstep_ai_app/features/admin/presentation/screens/admin_add_program_screen.dart';
 
 class AdminProgramsScreen extends StatefulWidget {
   const AdminProgramsScreen({super.key});
@@ -127,12 +130,10 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
 
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _animationController.forward();
-        });
+        setState(() => _isLoading = false);
+        _animationController.forward();
       }
     });
   }
@@ -143,43 +144,89 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     super.dispose();
   }
 
+  // ============================================================
+  //  التنقل لصفحة إضافة تخصص
+  // ============================================================
+  Future<void> _goToAddProgram() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AdminAddProgramScreen(),
+      ),
+    );
+    
+    if (result == true && mounted) {
+      _showSnackBar('✅ تم إضافة التخصص بنجاح');
+    }
+  }
+
+  // ============================================================
+  //  التنقل لتعديل تخصص
+  // ============================================================
+  Future<void> _goToEditProgram(Map<String, dynamic> program) async {
+    final programData = ProgramModel(
+      id: program['id'].toString(),
+      name: program['name'],
+      description: program['description'],
+      type: program['type'],
+      duration: 4,
+      universityId: program['university_id'] ?? '1',
+      isActive: program['status'] == 'نشط',
+      dimensions: null,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AdminAddProgramScreen(
+          isEditing: true,
+          programData: programData,
+        ),
+      ),
+    );
+    
+    if (result == true && mounted) {
+      _showSnackBar('✅ تم تحديث بيانات التخصص');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xFFF7F8FA),
-        appBar: _buildAppBar(),
         body: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.primary,
-                ),
+                child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
               )
             : FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
                   position: _slideAnimation,
-                  child: Column(
-                    children: [
-                      _buildSearchAndFilter(),
-                      _buildStatsRow(),
-                      Expanded(
-                        child: _filteredPrograms.isEmpty
-                            ? _buildEmptyState()
-                            : ListView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      _buildSliverHeader(),
+                      SliverToBoxAdapter(child: _buildStatsRow()),
+                      SliverToBoxAdapter(child: _buildSearchAndFilter()),
+                      _filteredPrograms.isEmpty
+                          ? SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: _buildEmptyState(),
+                            )
+                          : SliverPadding(
+                              padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                              sliver: SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) =>
+                                      _buildProgramCard(_filteredPrograms[index]),
+                                  childCount: _filteredPrograms.length,
                                 ),
-                                itemCount: _filteredPrograms.length,
-                                itemBuilder: (context, index) {
-                                  final program = _filteredPrograms[index];
-                                  return _buildProgramCard(program);
-                                },
                               ),
-                      ),
+                            ),
                     ],
                   ),
                 ),
@@ -189,134 +236,74 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
+  // ============================================================
+  //  رأس متدرّج — بنفسجي
+  // ============================================================
+  Widget _buildSliverHeader() {
+    return SliverAppBar(
+      pinned: true,
       elevation: 0,
+      backgroundColor: const Color(0xFF8B5CF6),
+      expandedHeight: 128,
       leading: IconButton(
-        icon: const Icon(
-          Icons.arrow_back_rounded,
-          color: AppTheme.primaryContainer,
-        ),
+        icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
         onPressed: () => Navigator.pop(context),
       ),
-      title: const Text(
-        'إدارة التخصصات',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppTheme.primaryContainer,
-        ),
-      ),
-      centerTitle: true,
       actions: [
         IconButton(
-          icon: const Icon(
-            Icons.add_rounded,
-            color: AppTheme.primaryContainer,
-          ),
-          onPressed: () => _showAddProgramDialog(),
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          onPressed: _goToAddProgram,
+          tooltip: 'إضافة تخصص',
         ),
+        const SizedBox(width: 4),
       ],
-    );
-  }
-
-  Widget _buildSearchAndFilter() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Column(
-        children: [
-          TextField(
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
-            },
-            textDirection: TextDirection.rtl,
-            textAlign: TextAlign.right,
-            decoration: InputDecoration(
-              hintText: 'بحث عن تخصص...',
-              hintStyle: TextStyle(
-                color: Colors.grey.shade400,
-                fontSize: 14,
-              ),
-              prefixIcon: const Icon(
-                Icons.search_rounded,
-                color: Colors.grey,
-              ),
-              filled: true,
-              fillColor: Colors.grey.shade50,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(
-                  color: AppTheme.secondary,
-                  width: 2,
-                ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+      flexibleSpace: FlexibleSpaceBar(
+        titlePadding: const EdgeInsets.only(right: 56, bottom: 16),
+        centerTitle: false,
+        title: const Text(
+          'إدارة التخصصات',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        background: const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
             ),
           ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: _filterOptions.map((filter) {
-                final isSelected = _selectedFilter == filter;
-                return Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: FilterChip(
-                    label: Text(filter),
-                    selected: isSelected,
-                    onSelected: (_) {
-                      setState(() {
-                        _selectedFilter = filter;
-                      });
-                    },
-                    backgroundColor: Colors.grey.shade100,
-                    selectedColor: AppTheme.primary.withValues(alpha: 0.1),
-                    labelStyle: TextStyle(
-                      fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected ? AppTheme.primary : Colors.grey.shade700,
-                    ),
-                    side: BorderSide(
-                      color: isSelected ? AppTheme.primary : Colors.grey.shade300,
-                      width: 1.5,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
+  // ============================================================
+  //  شريط الإحصائيات
+  // ============================================================
   Widget _buildStatsRow() {
     final total = _programs.length;
     final active = _programs.where((p) => p['status'] == 'نشط').length;
     final inactive = _programs.where((p) => p['status'] == 'غير نشط').length;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      color: Colors.white,
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Expanded(
@@ -327,11 +314,7 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
               color: const Color(0xFF3B82F6),
             ),
           ),
-          Container(
-            width: 1,
-            height: 30,
-            color: Colors.grey.shade200,
-          ),
+          Container(width: 1, height: 32, color: Colors.grey.shade200),
           Expanded(
             child: _buildStatItem(
               label: 'نشط',
@@ -340,11 +323,7 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
               color: const Color(0xFF22C55E),
             ),
           ),
-          Container(
-            width: 1,
-            height: 30,
-            color: Colors.grey.shade200,
-          ),
+          Container(width: 1, height: 32, color: Colors.grey.shade200),
           Expanded(
             child: _buildStatItem(
               label: 'غير نشط',
@@ -373,7 +352,7 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
             const SizedBox(width: 4),
             Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.primaryContainer,
@@ -381,178 +360,241 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
             ),
           ],
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey.shade500,
-          ),
-        ),
+        const SizedBox(height: 2),
+        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
       ],
     );
   }
 
+  // ============================================================
+  //  البحث والفلاتر
+  // ============================================================
+  Widget _buildSearchAndFilter() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Column(
+        children: [
+          TextField(
+            onChanged: (value) => setState(() => _searchQuery = value),
+            textDirection: TextDirection.rtl,
+            textAlign: TextAlign.right,
+            decoration: InputDecoration(
+              hintText: 'بحث عن تخصص...',
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+              prefixIcon: const Icon(Icons.search_rounded, color: Colors.grey),
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: Colors.grey.shade200, width: 1.2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: Colors.grey.shade200, width: 1.2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 1.8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 36,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: _filterOptions.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final filter = _filterOptions[index];
+                final isSelected = _selectedFilter == filter;
+                return ChoiceChip(
+                  label: Text(filter),
+                  selected: isSelected,
+                  onSelected: (_) => setState(() => _selectedFilter = filter),
+                  backgroundColor: Colors.white,
+                  selectedColor: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                  labelStyle: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade700,
+                  ),
+                  side: BorderSide(
+                    color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade300,
+                    width: 1.4,
+                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  //  بطاقة تخصص
+  // ============================================================
   Widget _buildProgramCard(Map<String, dynamic> program) {
-    Color statusColor;
-    switch (program['status']) {
-      case 'نشط':
-        statusColor = Colors.green;
-        break;
-      case 'غير نشط':
-        statusColor = Colors.red;
-        break;
-      default:
-        statusColor = Colors.orange;
-    }
+    final statusColor = switch (program['status']) {
+      'نشط' => const Color(0xFF22C55E),
+      'غير نشط' => const Color(0xFFDC2626),
+      _ => const Color(0xFFF97316),
+    };
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.grey.shade200, width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.school_rounded,
-                    size: 22,
-                    color: Color(0xFF8B5CF6),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => _showProgramDetails(program),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      program['name'],
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.primaryContainer,
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.school_rounded, size: 22, color: Color(0xFF8B5CF6)),
                       ),
                     ),
-                    Row(
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            program['name'],
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.primaryContainer,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 3),
+                          Row(
+                            children: [
+                              Text(
+                                program['university'],
+                                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF97316).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  program['type'],
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFFF97316),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          program['university'],
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF97316).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            color: statusColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            program['type'],
+                            program['status'],
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFFF97316),
+                              color: statusColor,
                             ),
                           ),
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${program['students_count']} طالب',
+                          style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                        ),
                       ],
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.more_vert_rounded, color: Colors.grey.shade400),
+                      onPressed: () => _showProgramOptions(program),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      iconSize: 20,
                     ),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _buildInfoChip(
+                      icon: Icons.business_rounded,
+                      label: program['faculty'],
+                      color: const Color(0xFF3B82F6),
                     ),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                    _buildInfoChip(
+                      icon: Icons.calendar_today_rounded,
+                      label: program['created_at'],
+                      color: const Color(0xFFF97316),
                     ),
-                    child: Text(
-                      program['status'],
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${program['students_count']} طالب',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
-              ),
-              IconButton(
-                icon:  Icon(
-                  Icons.more_vert_rounded,
-                  color: Colors.grey.shade400,
+                  ],
                 ),
-                onPressed: () => _showProgramOptions(program),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            program['description'],
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
+                const SizedBox(height: 6),
+                Text(
+                  program['description'],
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _buildInfoChip(
-                icon: Icons.business_rounded,
-                label: program['faculty'],
-                color: const Color(0xFF3B82F6),
-              ),
-              const SizedBox(width: 8),
-              _buildInfoChip(
-                icon: Icons.calendar_today_rounded,
-                label: program['created_at'],
-                color: const Color(0xFFF97316),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -573,14 +615,11 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
         children: [
           Icon(icon, size: 12, color: color),
           const SizedBox(width: 4),
-          Flexible(
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 140),
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: color,
-              ),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: color),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -596,17 +635,11 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.school_outlined,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.school_outlined, size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
-              _searchQuery.isEmpty
-                  ? 'لا توجد تخصصات'
-                  : 'لا توجد نتائج مطابقة',
-              style: TextStyle(
+              _searchQuery.isEmpty ? 'لا توجد تخصصات' : 'لا توجد نتائج مطابقة',
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.primaryContainer,
@@ -617,10 +650,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
               _searchQuery.isEmpty
                   ? 'أضف تخصص جديد باستخدام زر الإضافة'
                   : 'جرب تغيير كلمات البحث',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -629,162 +660,61 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
   }
 
   Widget _buildFAB() {
-    return FloatingActionButton(
-      onPressed: _showAddProgramDialog,
-      backgroundColor: AppTheme.primary,
-      child: const Icon(
-        Icons.add_rounded,
-        color: Colors.white,
+    return FloatingActionButton.extended(
+      onPressed: _goToAddProgram,
+      backgroundColor: const Color(0xFF8B5CF6),
+      icon: const Icon(Icons.add_rounded, color: Colors.white),
+      label: const Text(
+        'إضافة تخصص',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
       ),
     );
   }
 
-  void _showAddProgramDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          'إضافة تخصص جديد',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.primaryContainer,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                textDirection: TextDirection.rtl,
-                decoration: InputDecoration(
-                  labelText: 'اسم التخصص',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                textDirection: TextDirection.rtl,
-                decoration: InputDecoration(
-                  labelText: 'الجامعة',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'النوع',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'بكالوريوس', child: Text('بكالوريوس')),
-                  DropdownMenuItem(value: 'ماجستير', child: Text('ماجستير')),
-                  DropdownMenuItem(value: 'دكتوراه', child: Text('دكتوراه')),
-                  DropdownMenuItem(value: 'دبلوم', child: Text('دبلوم')),
-                ],
-                onChanged: (value) {},
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'الحالة',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'نشط', child: Text('نشط')),
-                  DropdownMenuItem(value: 'غير نشط', child: Text('غير نشط')),
-                ],
-                onChanged: (value) {},
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                textDirection: TextDirection.rtl,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'الوصف',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showSnackBar('تم إضافة التخصص بنجاح');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('إضافة'),
-          ),
-        ],
-        actionsAlignment: MainAxisAlignment.center,
-      ),
-    );
-  }
-
+  // ============================================================
+  //  خيارات التخصص (Bottom Sheet)
+  // ============================================================
   void _showProgramOptions(Map<String, dynamic> program) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildOptionTile(
-              icon: Icons.remove_red_eye_rounded,
-              title: 'عرض التفاصيل',
-              color: AppTheme.primary,
-              onTap: () {
-                Navigator.pop(context);
-                _showProgramDetails(program);
-              },
-            ),
-            _buildOptionTile(
-              icon: Icons.edit_rounded,
-              title: 'تعديل',
-              color: const Color(0xFF3B82F6),
-              onTap: () {
-                Navigator.pop(context);
-                _showSnackBar('تم التعديل');
-              },
-            ),
-            _buildOptionTile(
-              icon: Icons.delete_rounded,
-              title: 'حذف',
-              color: Colors.red,
-              onTap: () {
-                Navigator.pop(context);
-                _showDeleteDialog(program);
-              },
-            ),
-          ],
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildOptionTile(
+                icon: Icons.remove_red_eye_rounded,
+                title: 'عرض التفاصيل',
+                color: const Color(0xFF8B5CF6),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showProgramDetails(program);
+                },
+              ),
+              _buildOptionTile(
+                icon: Icons.edit_rounded,
+                title: 'تعديل',
+                color: const Color(0xFF3B82F6),
+                onTap: () {
+                  Navigator.pop(context);
+                  _goToEditProgram(program);
+                },
+              ),
+              _buildOptionTile(
+                icon: Icons.delete_rounded,
+                title: 'حذف',
+                color: const Color(0xFFDC2626),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showDeleteDialog(program);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -796,111 +726,110 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.school_rounded,
-                      size: 28,
-                      color: Color(0xFF8B5CF6),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.school_rounded, size: 28, color: Color(0xFF8B5CF6)),
                     ),
                   ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        program['name'],
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.primaryContainer,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          program['name'],
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.primaryContainer,
+                          ),
                         ),
-                      ),
-                      Text(
-                        program['university'],
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade500,
+                        Text(
+                          program['university'],
+                          style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildDetailRow('النوع', program['type']),
-            _buildDetailRow('الكلية', program['faculty']),
-            _buildDetailRow('عدد الطلاب', program['students_count'].toString()),
-            _buildDetailRow('الحالة', program['status']),
-            _buildDetailRow('تاريخ الإنشاء', program['created_at']),
-            _buildDetailRow('الوصف', program['description']),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.primaryContainer,
-                      side: BorderSide(color: Colors.grey.shade300),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
+                      ],
                     ),
-                    child: const Text('إغلاق'),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _showSnackBar('تم التعديل');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildDetailRow('النوع', program['type']),
+              _buildDetailRow('الكلية', program['faculty']),
+              _buildDetailRow('عدد الطلاب', program['students_count'].toString()),
+              _buildDetailRow('الحالة', program['status']),
+              _buildDetailRow('تاريخ الإنشاء', program['created_at']),
+              _buildDetailRow('الوصف', program['description']),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryContainer,
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
+                      child: const Text('إغلاق'),
                     ),
-                    child: const Text('تعديل'),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _goToEditProgram(program);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('تعديل'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -908,25 +837,19 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
           Text(
             '$label: ',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppTheme.primaryContainer,
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppTheme.onSurfaceVariant,
-              ),
-            ),
+            child: Text(value, style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant)),
           ),
         ],
       ),
@@ -937,11 +860,28 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('حذف التخصص'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('هل أنت متأكد من رغبتك في حذف:'),
+            const SizedBox(height: 8),
+            Text(
+              '${program['name']}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'هذا الإجراء لا يمكن التراجع عنه',
+              style: TextStyle(color: Colors.red.shade300, fontSize: 12),
+            ),
+          ],
         ),
-        title: Text('حذف التخصص'),
-        content: Text('هل أنت متأكد من رغبتك في حذف ${program['name']}؟'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -950,14 +890,12 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _showSnackBar('تم حذف التخصص بنجاح');
+              _showSnackBar('✅ تم حذف التخصص بنجاح');
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: const Color(0xFFDC2626),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('حذف'),
           ),
@@ -975,13 +913,7 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
   }) {
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
       onTap: onTap,
     );
   }
@@ -993,23 +925,14 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: const Color(0xFF22C55E),
           content: Row(
             children: [
-              const Icon(
-                Icons.check_circle_outline_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
+              const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  message,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
+                child: Text(message, style: const TextStyle(color: Colors.white, fontSize: 13)),
               ),
             ],
           ),

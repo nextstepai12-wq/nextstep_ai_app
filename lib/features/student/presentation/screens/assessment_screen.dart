@@ -1,8 +1,14 @@
-﻿import 'package:flutter/material.dart';
+﻿// lib/features/student/presentation/screens/assessment_screen.dart
+import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/themes/app_theme.dart';
+import 'package:nextstep_ai_app/core/storage/hive_storage.dart';
 import 'package:nextstep_ai_app/shared/services/supabase/supabase_service.dart';
-import 'package:nextstep_ai_app/shared/models/survey_question_model.dart';
 
+/// ============================================================
+///  شاشة التقييم الذكي (AI Assessment)
+///  تجمع بيانات الطالب لبناء ملفه الشخصي
+/// ============================================================
 class AssessmentScreen extends StatefulWidget {
   const AssessmentScreen({super.key});
 
@@ -12,30 +18,412 @@ class AssessmentScreen extends StatefulWidget {
 
 class _AssessmentScreenState extends State<AssessmentScreen>
     with SingleTickerProviderStateMixin {
-  final SupabaseService _supabase = SupabaseService();
-
-  List<SurveyQuestionModel> _questions = [];
-  Map<int, dynamic> _answers = {};
-  int _currentIndex = 0;
+  // ============================================================
+  //  المتغيرات
+  // ============================================================
   bool _isLoading = true;
   bool _isSubmitting = false;
-  bool _isComplete = false;
   String? _errorMessage;
-  String? _studentId;
 
-  // النتائج
-  Map<String, dynamic>? _recommendations;
+  List<Map<String, dynamic>> _questions = [];
+  int _currentQuestionIndex = 0;
+  int _totalQuestions = 0;
+
+  Map<int, int> _answers = {};
+
+  final Map<String, double> _dimensions = {
+    'programming': 0.0,
+    'math': 0.0,
+    'communication': 0.0,
+    'research': 0.0,
+    'practical': 0.0,
+    'management': 0.0,
+  };
+
+  double _progress = 0.0;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
+  // ============================================================
+  //  أسئلة افتراضية
+  // ============================================================
+  List<Map<String, dynamic>> _getDefaultQuestions() {
+    return [
+      {
+        'id': 1,
+        'question_text': 'هل تستمتع بحل المشاكل المنطقية والمعادلات الرياضية؟',
+        'dimension': 'math',
+        'options': ['نعم جداً', 'أحياناً', 'لا أبداً'],
+      },
+      {
+        'id': 2,
+        'question_text': 'هل تهتم بمعرفة كيفية عمل البرامج والتطبيقات؟',
+        'dimension': 'programming',
+        'options': ['نعم جداً', 'أحياناً', 'لا أبداً'],
+      },
+      {
+        'id': 3,
+        'question_text': 'هل تفضل العمل في فريق أم بشكل فردي؟',
+        'dimension': 'communication',
+        'options': ['فريق دائماً', 'مزيج', 'فردي دائماً'],
+      },
+      {
+        'id': 4,
+        'question_text': 'هل تستمع بتجربة الأشياء عملياً بدلاً من القراءة النظرية؟',
+        'dimension': 'practical',
+        'options': ['نعم جداً', 'أحياناً', 'لا أبداً'],
+      },
+      {
+        'id': 5,
+        'question_text': 'هل لديك فضول لاستكشاف مواضيع جديدة خارج مجال دراستك؟',
+        'dimension': 'research',
+        'options': ['نعم جداً', 'أحياناً', 'لا أبداً'],
+      },
+      {
+        'id': 6,
+        'question_text': 'هل تجد نفسك تنظّم المهام وتقود الآخرين؟',
+        'dimension': 'management',
+        'options': ['نعم جداً', 'أحياناً', 'لا أبداً'],
+      },
+    ];
+  }
+
+  // ============================================================
+  //  دوال مساعدة
+  // ============================================================
+  String _getDimensionName(String key) {
+    switch (key) {
+      case 'programming':
+        return 'برمجة';
+      case 'math':
+        return 'رياضيات';
+      case 'communication':
+        return 'تواصل';
+      case 'research':
+        return 'بحث علمي';
+      case 'practical':
+        return 'عملي';
+      case 'management':
+        return 'إدارة';
+      default:
+        return key;
+    }
+  }
+
+  String _getDimensionIcon(String key) {
+    switch (key) {
+      case 'programming':
+        return '💻';
+      case 'math':
+        return '📐';
+      case 'communication':
+        return '🗣️';
+      case 'research':
+        return '🔬';
+      case 'practical':
+        return '🔧';
+      case 'management':
+        return '📊';
+      default:
+        return '📌';
+    }
+  }
+
+  void _updateProgress() {
+    if (_totalQuestions > 0) {
+      _progress = _answers.length / _totalQuestions;
+    } else {
+      _progress = 0.0;
+    }
+  }
+
+  void _debugPrintQuestions() {
+    debugPrint('📊 ==== DEBUG QUESTIONS ====');
+    debugPrint('📊 عدد الأسئلة: ${_questions.length}');
+    for (int i = 0; i < _questions.length; i++) {
+      debugPrint('📊 السؤال ${i + 1}: ${_questions[i]['question_text']}');
+      debugPrint('📊 الخيارات: ${_questions[i]['options']}');
+    }
+    debugPrint('📊 ========================');
+  }
+
+  // ============================================================
+  //  اختيار إجابة
+  // ============================================================
+  void _selectAnswer(int questionIndex, int optionIndex) {
+    setState(() {
+      _answers[questionIndex] = optionIndex;
+      _updateProgress();
+    });
+
+    HiveStorage.saveData('assessment_cache', 'answers', _answers);
+
+    if (_currentQuestionIndex < _totalQuestions - 1) {
+      Future.delayed(const Duration(milliseconds: 400), () {
+        if (mounted) {
+          setState(() {
+            _currentQuestionIndex++;
+          });
+        }
+      });
+    }
+  }
+
+  // ============================================================
+  //  حساب النتائج
+  // ============================================================
+  void _calculateResults() {
+    final Map<String, List<int>> dimensionAnswers = {};
+
+    for (int i = 0; i < _questions.length; i++) {
+      if (_answers.containsKey(i)) {
+        final dimension = _questions[i]['dimension'] ?? 'general';
+        final answer = _answers[i]!;
+        final maxOptions = (_questions[i]['options'] as List).length;
+        final score = maxOptions > 1 ? (answer / (maxOptions - 1)) * 100 : 50;
+
+        if (!dimensionAnswers.containsKey(dimension)) {
+          dimensionAnswers[dimension] = [];
+        }
+        dimensionAnswers[dimension]!.add(score.toInt());
+      }
+    }
+
+    final Map<String, double> results = {};
+    for (var entry in dimensionAnswers.entries) {
+      final scores = entry.value;
+      final average = scores.reduce((a, b) => a + b) / scores.length;
+      results[entry.key] = average;
+    }
+
+    setState(() {
+      _dimensions.updateAll((key, value) => results[key] ?? 50.0);
+    });
+
+    debugPrint('📊 نتائج التقييم: $_dimensions');
+  }
+
+  // ============================================================
+  //  تحميل الإجابات المحفوظة
+  // ============================================================
+  Future<void> _loadSavedAnswers() async {
+    try {
+      final saved = await HiveStorage.getData('assessment_cache', 'answers');
+      if (saved != null) {
+        _answers = Map<int, int>.from(saved);
+        _updateProgress();
+      }
+    } catch (_) {}
+  }
+
+  // ============================================================
+  //  تحميل الأسئلة
+  // ============================================================
+  Future<void> _loadQuestions() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      debugPrint('🔄 جاري جلب أسئلة التقييم...');
+
+      // ✅ 1. محاولة جلب من Hive أولاً (Offline-First)
+      try {
+        final cached = await HiveStorage.getData('assessment_cache', 'questions');
+        if (cached != null && (cached as List).isNotEmpty) {
+          _questions = List<Map<String, dynamic>>.from(cached);
+          _totalQuestions = _questions.length;
+          await _loadSavedAnswers();
+
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+              _updateProgress();
+              _errorMessage = null;
+            });
+            debugPrint('✅ تم تحميل ${_questions.length} سؤال من Hive');
+            _debugPrintQuestions();
+            return;
+          }
+        }
+      } catch (e) {
+        debugPrint('⚠️ فشل قراءة Hive: $e');
+      }
+
+      // ✅ 2. جلب الأسئلة من Supabase
+      final supabase = SupabaseService();
+      final response = await supabase.client
+          .from('survey_questions')
+          .select('*')
+          .eq('is_active', true)
+          .order('order_index')
+          .timeout(const Duration(seconds: 10));
+
+      if (response != null && response.isNotEmpty) {
+        final questions = List<Map<String, dynamic>>.from(response);
+
+        _questions = questions.map((q) {
+          List<String> options = ['نعم جداً', 'أحياناً', 'لا أبداً'];
+
+          if (q['options'] != null) {
+            if (q['options'] is List) {
+              options = List<String>.from(q['options']);
+            } else if (q['options'] is String) {
+              try {
+                final parsed = q['options'] as String;
+                if (parsed.startsWith('[')) {
+                  final List<dynamic> parsedList = jsonDecode(parsed);
+                  options = parsedList.map((e) => e.toString()).toList();
+                } else {
+                  options = parsed.split(',').map((s) => s.trim()).toList();
+                }
+              } catch (_) {
+                options = ['نعم جداً', 'أحياناً', 'لا أبداً'];
+              }
+            }
+          }
+
+          if (options.isEmpty) {
+            options = ['نعم جداً', 'أحياناً', 'لا أبداً'];
+          }
+
+          String dimension = 'general';
+          if (q['interest_id'] != null) {
+            dimension = 'interest';
+          } else if (q['type'] != null) {
+            dimension = q['type'].toString();
+          }
+
+          return {
+            'id': q['id'],
+            'question_text': q['question_text'] ?? 'سؤال',
+            'dimension': dimension,
+            'options': options,
+            'order_index': q['order_index'] ?? 0,
+          };
+        }).toList();
+
+        _totalQuestions = _questions.length;
+        debugPrint('📊 تم تحميل $_totalQuestions سؤال من Supabase');
+
+        try {
+          await HiveStorage.saveData('assessment_cache', 'questions', _questions);
+          debugPrint('✅ تم حفظ $_totalQuestions سؤال في Hive');
+        } catch (e) {
+          debugPrint('⚠️ فشل حفظ الأسئلة في Hive: $e');
+        }
+
+        await _loadSavedAnswers();
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _updateProgress();
+            _errorMessage = null;
+          });
+          _debugPrintQuestions();
+        }
+      } else {
+        debugPrint('⚠️ لا توجد أسئلة في Supabase، استخدام أسئلة افتراضية');
+        _questions = _getDefaultQuestions();
+        _totalQuestions = _questions.length;
+
+        try {
+          await HiveStorage.saveData('assessment_cache', 'questions', _questions);
+        } catch (_) {}
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _updateProgress();
+            _errorMessage = 'لا توجد أسئلة - عرض أسئلة افتراضية';
+          });
+          _debugPrintQuestions();
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ خطأ في جلب الأسئلة: $e');
+
+      _questions = _getDefaultQuestions();
+      _totalQuestions = _questions.length;
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _updateProgress();
+          _errorMessage = 'فشل تحميل الأسئلة - عرض أسئلة افتراضية';
+        });
+        _debugPrintQuestions();
+      }
+    }
+  }
+
+  // ============================================================
+  //  حفظ النتائج
+  // ============================================================
+  Future<void> _submitAssessment() async {
+    if (_answers.length < _totalQuestions) {
+      _showSnackBar(
+        '⚠️ الرجاء الإجابة على جميع الأسئلة (${_answers.length}/$_totalQuestions)',
+        Colors.orange,
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      _calculateResults();
+
+      await HiveStorage.saveData('assessment_cache', 'results', _dimensions);
+
+      final supabase = SupabaseService();
+      final user = supabase.currentUser;
+
+      if (user != null) {
+        await supabase.client.from('student_profiles').upsert({
+          'user_id': user.id,
+          'assessment_results': _dimensions,
+          'completed_at': DateTime.now().toIso8601String(),
+        });
+      }
+
+      await HiveStorage.saveData('assessment_cache', 'completed', true);
+
+      _showSnackBar('✅ تم إكمال التقييم بنجاح!', Colors.green);
+
+      Navigator.pushReplacementNamed(
+        context,
+        '/student/recommendations',
+        arguments: _dimensions,
+      );
+    } catch (e) {
+      _showSnackBar('❌ خطأ: ${e.toString()}', Colors.red);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  // ============================================================
+  //  دورة الحياة
+  // ============================================================
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 600),
     );
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
@@ -47,186 +435,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     ).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
+
     _loadQuestions();
-  }
-
-  Future<void> _loadQuestions() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      // جلب أسئلة الاستبيان
-      final questions = await _supabase.getActiveSurveyQuestions();
-      if (questions.isEmpty) {
-        setState(() {
-          _errorMessage = 'لا توجد أسئلة متاحة حالياً';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // جلب معرف الطالب
-      final user = _supabase.currentUser;
-      if (user != null) {
-        final profile = await _supabase.getStudentProfile(user.id);
-        if (profile != null) {
-          _studentId = profile.id.toString();
-        }
-      }
-
-      setState(() {
-        _questions = questions;
-        _isLoading = false;
-        _animationController.forward();
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'تعذّر تحميل الأسئلة';
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _nextQuestion() {
-    if (_currentIndex < _questions.length - 1) {
-      // التحقق من الإجابة
-      if (!_answers.containsKey(_questions[_currentIndex].id)) {
-        _showSnackBar('الرجاء الإجابة على السؤال أولاً');
-        return;
-      }
-      setState(() {
-        _currentIndex++;
-        _animationController.reset();
-        _animationController.forward();
-      });
-    }
-  }
-
-  void _previousQuestion() {
-    if (_currentIndex > 0) {
-      setState(() {
-        _currentIndex--;
-        _animationController.reset();
-        _animationController.forward();
-      });
-    }
-  }
-
-  void _selectAnswer(dynamic value) {
-    setState(() {
-      _answers[_questions[_currentIndex].id!] = value;
-    });
-  }
-
-  Future<void> _submitAssessment() async {
-    // التحقق من إجابة جميع الأسئلة
-    for (var question in _questions) {
-      if (!_answers.containsKey(question.id)) {
-        _showSnackBar('يرجى الإجابة على جميع الأسئلة');
-        return;
-      }
-    }
-
-    if (_studentId == null) {
-      _showSnackBar('لم يتم التعرف على الطالب');
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      // حفظ الإجابات في قاعدة البيانات
-      for (var question in _questions) {
-        await _supabase.client.from('student_survey_responses').upsert({
-          'student_id': int.parse(_studentId!),
-          'question_id': question.id,
-          'answer': _answers[question.id].toString(),
-          'created_at': DateTime.now().toIso8601String(),
-        });
-      }
-
-      // جلب التوصيات
-      final recommendations = await _getRecommendations();
-
-      setState(() {
-        _isSubmitting = false;
-        _isComplete = true;
-        _recommendations = recommendations;
-      });
-
-      _showSnackBar('تم إرسال الاستبيان بنجاح!', isSuccess: true);
-    } catch (e) {
-      setState(() {
-        _isSubmitting = false;
-      });
-      _showSnackBar('حدث خطأ أثناء الإرسال: ${e.toString()}');
-    }
-  }
-
-  Future<Map<String, dynamic>> _getRecommendations() async {
-    // TODO: استدعاء API للحصول على التوصيات بناءً على الإجابات
-    // محاكاة النتائج
-    await Future.delayed(const Duration(seconds: 1));
-    return {
-      'top_majors': [
-        {'name': 'هندسة الحاسوب', 'match': 92},
-        {'name': 'الذكاء الاصطناعي', 'match': 85},
-        {'name': 'علوم البيانات', 'match': 78},
-      ],
-      'suggested_universities': [
-        'الجامعة الإسلامية',
-        'جامعة الأزهر',
-        'جامعة الأقصى',
-      ],
-    };
-  }
-
-  void _showSnackBar(String message, {bool isSuccess = false}) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          backgroundColor: isSuccess ? const Color(0xFF22C55E) : const Color(0xFFDC2626),
-          content: Row(
-            children: [
-              Icon(
-                isSuccess
-                    ? Icons.check_circle_outline_rounded
-                    : Icons.error_outline_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  message,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-  }
-
-  void _resetAssessment() {
-    setState(() {
-      _currentIndex = 0;
-      _answers.clear();
-      _isComplete = false;
-      _recommendations = null;
-      _animationController.reset();
-      _animationController.forward();
-    });
   }
 
   @override
@@ -235,58 +445,43 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
-        appBar: _buildAppBar(),
-        body: _buildBody(),
-      ),
-    );
-  }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      title: const Text(
-        'الاستبيان الذكي',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppTheme.primaryContainer,
-        ),
-      ),
-      centerTitle: true,
-leading: const SizedBox.shrink(),
-    );
-  }
-
+  // ============================================================
+  //  بناء الجسم الرئيسي
+  // ============================================================
   Widget _buildBody() {
+    debugPrint('🔨 بناء الواجهة - عدد الأسئلة: ${_questions.length}');
+    debugPrint('🔨 حالة التحميل: $_isLoading');
+    debugPrint('🔨 المؤشر الحالي: $_currentQuestionIndex');
+    debugPrint('🔨 إجمالي الأسئلة: $_totalQuestions');
+
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: AppTheme.primary,
-        ),
+        child: CircularProgressIndicator(color: AppTheme.primary),
       );
     }
 
-    if (_errorMessage != null) {
+    if (_questions.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline_rounded,
-                  size: 56, color: Colors.grey.shade400),
+              Icon(Icons.quiz_outlined, size: 64, color: Colors.grey.shade400),
               const SizedBox(height: 16),
+              const Text(
+                'لا توجد أسئلة حالياً',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.primaryContainer,
+                ),
+              ),
+              const SizedBox(height: 8),
               Text(
-                _errorMessage!,
+                _errorMessage ?? 'يرجى المحاولة مرة أخرى',
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -307,145 +502,281 @@ leading: const SizedBox.shrink(),
       );
     }
 
-    if (_isComplete && _recommendations != null) {
-      return _buildResultsView();
-    }
-
-    if (_questions.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.assignment_outlined, size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(
-              'لا توجد أسئلة حالياً',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return _buildQuestionView();
-  }
-
-  Widget _buildQuestionView() {
-    final question = _questions[_currentIndex];
-    final total = _questions.length;
-    final progress = (_currentIndex + 1) / total;
-
     return Column(
       children: [
-        // Progress Bar
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          color: Colors.white,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        _buildProgressBar(),
+        Expanded(
+          child: _currentQuestionIndex < _totalQuestions
+              ? _buildQuestionCard()
+              : _buildResultsCard(),
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  //  بناء الواجهة الرئيسية
+  // ============================================================
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F8FA),
+        appBar: _buildAppBar(),
+        body: _buildBody(),
+      ),
+    );
+  }
+
+  // ============================================================
+  //  AppBar
+  // ============================================================
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      title: const Text(
+        'التقييم الذكي',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: AppTheme.primaryContainer,
+        ),
+      ),
+      centerTitle: true,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.primaryContainer),
+        onPressed: () => Navigator.pop(context),
+      ),
+    );
+  }
+
+  // ============================================================
+  //  شريط التقدم
+  // ============================================================
+  Widget _buildProgressBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      color: Colors.white,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'سؤال ${_currentIndex + 1} من $total',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.onSurfaceVariant,
-                    ),
-                  ),
-                  Text(
-                    '${(progress * 100).round()}%',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.primary,
-                    ),
-                  ),
-                ],
+              Text(
+                'التقدم',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
               ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: Colors.grey.shade200,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
-                  minHeight: 6,
+              Text(
+                '${(_progress * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.primary,
                 ),
               ),
             ],
           ),
-        ),
-
-        // Question Content
-        Expanded(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Question Number
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'السؤال ${_currentIndex + 1}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.primary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Question Text
-                    Text(
-                      question.questionText,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.primaryContainer,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Answer Options
-                    _buildAnswerOptions(question),
-                  ],
-                ),
-              ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: _progress,
+              minHeight: 8,
+              backgroundColor: Colors.grey.shade200,
+              color: AppTheme.primary,
             ),
           ),
-        ),
+          const SizedBox(height: 4),
+          Text(
+            'السؤال ${_currentQuestionIndex + 1} من $_totalQuestions',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-        // Navigation Buttons
-        Container(
-          padding: const EdgeInsets.all(20),
-          color: Colors.white,
-          child: Row(
+  // ============================================================
+  //  بطاقة السؤال
+  // ============================================================
+  Widget _buildQuestionCard() {
+    if (_questions.isEmpty || _currentQuestionIndex >= _questions.length) {
+      return const Center(
+        child: Text('لا توجد أسئلة'),
+      );
+    }
+
+    final question = _questions[_currentQuestionIndex];
+    final options = List<String>.from(question['options'] ?? ['نعم جداً', 'أحياناً', 'لا أبداً']);
+    final selectedIndex = _answers[_currentQuestionIndex];
+
+    final dimension = question['dimension'] ?? 'general';
+    final dimensionIcon = _getDimensionIcon(dimension);
+    final dimensionName = _getDimensionName(dimension);
+
+    debugPrint('📝 عرض السؤال ${_currentQuestionIndex + 1}: ${question['question_text']}');
+    debugPrint('📝 الخيارات: $options');
+
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // مؤشر السؤال
+          Row(
             children: [
-              if (_currentIndex > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'السؤال ${_currentQuestionIndex + 1}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$dimensionIcon $dimensionName',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // نص السؤال
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey.shade200, width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  question['question_text'] ?? 'سؤال',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryContainer,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ...options.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final option = entry.value;
+                  final isSelected = selectedIndex == index;
+
+                  return GestureDetector(
+                    onTap: () => _selectAnswer(_currentQuestionIndex, index),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppTheme.primary.withValues(alpha: 0.08)
+                            : Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isSelected ? AppTheme.primary : Colors.grey.shade200,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: AppTheme.primary.withValues(alpha: 0.15),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                            : [],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppTheme.primary : Colors.grey.shade200,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: isSelected
+                                  ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                                  : Text(
+                                      String.fromCharCode(65 + index),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              option,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                color: isSelected ? AppTheme.primary : AppTheme.primaryContainer,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // أزرار التنقل
+          Row(
+            children: [
+              if (_currentQuestionIndex > 0)
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: _previousQuestion,
+                    onPressed: () {
+                      setState(() {
+                        _currentQuestionIndex--;
+                      });
+                    },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.primaryContainer,
                       side: BorderSide(color: Colors.grey.shade300),
@@ -454,262 +785,55 @@ leading: const SizedBox.shrink(),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.arrow_back_rounded, size: 20),
-                        SizedBox(width: 8),
-                        Text('السابق'),
-                      ],
-                    ),
+                    child: const Text('السابق'),
                   ),
                 ),
-              if (_currentIndex > 0) const SizedBox(width: 12),
+              if (_currentQuestionIndex > 0) const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: _isSubmitting
-                      ? null
-                      : _currentIndex < _questions.length - 1
-                          ? _nextQuestion
-                          : _submitAssessment,
+                  onPressed: _currentQuestionIndex == _totalQuestions - 1
+                      ? _submitAssessment
+                      : () {
+                          if (_answers.containsKey(_currentQuestionIndex)) {
+                            setState(() {
+                              _currentQuestionIndex++;
+                            });
+                          } else {
+                            _showSnackBar('⚠️ الرجاء اختيار إجابة', Colors.orange);
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
-                    foregroundColor: AppTheme.onPrimary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              _currentIndex < _questions.length - 1
-                                  ? 'التالي'
-                                  : 'إرسال',
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              _currentIndex < _questions.length - 1
-                                  ? Icons.arrow_forward_rounded
-                                  : Icons.send_rounded,
-                              size: 20,
-                              color: Colors.white,
-                            ),
-                          ],
-                        ),
+                  child: Text(
+                    _currentQuestionIndex == _totalQuestions - 1
+                        ? 'إرسال التقييم'
+                        : 'التالي',
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAnswerOptions(SurveyQuestionModel question) {
-    switch (question.type) {
-      case 'multiple_choice':
-        return _buildMultipleChoice(question);
-      case 'rating':
-        return _buildRating(question);
-      case 'text':
-        return _buildTextInput(question);
-      default:
-        return _buildMultipleChoice(question);
-    }
-  }
-
-  Widget _buildMultipleChoice(SurveyQuestionModel question) {
-    // الخيارات يمكن جلبها من جدول survey_question_options
-    // مؤقتاً نستخدم خيارات وهمية
-    final options = [
-      'خيار 1',
-      'خيار 2',
-      'خيار 3',
-      'خيار 4',
-    ];
-
-    return Column(
-      children: options.map((option) {
-        final isSelected = _answers[question.id] == option;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: InkWell(
-            onTap: () => _selectAnswer(option),
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppTheme.primary.withValues(alpha: 0.08)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isSelected ? AppTheme.primary : Colors.grey.shade200,
-                  width: isSelected ? 2 : 1.5,
-                ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: AppTheme.primary.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ]
-                    : [],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isSelected ? AppTheme.primary : Colors.white,
-                      border: Border.all(
-                        color: isSelected ? AppTheme.primary : Colors.grey.shade400,
-                        width: 2,
-                      ),
-                    ),
-                    child: isSelected
-                        ? const Icon(Icons.check, size: 16, color: Colors.white)
-                        : null,
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      option,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected
-                            ? AppTheme.primary
-                            : AppTheme.primaryContainer,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildRating(SurveyQuestionModel question) {
-    final currentRating = _answers[question.id] ?? 0;
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(5, (index) {
-            final value = index + 1;
-            return GestureDetector(
-              onTap: () => _selectAnswer(value),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: value <= currentRating
-                        ? AppTheme.primary
-                        : Colors.grey.shade200,
-                    boxShadow: value <= currentRating
-                        ? [
-                            BoxShadow(
-                              color: AppTheme.primary.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : [],
-                  ),
-                  child: Center(
-                    child: Text(
-                      '$value',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: value <= currentRating
-                            ? Colors.white
-                            : Colors.grey.shade500,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          currentRating > 0 ? 'التقييم: $currentRating / 5' : 'اختر التقييم',
-          style: TextStyle(
-            fontSize: 13,
-            color: currentRating > 0 ? AppTheme.primary : Colors.grey.shade500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTextInput(SurveyQuestionModel question) {
-    final currentAnswer = _answers[question.id] ?? '';
-    return TextField(
-      onChanged: (value) => _selectAnswer(value),
-      decoration: InputDecoration(
-        hintText: 'اكتب إجابتك هنا...',
-        filled: true,
-        fillColor: Colors.grey.shade50,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.primary, width: 2),
-        ),
-        contentPadding: const EdgeInsets.all(16),
+        ],
       ),
-      maxLines: 4,
-      textDirection: TextDirection.rtl,
-      textAlign: TextAlign.right,
-      style: const TextStyle(fontSize: 15),
     );
   }
 
   // ============================================================
-  //  Results View
+  //  بطاقة النتائج
   // ============================================================
-  Widget _buildResultsView() {
-    return SingleChildScrollView(
+  Widget _buildResultsCard() {
+    return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Success Header
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -730,174 +854,152 @@ leading: const SizedBox.shrink(),
             child: Column(
               children: [
                 const Icon(
-                  Icons.celebration_rounded,
-                  size: 56,
+                  Icons.emoji_events_rounded,
+                  size: 48,
                   color: Colors.white,
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'تم إكمال الاستبيان! 🎉',
+                  '🎉 تهانينا!',
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Text(
-                  'بناءً على إجاباتك، هذه هي التوصيات المقترحة',
+                  'لقد أكملت التقييم الذكي بنجاح',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.85),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
-
-          const SizedBox(height: 24),
-
-          // Top Majors
+          const SizedBox(height: 20),
           const Text(
-            'التخصصات المناسبة لك',
+            'نتائج التقييم (الأبعاد الستة)',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppTheme.primaryContainer,
             ),
           ),
           const SizedBox(height: 12),
-          ...(_recommendations?['top_majors'] as List? ?? []).map((major) =>
-              Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade200),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        major['name'] ?? '',
+          ..._dimensions.keys.map((key) {
+            final value = _dimensions[key] ?? 0;
+            final name = _getDimensionName(key);
+            final icon = _getDimensionIcon(key);
+            final color = value >= 70
+                ? Colors.green
+                : value >= 40
+                    ? Colors.orange
+                    : Colors.red;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.grey.shade200, width: 1.2),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '$icon $name',
                         style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.primaryContainer,
                         ),
                       ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${major['match']}%',
+                      Text(
+                        '${value.toInt()}%',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.primary,
+                          color: color,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          const SizedBox(height: 24),
-
-          // Suggested Universities
-          const Text(
-            'الجامعات المقترحة',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.primaryContainer,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...(_recommendations?['suggested_universities'] as List? ?? [])
-              .map((uni) => Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.location_city_rounded,
-                          color: AppTheme.primary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          uni,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.primaryContainer,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )),
-
-          const SizedBox(height: 24),
-
-          // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _resetAssessment,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.primaryContainer,
-                    side: BorderSide(color: Colors.grey.shade300),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    ],
                   ),
-                  child: const Text('إعادة الاستبيان'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    foregroundColor: AppTheme.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: value / 100,
+                      minHeight: 6,
+                      backgroundColor: Colors.grey.shade200,
+                      color: color,
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: const Text('العودة للرئيسية'),
-                ),
+                ],
               ),
-            ],
+            );
+          }).toList(),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isSubmitting ? null : _submitAssessment,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'عرض التوصيات',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  // ============================================================
+  //  دوال مساعدة
+  // ============================================================
+  void _showSnackBar(String message, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          backgroundColor: color,
+          content: Text(
+            message,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
   }
 }

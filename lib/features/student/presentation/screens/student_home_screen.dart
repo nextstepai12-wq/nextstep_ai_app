@@ -1,8 +1,13 @@
-﻿import 'package:flutter/material.dart';
+﻿// lib/features/student/presentation/screens/student_home_screen.dart
+import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/themes/app_theme.dart';
+import 'package:nextstep_ai_app/features/student/presentation/student_main_screen.dart';
 import 'package:nextstep_ai_app/shared/services/supabase/supabase_service.dart';
 import 'package:nextstep_ai_app/shared/services/auth/token_manager.dart';
 
+/// ============================================================
+///  الصفحة الرئيسية للطالب
+/// ============================================================
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
 
@@ -15,82 +20,112 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   String _userName = 'طالب';
   String _userEmail = '';
-  String _userRole = 'student';
   Map<String, dynamic>? _profileData;
   bool _isLoading = true;
   String? _errorMessage;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
+  // بيانات التوصيات
+  final List<Map<String, dynamic>> _recommendations = [
+    {
+      'title': 'هندسة الحاسوب',
+      'university': 'الجامعة الإسلامية',
+      'matchScore': 92,
+      'color': const Color(0xFF3B82F6),
+    },
+    {
+      'title': 'الذكاء الاصطناعي',
+      'university': 'جامعة الأزهر',
+      'matchScore': 85,
+      'color': const Color(0xFFA855F7),
+    },
+    {
+      'title': 'علوم البيانات',
+      'university': 'جامعة الأقصى',
+      'matchScore': 78,
+      'color': const Color(0xFF22C55E),
+    },
+  ];
+
+  // ============================================================
+  //  ✅ دالة تغيير التبويب
+  // ============================================================
+  void _changeTab(int index) {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+    // ✅ استخدام tabNotifier من StudentMainScreen
+    StudentMainScreen.tabNotifier.value = index;
   }
 
-  Future<void> _loadUserData() async {
-    // ✅ التحقق من mounted قبل setState
-    if (!mounted) return;
+ // ============================================================
+//  تحميل بيانات المستخدم
+// ============================================================
+Future<void> _loadUserData() async {
+  if (!mounted) return;
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
 
-    try {
-      // ✅ 1. تحميل البيانات من TokenManager
-      final cachedData = await TokenManager.getUserData();
-      if (cachedData['name'] != null && cachedData['name']!.isNotEmpty) {
-        if (!mounted) return;
-        setState(() {
-          _userName = cachedData['name'] ?? 'طالب';
-          _userEmail = cachedData['email'] ?? '';
-          _userRole = cachedData['role'] ?? 'student';
-        });
-      }
-
-      // ✅ 2. تحميل البيانات من Supabase
-      final user = _supabase.currentUser;
-      if (user != null) {
-        final userData = await _supabase.getUser(user.id);
-        if (userData != null) {
-          if (!mounted) return;
-          setState(() {
-            _userName = userData.displayName;
-            _userEmail = user.email ?? '';
-            _userRole = userData.role ?? 'student';
-          });
-        }
-
-        // ✅ 3. جلب ملف الطالب
-        try {
-          final profile = await _supabase.getStudentProfile(user.id);
-          if (profile != null) {
-            if (!mounted) return;
-            setState(() {
-              _profileData = {
-                'student_type': profile.studentType,
-                'phone': profile.phone,
-                'city': profile.city,
-                'high_school_score': profile.highSchoolScore,
-                'gpa': profile.gpa,
-              };
-            });
-          }
-        } catch (_) {}
-      }
-    } catch (e) {
+  try {
+    // 1️⃣ تحميل البيانات من TokenManager
+    final cachedData = await TokenManager.getUserData();
+    if (cachedData['name'] != null && cachedData['name']!.isNotEmpty) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'تعذّر تحميل البيانات';
+        _userName = cachedData['name'] ?? 'طالب';
+        _userEmail = cachedData['email'] ?? '';
       });
-    } finally {
-      if (mounted) {
+    }
+
+    // 2️⃣ تحميل بيانات المستخدم من Supabase
+    final user = _supabase.currentUser;
+    if (user != null) {
+      final userData = await _supabase.getUser(user.id);
+      if (userData != null) {
+        if (!mounted) return;
         setState(() {
-          _isLoading = false;
+          _userName = userData.displayName;
+          _userEmail = user.email ?? '';
         });
       }
+
+      // 3️⃣ تحميل ملف الطالب ✅ باستخدام الدالة الجديدة
+      try {
+        final profile = await _supabase.getStudentProfileByUuid(user.id);
+        if (profile != null) {
+          if (!mounted) return;
+          setState(() {
+            _profileData = {
+              'student_type': profile.studentType,
+              'phone': profile.phone,
+              'city': profile.city,
+              'high_school_score': profile.highSchoolScore,
+              'gpa': profile.gpa,
+            };
+          });
+        }
+      } catch (e) {
+        debugPrint('❌ خطأ في جلب ملف الطالب: $e');
+      }
+    }
+  } catch (e) {
+    if (!mounted) return;
+    setState(() {
+      _errorMessage = 'تعذّر تحميل البيانات';
+    });
+  } finally {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
-
+}
+  // ============================================================
+  //  تسجيل الخروج
+  // ============================================================
   Future<void> _logout() async {
     await TokenManager.clearAll();
     await _supabase.signOut();
@@ -99,6 +134,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     }
   }
 
+  // ============================================================
+  //  بناء الواجهة الرئيسية
+  // ============================================================
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -113,122 +151,54 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   }
 
   // ============================================================
-  //  الجسم الرئيسي
+  //  AppBar
   // ============================================================
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: AppTheme.primary,
-        ),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline_rounded,
-                  size: 56, color: Colors.grey.shade400),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _loadUserData,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('إعادة المحاولة'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ],
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: const Color(0xFFF6F7FB),
+      elevation: 0,
+      leading: Builder(
+        builder: (context) => IconButton(
+          icon: const Icon(
+            Icons.menu_rounded,
+            color: AppTheme.primaryContainer,
           ),
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadUserData,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildWelcomeSection(),
-            const SizedBox(height: 24),
-            _buildStatsSection(),
-            const SizedBox(height: 28),
-            _buildQuickActionsSection(),
-            const SizedBox(height: 28),
-            _buildRecommendationSection(),
-          ],
+          onPressed: () => Scaffold.of(context).openDrawer(),
         ),
       ),
+      title: const Center(
+        child: Text(
+          'NextStep AI',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.primaryContainer,
+            letterSpacing: -0.3,
+          ),
+        ),
+      ),
+      centerTitle: true,
+      actions: [
+        IconButton(
+          icon: const Icon(
+            Icons.notifications_outlined,
+            color: AppTheme.primaryContainer,
+          ),
+          onPressed: () => Navigator.pushNamed(context, '/student/notifications'),
+        ),
+      ],
     );
   }
 
   // ============================================================
-  //  AppBar
-  // ============================================================
-AppBar _buildAppBar() {
-  return AppBar(
-    backgroundColor: const Color(0xFFF6F7FB),
-    elevation: 0,
-    leading: Builder(
-      builder: (context) => IconButton(
-        icon: const Icon(
-          Icons.menu_rounded,
-          color: AppTheme.primaryContainer,
-        ),
-        onPressed: () => Scaffold.of(context).openDrawer(),
-      ),
-    ),
-    title: const Center(
-      child: Text(
-        'NextStep AI',
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w800,
-          color: AppTheme.primaryContainer,
-          letterSpacing: -0.3,
-        ),
-      ),
-    ),
-    centerTitle: true,
-    actions: [
-      IconButton(
-        icon: const Icon(
-          Icons.notifications_outlined,
-          color: AppTheme.primaryContainer,
-        ),
-        onPressed: () => Navigator.pushNamed(context, '/notifications'),
-      ),
-    ],
-  );
-}
-
-  // ============================================================
-  //  Drawer
+  //  القائمة الجانبية (Drawer)
   // ============================================================
   Widget _buildDrawer() {
     return Drawer(
       child: SafeArea(
         child: Column(
           children: [
+            // رأس القائمة
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -295,6 +265,8 @@ AppBar _buildAppBar() {
               ),
             ),
             const SizedBox(height: 16),
+
+            // عناصر القائمة
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -302,40 +274,28 @@ AppBar _buildAppBar() {
                   _buildDrawerItem(
                     icon: Icons.home_rounded,
                     title: 'الرئيسية',
-                    onTap: () => Navigator.pop(context),
+                    onTap: () => _changeTab(0),
                   ),
                   _buildDrawerItem(
                     icon: Icons.assessment_rounded,
                     title: 'الاستبيان الذكي',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/assessment');
-                    },
+                    onTap: () => _changeTab(1),
                   ),
                   _buildDrawerItem(
                     icon: Icons.recommend_rounded,
                     title: 'التوصيات',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/recommendations');
-                    },
+                    onTap: () => _changeTab(2),
                   ),
                   _buildDrawerItem(
                     icon: Icons.chat_rounded,
                     title: 'المساعد الأكاديمي',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/chat');
-                    },
+                    onTap: () => _changeTab(3),
                   ),
                   const Divider(),
                   _buildDrawerItem(
                     icon: Icons.person_rounded,
                     title: 'الملف الشخصي',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/profile');
-                    },
+                    onTap: () => _changeTab(4),
                   ),
                   _buildDrawerItem(
                     icon: Icons.settings_rounded,
@@ -348,6 +308,8 @@ AppBar _buildAppBar() {
                 ],
               ),
             ),
+
+            // زر تسجيل الخروج
             const Divider(height: 1),
             _buildDrawerItem(
               icon: Icons.logout_rounded,
@@ -388,110 +350,191 @@ AppBar _buildAppBar() {
   }
 
   // ============================================================
-  //  Welcome Section
+  //  الجسم الرئيسي
   // ============================================================
-Widget _buildWelcomeSection() {
-  final isUniversityStudent = _profileData?['student_type'] == 'university';
-
-  return Container(
-    padding: const EdgeInsets.all(22),
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color.fromARGB(138, 0, 32, 69), AppTheme.primaryContainer],
-      ),
-      borderRadius: BorderRadius.circular(22),
-      boxShadow: [
-        BoxShadow(
-          color: AppTheme.primary.withValues(alpha: 0.25),
-          blurRadius: 24,
-          offset: const Offset(0, 10),
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppTheme.primary,
         ),
-      ],
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'مرحباً بك 👋',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.85),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return _buildErrorState();
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadUserData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildWelcomeSection(),
+            const SizedBox(height: 24),
+            _buildStatsSection(),
+            const SizedBox(height: 28),
+            _buildQuickActionsSection(),
+            const SizedBox(height: 28),
+            _buildRecommendationSection(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  //  حالة الخطأ
+  // ============================================================
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 56,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _loadUserData,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('إعادة المحاولة'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                _userName.isNotEmpty ? _userName : 'طالب',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 10),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  isUniversityStudent ? 'طالب جامعي' : 'طالب توجيهي',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  //  قسم الترحيب
+  // ============================================================
+  Widget _buildWelcomeSection() {
+    final isUniversityStudent = _profileData?['student_type'] == 'university';
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppTheme.primary, AppTheme.primaryContainer],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withValues(alpha: 0.25),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'مرحباً بك 👋',
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white.withValues(alpha: 0.95),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withValues(alpha: 0.85),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  _userName.isNotEmpty ? _userName : 'طالب',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    isUniversityStudent ? 'طالب جامعي' : 'طالب توجيهي',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white.withValues(alpha: 0.95),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        // ✅ الشعار مع خلفية بيضاء
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: Colors.white, // ✅ خلفية بيضاء
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.asset(
-              'assets/images/logo.png',
-              width: 60,
-              height: 60,
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const Icon(
-                Icons.school_rounded,
-                size: 36,
-                color: AppTheme.primary,
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.school_rounded,
+                  size: 36,
+                  color: AppTheme.primary,
+                ),
               ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   // ============================================================
-  //  Stats Section
+  //  قسم الإحصائيات
   // ============================================================
   Widget _buildStatsSection() {
     return Row(
@@ -580,7 +623,7 @@ Widget _buildWelcomeSection() {
   }
 
   // ============================================================
-  //  Quick Actions Section
+  //  قسم الخدمات السريعة
   // ============================================================
   Widget _buildQuickActionsSection() {
     return Column(
@@ -603,7 +646,7 @@ Widget _buildWelcomeSection() {
                 title: 'الاستبيان',
                 subtitle: 'اكتشف مسارك',
                 color: const Color(0xFF3B82F6),
-                onTap: () => Navigator.pushNamed(context, '/assessment'),
+                onTap: () => _changeTab(1),
               ),
             ),
             const SizedBox(width: 12),
@@ -613,7 +656,7 @@ Widget _buildWelcomeSection() {
                 title: 'التوصيات',
                 subtitle: 'شوف الخيارات',
                 color: const Color(0xFF22C55E),
-                onTap: () => Navigator.pushNamed(context, '/recommendations'),
+                onTap: () => _changeTab(2),
               ),
             ),
           ],
@@ -627,7 +670,7 @@ Widget _buildWelcomeSection() {
                 title: 'المساعد',
                 subtitle: 'اسأل الذكاء',
                 color: const Color(0xFFA855F7),
-                onTap: () => Navigator.pushNamed(context, '/chat'),
+                onTap: () => _changeTab(3),
               ),
             ),
             const SizedBox(width: 12),
@@ -637,7 +680,7 @@ Widget _buildWelcomeSection() {
                 title: 'الملف الشخصي',
                 subtitle: 'عرض بياناتي',
                 color: const Color(0xFFF97316),
-                onTap: () => Navigator.pushNamed(context, '/profile'),
+                onTap: () => _changeTab(4),
               ),
             ),
           ],
@@ -700,8 +743,11 @@ Widget _buildWelcomeSection() {
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded,
-                size: 14, color: Colors.grey.shade400),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: Colors.grey.shade400,
+            ),
           ],
         ),
       ),
@@ -709,7 +755,7 @@ Widget _buildWelcomeSection() {
   }
 
   // ============================================================
-  //  Recommendation Section
+  //  قسم التوصيات المقترحة
   // ============================================================
   Widget _buildRecommendationSection() {
     return Column(
@@ -727,7 +773,7 @@ Widget _buildWelcomeSection() {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/recommendations'),
+              onPressed: () => _changeTab(2),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.secondary,
                 textStyle: const TextStyle(
@@ -742,31 +788,22 @@ Widget _buildWelcomeSection() {
         const SizedBox(height: 12),
         SizedBox(
           height: 180,
-          child: ListView(
+          child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            children: const [
-              _RecommendationCard(
-                title: 'هندسة الحاسوب',
-                university: 'الجامعة الإسلامية',
-                matchScore: 92,
-                color: Color(0xFF3B82F6),
-              ),
-              SizedBox(width: 12),
-              _RecommendationCard(
-                title: 'الذكاء الاصطناعي',
-                university: 'جامعة الأزهر',
-                matchScore: 85,
-                color: Color(0xFFA855F7),
-              ),
-              SizedBox(width: 12),
-              _RecommendationCard(
-                title: 'علوم البيانات',
-                university: 'جامعة الأقصى',
-                matchScore: 78,
-                color: Color(0xFF22C55E),
-              ),
-            ],
+            itemCount: _recommendations.length,
+            itemBuilder: (context, index) {
+              final rec = _recommendations[index];
+              return Padding(
+                padding: EdgeInsets.only(right: index == 0 ? 0 : 12),
+                child: _RecommendationCard(
+                  title: rec['title'] as String,
+                  university: rec['university'] as String,
+                  matchScore: rec['matchScore'] as int,
+                  color: rec['color'] as Color,
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -775,7 +812,7 @@ Widget _buildWelcomeSection() {
 }
 
 // ============================================================
-//  Recommendation Card
+//  بطاقة التوصية
 // ============================================================
 class _RecommendationCard extends StatelessWidget {
   final String title;
