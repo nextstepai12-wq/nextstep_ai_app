@@ -1,10 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'major_model.dart';
-
-// **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
 
 MajorModel _$MajorModelFromJson(Map<String, dynamic> json) => MajorModel(
       id: (json['id'] as num?)?.toInt(),
@@ -44,3 +39,4 @@ Map<String, dynamic> _$MajorModelToJson(MajorModel instance) =>
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };
+

@@ -545,9 +545,6 @@ class _UniversitySettingsScreenState extends State<UniversitySettingsScreen>
     );
   }
 
-  // ============================================================
-  //  Helper Widgets
-  // ============================================================
   Widget _buildSection({
     required String title,
     required IconData icon,

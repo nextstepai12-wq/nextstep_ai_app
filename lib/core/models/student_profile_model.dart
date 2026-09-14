@@ -1,4 +1,3 @@
-// lib/shared/models/student_profile_model.dart
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -10,7 +9,7 @@ class StudentProfileModel {
   final int? id;
 
   @JsonKey(name: 'user_id')
-  final String userId; // ✅ String (سنحولها إلى int عند الإرسال)
+  final String userId;
 
   @JsonKey(name: 'student_type')
   final String studentType;
@@ -34,7 +33,7 @@ class StudentProfileModel {
   final int? currentMajorId;
 
   @JsonKey(name: 'academic_level')
-  final String? academicLevel; // ✅ استخدم academicLevel
+  final String? academicLevel;
 
   @JsonKey(name: 'gpa')
   final double? gpa;

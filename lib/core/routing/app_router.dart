@@ -68,7 +68,6 @@ import 'package:nextstep_ai_app/features/training_center/ui/screens/help_screen.
 import 'package:nextstep_ai_app/features/training_center/logic/training_center_bloc/training_center_bloc.dart';
 import 'package:nextstep_ai_app/features/training_center/logic/training_programs_bloc/training_programs_bloc.dart';
 
-/// Wraps the training-center section with the BLoC providers it needs.
 class TrainingCenterShell extends StatelessWidget {
   final Widget child;
 
@@ -92,14 +91,12 @@ class TrainingCenterShell extends StatelessWidget {
   }
 }
 
-/// App-level GoRouter configuration.
 class AppRouter {
   AppRouter._();
 
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
     routes: [
-      // ========== Auth ==========
       GoRoute(path: '/splash', builder: (c, s) => const SplashScreen()),
       GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
       GoRoute(path: '/register', builder: (c, s) => const RegisterScreen()),
@@ -108,7 +105,6 @@ class AppRouter {
         builder: (c, s) => const ForgetPasswordScreen(),
       ),
 
-      // ========== Student ==========
       GoRoute(path: '/student', builder: (c, s) => const StudentMainScreen()),
       GoRoute(path: '/student/profile', builder: (c, s) => const ProfileScreen()),
       GoRoute(
@@ -155,7 +151,6 @@ class AppRouter {
       GoRoute(path: '/profile', builder: (c, s) => const ProfileScreen()),
       GoRoute(path: '/settings', builder: (c, s) => const SettingsScreen()),
 
-      // ========== University ==========
       GoRoute(
         path: '/university',
         builder: (c, s) => const UniversityHomeScreen(),
@@ -211,7 +206,6 @@ class AppRouter {
         ),
       ),
 
-      // ========== Admin ==========
       GoRoute(path: '/admin', builder: (c, s) => const AdminDashboardScreen()),
       GoRoute(path: '/admin/home', builder: (c, s) => const AdminHomeScreen()),
       GoRoute(path: '/admin/users', builder: (c, s) => const AdminUsersScreen()),
@@ -274,7 +268,6 @@ class AppRouter {
       ),
       GoRoute(path: '/admin/profile', builder: (c, s) => const AdminProfileScreen()),
 
-      // ========== Training Center ==========
       ShellRoute(
         builder: (context, state, child) =>
             TrainingCenterShell(child: child),
@@ -334,7 +327,6 @@ class AppRouter {
         ],
       ),
 
-      // ========== Shared ==========
       GoRoute(path: '/terms', builder: (c, s) => const TermsScreen()),
       GoRoute(
         path: '/help-center',

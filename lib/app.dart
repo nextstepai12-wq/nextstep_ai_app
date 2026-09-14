@@ -1,4 +1,3 @@
-// lib/app.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -17,24 +16,31 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp.router(
-          title: 'NextStep AI',
-          theme: AppTheme.lightTheme,
-          debugShowCheckedModeBanner: false,
-          routerConfig: AppRouter.router,
-          builder: (context, child) {
-            return Directionality(
-              textDirection: TextDirection.rtl,
-              child: child!,
+        return ValueListenableBuilder<ThemeMode>(
+          valueListenable: AppTheme.themeModeNotifier,
+          builder: (context, themeMode, _) {
+            return MaterialApp.router(
+              title: 'NextStep AI',
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              themeMode: themeMode,
+              debugShowCheckedModeBanner: false,
+              routerConfig: AppRouter.router,
+              builder: (context, child) {
+                return Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: child!,
+                );
+              },
+              locale: const Locale('ar', 'SA'),
+              supportedLocales: const [Locale('ar', 'SA')],
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+              ],
             );
           },
-          locale: const Locale('ar', 'SA'),
-          supportedLocales: const [Locale('ar', 'SA')],
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-          ],
         );
       },
     );

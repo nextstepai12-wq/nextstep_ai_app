@@ -333,7 +333,6 @@ Widget _buildBasicInfo() {
         },
       ),
       const SizedBox(height: 12),
-      // ✅ إصلاح Row - استخدام Flexible بدلاً من Expanded
       Row(
         children: [
           Flexible(
@@ -449,7 +448,6 @@ Widget _buildBasicInfo() {
     );
   }
 
-  // ✅ إصلاح قسم المعلومات الإضافية
   Widget _buildAdditionalInfo() {
     return _buildCard(
       title: 'معلومات إضافية',
@@ -464,7 +462,6 @@ Widget _buildBasicInfo() {
           maxLines: 3,
         ),
         const SizedBox(height: 12),
-        // ✅ إصلاح SwitchListTile - إضافة Material حولها
         Material(
           color: Colors.transparent,
           child: SwitchListTile(
@@ -477,7 +474,7 @@ Widget _buildBasicInfo() {
                 color: AppTheme.primaryContainer,
               ),
             ),
-            subtitle: Text( // ✅ إزالة const
+            subtitle: Text(
               'عرض الكلية للطلاب والمستخدمين',
               style: TextStyle(
                 fontSize: 12,
