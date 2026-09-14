@@ -23,7 +23,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
     try {
       await Future.delayed(const Duration(seconds: 2));
-      
+
       setState(() {
         _isLoading = false;
         _isSuccess = true;
@@ -76,17 +76,15 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  // Logo
-// Logo - تم تكبير الحجم
 Image.asset(
   'assets/images/logo.png',
-  width: 150,  // تم التغيير من 80 إلى 120
-  height: 150, // تم التغيير من 80 إلى 120
+  width: 150,
+  height: 150,
   fit: BoxFit.contain,
   errorBuilder: (_, __, ___) {
     return Container(
-      width: 120,  // تم التغيير من 70 إلى 100
-      height: 120, // تم التغيير من 70 إلى 100
+      width: 120,
+      height: 120,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -100,7 +98,7 @@ Image.asset(
       ),
       child: const Icon(
         Icons.school,
-        size: 50, // تم التغيير من 35 إلى 50
+        size: 50,
         color: Colors.white,
       ),
     );
@@ -109,7 +107,6 @@ Image.asset(
 
                   const SizedBox(height: 16),
 
-                  // Title
                   Text(
                     'استعادة كلمة المرور',
                     style: const TextStyle(
@@ -123,7 +120,6 @@ Image.asset(
 
                   const SizedBox(height: 8),
 
-                  // Subtitle
                   Text(
                     'أدخل البريد الإلكتروني المرتبط بحسابك، وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.',
                     style: TextStyle(
@@ -137,7 +133,6 @@ Image.asset(
 
                   const SizedBox(height: 24),
 
-                  // Success State
                   if (_isSuccess) ...[
                     Container(
                       width: 48,
@@ -193,12 +188,10 @@ Image.asset(
                       child: const Text('جرب بريد إلكتروني آخر'),
                     ),
                   ] else ...[
-                    // Form
                     Form(
                       key: _formKey,
                       child: Column(
                         children: [
-                          // Email Field
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -219,7 +212,7 @@ Image.asset(
                                 decoration: InputDecoration(
                                   hintText: 'scholar@university.edu',
                                   hintStyle: TextStyle(
-                                    color: Colors.grey.shade400, // تغيير من outline
+                                    color: Colors.grey.shade400,
                                   ),
                                   prefixIcon: const Icon(
                                     Icons.mail,
@@ -271,7 +264,6 @@ Image.asset(
 
                           const SizedBox(height: 24),
 
-                          // Send Button
                           SizedBox(
                             width: double.infinity,
                             height: 56,
@@ -323,7 +315,6 @@ Image.asset(
 
                   const SizedBox(height: 16),
 
-                  // Back to Login
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);

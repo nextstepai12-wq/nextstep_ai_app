@@ -1,4 +1,3 @@
-// lib/features/admin/ui/screens/admin_add_program_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
@@ -6,9 +5,6 @@ import 'package:nextstep_ai_app/features/admin/data/models/program_model.dart';
 import 'package:nextstep_ai_app/features/admin/data/repos/program_repository.dart';
 import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 
-/// ============================================================
-///  شاشة إضافة / تعديل تخصص — Offline-First مع Hive
-/// ============================================================
 class AdminAddProgramScreen extends StatefulWidget {
   final bool isEditing;
   final ProgramModel? programData;
@@ -25,9 +21,6 @@ class AdminAddProgramScreen extends StatefulWidget {
 
 class _AdminAddProgramScreenState extends State<AdminAddProgramScreen>
     with SingleTickerProviderStateMixin {
-  // ============================================================
-  //  المتغيرات
-  // ============================================================
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -39,7 +32,6 @@ class _AdminAddProgramScreenState extends State<AdminAddProgramScreen>
   bool _isSubmitting = false;
   bool _isActive = true;
 
-  // الأبعاد الستة للتخصص
   final Map<String, double> _dimensions = {
     'programming': 50.0,
     'math': 50.0,
@@ -52,9 +44,6 @@ class _AdminAddProgramScreenState extends State<AdminAddProgramScreen>
   List<Map<String, dynamic>> _universities = [];
   String? _errorMessage;
 
-  // ============================================================
-  //  دورة الحياة
-  // ============================================================
   @override
   void initState() {
     super.initState();
@@ -73,12 +62,6 @@ class _AdminAddProgramScreenState extends State<AdminAddProgramScreen>
     super.dispose();
   }
 
-  // ============================================================
-  //  تحميل الجامعات من Hive + Supabase
-  // ============================================================
-  // في admin_add_program_screen.dart
-// تأكد من أن _loadUniversities تستخدم HiveStorage بشكل صحيح
-
 Future<void> _loadUniversities() async {
   try {
     if (!mounted) return;
@@ -87,7 +70,6 @@ Future<void> _loadUniversities() async {
       _errorMessage = null;
     });
 
-    // ✅ استخدام HiveStorage الآمن
     final cached = await HiveStorage.getData('universities_cache', 'universities');
 
     if (cached != null && (cached as List).isNotEmpty) {
@@ -100,7 +82,6 @@ Future<void> _loadUniversities() async {
       return;
     }
 
-    // إذا لم يوجد في Hive، جلب من Supabase
     final supabase = SupabaseService();
     final response = await supabase.client
         .from('universities')
@@ -135,9 +116,6 @@ Future<void> _loadUniversities() async {
   }
 }
 
-  // ============================================================
-  //  تعبئة الحقول في وضع التعديل
-  // ============================================================
   void _populateFields(ProgramModel program) {
     _nameController.text = program.name;
     _descriptionController.text = program.description;
@@ -156,9 +134,6 @@ Future<void> _loadUniversities() async {
     }
   }
 
-  // ============================================================
-  //  حفظ التخصص
-  // ============================================================
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedUniversityId == null) {
@@ -213,9 +188,6 @@ Future<void> _loadUniversities() async {
     }
   }
 
-  // ============================================================
-  //  بناء الواجهة
-  // ============================================================
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -256,9 +228,6 @@ Future<void> _loadUniversities() async {
     );
   }
 
-  // ============================================================
-  //  رأس الصفحة
-  // ============================================================
   Widget _buildSliverHeader() {
     return SliverAppBar(
       pinned: true,
@@ -299,9 +268,6 @@ Future<void> _loadUniversities() async {
     );
   }
 
-  // ============================================================
-  //  محدد الحالة
-  // ============================================================
   Widget _buildStatusSelector() {
     return Row(
       children: [
@@ -357,9 +323,6 @@ Future<void> _loadUniversities() async {
     );
   }
 
-  // ============================================================
-  //  بطاقة الحقول
-  // ============================================================
   Widget _buildFormCard() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -433,9 +396,6 @@ Future<void> _loadUniversities() async {
     );
   }
 
-  // ============================================================
-  //  حقل نصي
-  // ============================================================
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -494,9 +454,6 @@ Future<void> _loadUniversities() async {
     );
   }
 
-  // ============================================================
-  //  حقل القائمة المنسدلة
-  // ============================================================
   Widget _buildDropdownField({
     required String label,
     required String value,
@@ -544,9 +501,6 @@ Future<void> _loadUniversities() async {
     );
   }
 
-  // ============================================================
-  //  اختيار الجامعة
-  // ============================================================
   Widget _buildUniversityDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -617,9 +571,6 @@ Future<void> _loadUniversities() async {
     );
   }
 
-  // ============================================================
-  //  قسم الأبعاد الستة
-  // ============================================================
   Widget _buildDimensionsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -684,9 +635,6 @@ Future<void> _loadUniversities() async {
     );
   }
 
-  // ============================================================
-  //  زر الحفظ
-  // ============================================================
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
@@ -724,9 +672,6 @@ Future<void> _loadUniversities() async {
     );
   }
 
-  // ============================================================
-  //  حالة الخطأ
-  // ============================================================
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -760,9 +705,6 @@ Future<void> _loadUniversities() async {
     );
   }
 
-  // ============================================================
-  //  دوال مساعدة
-  // ============================================================
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -781,9 +723,6 @@ Future<void> _loadUniversities() async {
   }
 }
 
-// ============================================================
-//  أيقونة الرأس
-// ============================================================
 class _HeaderIcon extends StatelessWidget {
   const _HeaderIcon();
 

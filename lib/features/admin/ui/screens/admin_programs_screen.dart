@@ -1,4 +1,3 @@
-// lib/features/admin/ui/screens/admin_programs_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/features/admin/data/models/program_model.dart';
@@ -23,7 +22,6 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
 
   final List<String> _filterOptions = ['الكل', 'نشط', 'غير نشط'];
 
-  // بيانات التخصصات الوهمية
   final List<Map<String, dynamic>> _programs = [
     {
       'id': 1,
@@ -144,9 +142,6 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     super.dispose();
   }
 
-  // ============================================================
-  //  التنقل لصفحة إضافة تخصص
-  // ============================================================
   Future<void> _goToAddProgram() async {
     final result = await Navigator.push(
       context,
@@ -154,15 +149,12 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
         builder: (context) => const AdminAddProgramScreen(),
       ),
     );
-    
+
     if (result == true && mounted) {
       _showSnackBar('✅ تم إضافة التخصص بنجاح');
     }
   }
 
-  // ============================================================
-  //  التنقل لتعديل تخصص
-  // ============================================================
   Future<void> _goToEditProgram(Map<String, dynamic> program) async {
     final programData = ProgramModel(
       id: program['id'].toString(),
@@ -186,7 +178,7 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
         ),
       ),
     );
-    
+
     if (result == true && mounted) {
       _showSnackBar('✅ تم تحديث بيانات التخصص');
     }
@@ -236,9 +228,6 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     );
   }
 
-  // ============================================================
-  //  رأس متدرّج — بنفسجي
-  // ============================================================
   Widget _buildSliverHeader() {
     return SliverAppBar(
       pinned: true,
@@ -281,9 +270,6 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     );
   }
 
-  // ============================================================
-  //  شريط الإحصائيات
-  // ============================================================
   Widget _buildStatsRow() {
     final total = _programs.length;
     final active = _programs.where((p) => p['status'] == 'نشط').length;
@@ -366,9 +352,6 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     );
   }
 
-  // ============================================================
-  //  البحث والفلاتر
-  // ============================================================
   Widget _buildSearchAndFilter() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -436,9 +419,6 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     );
   }
 
-  // ============================================================
-  //  بطاقة تخصص
-  // ============================================================
   Widget _buildProgramCard(Map<String, dynamic> program) {
     final statusColor = switch (program['status']) {
       'نشط' => const Color(0xFF22C55E),
@@ -671,9 +651,6 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     );
   }
 
-  // ============================================================
-  //  خيارات التخصص (Bottom Sheet)
-  // ============================================================
   void _showProgramOptions(Map<String, dynamic> program) {
     showModalBottomSheet(
       context: context,

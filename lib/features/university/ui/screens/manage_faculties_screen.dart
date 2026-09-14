@@ -316,7 +316,6 @@ class _ManageFacultiesScreenState extends State<ManageFacultiesScreen>
     );
   }
 
-  // ✅ إصلاح بطاقة الكلية - استخدام Wrap لتجنب Overflow
   Widget _buildFacultyCard(Map<String, dynamic> faculty) {
     final isDeanship = faculty['type'] == 'عمادة';
     final Color accentColor = isDeanship
@@ -413,7 +412,6 @@ class _ManageFacultiesScreenState extends State<ManageFacultiesScreen>
           ),
           const SizedBox(height: 10),
 
-          // ✅ استخدام Wrap بدلاً من Row لحل مشكلة Overflow
           Wrap(
             spacing: 8,
             runSpacing: 4,
@@ -454,7 +452,6 @@ class _ManageFacultiesScreenState extends State<ManageFacultiesScreen>
     );
   }
 
-  // ✅ تحسين InfoChip
   Widget _buildInfoChip({
     required IconData icon,
     required String label,

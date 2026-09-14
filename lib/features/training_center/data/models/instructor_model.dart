@@ -1,4 +1,3 @@
-// lib/features/training_center/data/models/instructor_model.dart
 
 import 'package:equatable/equatable.dart';
 

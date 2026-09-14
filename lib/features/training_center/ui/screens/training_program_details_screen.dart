@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/training_program_details_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -42,7 +41,6 @@ class TrainingProgramDetailsScreen extends StatelessWidget {
           }
 
           if (state is TrainingProgramsLoaded) {
-            // إذا كانت الحالة تحوي قائمة البرامج، نبحث عن البرنامج المطلوب
             final program = state.programs.firstWhere(
               (p) => p.id == programId,
               orElse: () => state.programs.first,
@@ -105,7 +103,6 @@ class TrainingProgramDetailsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // صورة البرنامج
           ClipRRect(
             borderRadius: BorderRadius.circular(12.r),
             child: program.imageUrl != null
@@ -140,7 +137,6 @@ class TrainingProgramDetailsScreen extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
 
-          // عنوان البرنامج
           Text(
             program.title,
             style: TextStyle(
@@ -150,7 +146,6 @@ class TrainingProgramDetailsScreen extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
 
-          // الفئة والمستوى
           Wrap(
             spacing: 8.w,
             runSpacing: 8.h,
@@ -219,7 +214,6 @@ class TrainingProgramDetailsScreen extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
 
-          // التقييم والمدة والسعر
           Row(
             children: [
               if (program.rating != null) ...[
@@ -274,7 +268,6 @@ class TrainingProgramDetailsScreen extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
 
-          // الوصف
           if (program.description != null) ...[
             Text(
               'الوصف',
@@ -294,7 +287,6 @@ class TrainingProgramDetailsScreen extends StatelessWidget {
             SizedBox(height: 16.h),
           ],
 
-          // المتطلبات الأساسية
           if (program.prerequisites != null && program.prerequisites!.isNotEmpty) ...[
             Text(
               'المتطلبات الأساسية',
@@ -330,7 +322,6 @@ class TrainingProgramDetailsScreen extends StatelessWidget {
             SizedBox(height: 16.h),
           ],
 
-          // المهارات المكتسبة
           if (program.skillsLearned != null && program.skillsLearned!.isNotEmpty) ...[
             Text(
               'المهارات المكتسبة',
@@ -364,7 +355,6 @@ class TrainingProgramDetailsScreen extends StatelessWidget {
             SizedBox(height: 16.h),
           ],
 
-          // تاريخ البدء والانتهاء
           if (program.startDate != null || program.endDate != null) ...[
             Text(
               'التواريخ',
@@ -409,7 +399,6 @@ class TrainingProgramDetailsScreen extends StatelessWidget {
             SizedBox(height: 16.h),
           ],
 
-          // زر التقديم
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(

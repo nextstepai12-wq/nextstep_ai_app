@@ -383,7 +383,6 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen>
     );
   }
 
-  // ✅ إصلاح بطاقة الطالب - استخدام Expanded و Flexible
   Widget _buildStudentCard(Map<String, dynamic> student) {
     Color statusColor;
     switch (student['status']) {
@@ -417,7 +416,6 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen>
       ),
       child: Row(
         children: [
-          // ✅ صورة رمزية
           Container(
             width: 44,
             height: 44,
@@ -438,7 +436,6 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen>
           ),
           const SizedBox(width: 12),
 
-          // ✅ معلومات الطالب (موسعة)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,7 +459,6 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                // ✅ البريد والهاتف في صف واحد
                 Row(
                   children: [
                     Icon(
@@ -504,7 +500,6 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen>
             ),
           ),
 
-          // ✅ الحالة والمعدل (مضغوط)
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisSize: MainAxisSize.min,
@@ -589,7 +584,6 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen>
   Widget _buildFAB() {
     return FloatingActionButton(
       onPressed: () {
-        // TODO: إضافة طالب جديد
       },
       backgroundColor: AppTheme.primary,
       child: const Icon(

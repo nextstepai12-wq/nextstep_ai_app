@@ -1,4 +1,4 @@
-﻿// lib/features/student/ui/screens/student_home_screen.dart
+﻿
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
@@ -6,9 +6,6 @@ import 'package:nextstep_ai_app/features/student/ui/screens/student_main_screen.
 import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
 
-/// ============================================================
-///  الصفحة الرئيسية للطالب
-/// ============================================================
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
 
@@ -25,7 +22,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
-  // بيانات التوصيات
   final List<Map<String, dynamic>> _recommendations = [
     {
       'title': 'هندسة الحاسوب',
@@ -47,20 +43,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     },
   ];
 
-  // ============================================================
-  //  ✅ دالة تغيير التبويب
-  // ============================================================
   void _changeTab(int index) {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     }
-    // ✅ استخدام tabNotifier من StudentMainScreen
     StudentMainScreen.tabNotifier.value = index;
   }
 
- // ============================================================
-//  تحميل بيانات المستخدم
-// ============================================================
 Future<void> _loadUserData() async {
   if (!mounted) return;
 
@@ -70,7 +59,6 @@ Future<void> _loadUserData() async {
   });
 
   try {
-    // 1️⃣ تحميل البيانات من TokenManager
     final cachedData = await TokenManager.getUserData();
     if (cachedData['name'] != null && cachedData['name']!.isNotEmpty) {
       if (!mounted) return;
@@ -80,7 +68,6 @@ Future<void> _loadUserData() async {
       });
     }
 
-    // 2️⃣ تحميل بيانات المستخدم من Supabase
     final user = _supabase.currentUser;
     if (user != null) {
       final userData = await _supabase.getUser(user.id);
@@ -92,7 +79,6 @@ Future<void> _loadUserData() async {
         });
       }
 
-      // 3️⃣ تحميل ملف الطالب ✅ باستخدام الدالة الجديدة
       try {
         final profile = await _supabase.getStudentProfileByUuid(user.id);
         if (profile != null) {
@@ -108,7 +94,6 @@ Future<void> _loadUserData() async {
           });
         }
       } catch (e) {
-        debugPrint('❌ خطأ في جلب ملف الطالب: $e');
       }
     }
   } catch (e) {
@@ -124,9 +109,6 @@ Future<void> _loadUserData() async {
     }
   }
 }
-  // ============================================================
-  //  تسجيل الخروج
-  // ============================================================
   Future<void> _logout() async {
     await TokenManager.clearAll();
     await _supabase.signOut();
@@ -135,9 +117,6 @@ Future<void> _loadUserData() async {
     }
   }
 
-  // ============================================================
-  //  بناء الواجهة الرئيسية
-  // ============================================================
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -151,9 +130,6 @@ Future<void> _loadUserData() async {
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: const Color(0xFFF6F7FB),
@@ -191,15 +167,11 @@ Future<void> _loadUserData() async {
     );
   }
 
-  // ============================================================
-  //  القائمة الجانبية (Drawer)
-  // ============================================================
   Widget _buildDrawer() {
     return Drawer(
       child: SafeArea(
         child: Column(
           children: [
-            // رأس القائمة
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -267,7 +239,6 @@ Future<void> _loadUserData() async {
             ),
             const SizedBox(height: 16),
 
-            // عناصر القائمة
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -310,7 +281,6 @@ Future<void> _loadUserData() async {
               ),
             ),
 
-            // زر تسجيل الخروج
             const Divider(height: 1),
             _buildDrawerItem(
               icon: Icons.logout_rounded,
@@ -350,9 +320,6 @@ Future<void> _loadUserData() async {
     );
   }
 
-  // ============================================================
-  //  الجسم الرئيسي
-  // ============================================================
   Widget _buildBody() {
     if (_isLoading) {
       return const Center(
@@ -389,9 +356,6 @@ Future<void> _loadUserData() async {
     );
   }
 
-  // ============================================================
-  //  حالة الخطأ
-  // ============================================================
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -432,9 +396,6 @@ Future<void> _loadUserData() async {
     );
   }
 
-  // ============================================================
-  //  قسم الترحيب
-  // ============================================================
   Widget _buildWelcomeSection() {
     final isUniversityStudent = _profileData?['student_type'] == 'university';
 
@@ -534,9 +495,6 @@ Future<void> _loadUserData() async {
     );
   }
 
-  // ============================================================
-  //  قسم الإحصائيات
-  // ============================================================
   Widget _buildStatsSection() {
     return Row(
       children: [
@@ -623,9 +581,6 @@ Future<void> _loadUserData() async {
     );
   }
 
-  // ============================================================
-  //  قسم الخدمات السريعة
-  // ============================================================
   Widget _buildQuickActionsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -755,9 +710,6 @@ Future<void> _loadUserData() async {
     );
   }
 
-  // ============================================================
-  //  قسم التوصيات المقترحة
-  // ============================================================
   Widget _buildRecommendationSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -812,9 +764,6 @@ Future<void> _loadUserData() async {
   }
 }
 
-// ============================================================
-//  بطاقة التوصية
-// ============================================================
 class _RecommendationCard extends StatelessWidget {
   final String title;
   final String university;

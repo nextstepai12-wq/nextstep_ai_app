@@ -23,20 +23,18 @@ class _LoginScreenState extends State<LoginScreen>
 
   bool _isLoading = false;
   bool _obscurePassword = true;
+  String? _devRoleOverride;
 
   late final AnimationController _animController;
   late final Animation<double> _fadeAnim;
   late final Animation<Offset> _slideAnim;
 
-  // ============================================================
-  //  حسابات التطوير السريعة — تظهر فقط في وضع Debug
-  //  ⚠️ لا تُعرض أبدًا في نسخة الإنتاج (Release) بفضل فحص kDebugMode
-  // ============================================================
   static const List<_DevAccount> _devAccounts = [
     _DevAccount(
       label: 'طالب',
       email: 'aalhayek7@smail.ucas.edu.ps',
       password: '123456789',
+      role: 'student',
       icon: Icons.school_rounded,
       color: Color(0xFF3B82F6),
     ),
@@ -44,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen>
       label: 'جامعة',
       email: 'alhayekahmed045@gmail.com',
       password: '123456789',
+      role: 'university',
       icon: Icons.business_rounded,
       color: Color(0xFF22C55E),
     ),
@@ -51,6 +50,7 @@ class _LoginScreenState extends State<LoginScreen>
       label: 'إدارة',
       email: 'nextstepai12@gmail.com',
       password: '123456789',
+      role: 'admin',
       icon: Icons.admin_panel_settings_rounded,
       color: Color(0xFF8B5CF6),
     ),
@@ -58,6 +58,7 @@ class _LoginScreenState extends State<LoginScreen>
       label: 'مركز تدريب',
       email: 'fatmakh2023@gmail.com',
       password: '123456789',
+      role: 'training_center',
       icon: Icons.workspace_premium_rounded,
       color: Color(0xFFF97316),
     ),
@@ -78,29 +79,20 @@ class _LoginScreenState extends State<LoginScreen>
     _animController.forward();
   }
 
-  // ============================================================
-  //  تعبئة الحقول تلقائيًا وتسجيل الدخول مباشرة (وضع التطوير فقط)
-  // ============================================================
   void _quickLoginWith(_DevAccount account) {
+    _devRoleOverride = account.role;
     setState(() {
       _emailController.text = account.email;
       _passwordController.text = account.password;
     });
-    // تأخير بسيط حتى يرى المطور تعبئة الحقول قبل الانتقال فعليًا
     Future.delayed(const Duration(milliseconds: 150), _login);
   }
 
-  // ============================================================
-  //  التحقق من الاتصال بالإنترنت
-  // ============================================================
   Future<bool> _checkInternet() async {
     final result = await _connectivity.checkConnectivity();
     return result != ConnectivityResult.none;
   }
 
-  // ============================================================
-  //  عرض رسالة عدم الاتصال
-  // ============================================================
   void _showNoInternetDialog() {
     showDialog(
       context: context,
@@ -179,10 +171,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ============================================================
-  //  عرض رسالة خطأ مخصصة (منبثقة احترافية)
-  //  ✅ مُصلَحة: opacity منفصلة عن scale، ومحمية من overflow بالكيبورد
-  // ============================================================
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -437,9 +425,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ============================================================
-  //  نصائح ذكية حسب نوع الخطأ
-  // ============================================================
   String _getSuggestion(String errorMessage) {
     if (errorMessage.contains('Invalid login credentials')) {
       return 'تأكد من صحة البريد الإلكتروني وكلمة المرور. يمكنك استخدام "نسيت كلمة المرور" لإعادة تعيينها.';
@@ -458,9 +443,6 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
-  // ============================================================
-  //  تحديد المسار حسب الدور
-  // ============================================================
   String _getRouteForRole(String role) {
     switch (role) {
       case 'student':
@@ -476,16 +458,15 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
-  // ============================================================
-  //  تسجيل الدخول
-  // ============================================================
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final hasInternet = await _checkInternet();
-    if (!hasInternet) {
-      _showNoInternetDialog();
-      return;
+    if (!kDebugMode) {
+      final hasInternet = await _checkInternet();
+      if (!hasInternet) {
+        _showNoInternetDialog();
+        return;
+      }
     }
 
     setState(() => _isLoading = true);
@@ -498,7 +479,9 @@ class _LoginScreenState extends State<LoginScreen>
 
       if (response.user != null && mounted) {
         final userData = await _supabase.getUser(response.user!.id);
-        final role = userData?.role ?? 'student';
+        final devRole = _devRoleOverride;
+        _devRoleOverride = null;
+        final role = devRole ?? userData?.role ?? 'student';
         final name = userData?.displayName ?? _emailController.text.trim();
 
         await TokenManager.saveToken(response.session?.accessToken ?? '');
@@ -525,6 +508,7 @@ class _LoginScreenState extends State<LoginScreen>
     } catch (e) {
       _showErrorDialog('حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.');
     } finally {
+      _devRoleOverride = null;
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -561,7 +545,6 @@ class _LoginScreenState extends State<LoginScreen>
                         SizedBox(height: size.height * 0.04),
                         _buildLogoSection(),
                         const SizedBox(height: 28),
-                        // ✅ قسم حسابات التطوير — يظهر فقط في وضع Debug
                         if (kDebugMode) ...[
                           _buildDevAccountsSection(),
                           const SizedBox(height: 20),
@@ -582,9 +565,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ============================================================
-  //  خلفية زخرفية
-  // ============================================================
   Widget _buildBackgroundDecor(Size size) {
     return Stack(
       children: [
@@ -628,9 +608,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ============================================================
-  //  الشعار والترحيب
-  // ============================================================
   Widget _buildLogoSection() {
     return Column(
       children: [
@@ -691,9 +668,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ============================================================
-  //  قسم حسابات التطوير السريعة (Debug فقط)
-  // ============================================================
   Widget _buildDevAccountsSection() {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -739,9 +713,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ============================================================
-  //  بطاقة الفورم (Glass Card)
-  // ============================================================
   Widget _buildGlassCard() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -1005,13 +976,11 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-// ============================================================
-//  نموذج بيانات حساب التطوير
-// ============================================================
 class _DevAccount {
   final String label;
   final String email;
   final String password;
+  final String role;
   final IconData icon;
   final Color color;
 
@@ -1019,14 +988,12 @@ class _DevAccount {
     required this.label,
     required this.email,
     required this.password,
+    required this.role,
     required this.icon,
     required this.color,
   });
 }
 
-// ============================================================
-//  زر حساب تطوير واحد
-// ============================================================
 class _DevAccountButton extends StatelessWidget {
   final _DevAccount account;
   final VoidCallback onTap;

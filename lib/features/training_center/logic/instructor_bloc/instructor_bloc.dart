@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/blocs/instructor_bloc/instructor_bloc.dart
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -18,7 +17,6 @@ class InstructorBloc extends Bloc<InstructorEvent, InstructorState> {
     on<LoadInstructorsForCenter>(_onLoadInstructors);
   }
 
-  /// تحميل ملف مدرب
   Future<void> _onLoadProfile(
     LoadInstructorProfile event,
     Emitter<InstructorState> emit,
@@ -34,7 +32,6 @@ class InstructorBloc extends Bloc<InstructorEvent, InstructorState> {
     }
   }
 
-  /// تحميل قائمة المدربين في مركز
   Future<void> _onLoadInstructors(
     LoadInstructorsForCenter event,
     Emitter<InstructorState> emit,

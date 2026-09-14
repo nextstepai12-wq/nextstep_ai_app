@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/help_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -15,12 +14,11 @@ class HelpScreen extends StatefulWidget {
 class _HelpScreenState extends State<HelpScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
-  
+
   String _searchQuery = '';
   int _selectedCategoryIndex = -1;
   int _expandedFaqIndex = -1;
 
-  // بيانات فئات المساعدة
   final List<Map<String, dynamic>> _helpCategories = [
     {
       'title': 'إدارة الحساب',
@@ -52,7 +50,6 @@ class _HelpScreenState extends State<HelpScreen> {
     },
   ];
 
-  // بيانات الأسئلة الشائعة
   final List<Map<String, dynamic>> _faqs = [
     {
       'question': 'كيف يمكنني إضافة مدرب جديد إلى النظام؟',
@@ -71,7 +68,6 @@ class _HelpScreenState extends State<HelpScreen> {
     },
   ];
 
-  // بيانات التذاكر النشطة
   final List<Map<String, dynamic>> _activeTickets = [
     {
       'id': '#1234',
@@ -105,9 +101,6 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  AppBar
-  // ============================
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: IconButton(
@@ -193,9 +186,6 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  Body
-  // ============================
   Widget _buildBody() {
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.r),
@@ -219,9 +209,6 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  Page Header
-  // ============================
   Widget _buildPageHeader() {
     return Container(
       padding: EdgeInsets.all(16.r),
@@ -268,9 +255,6 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  Search Bar
-  // ============================
   Widget _buildSearchBar() {
     return Container(
       height: 48.h,
@@ -333,9 +317,6 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  Support Stats
-  // ============================
   Widget _buildSupportStats() {
     return Container(
       padding: EdgeInsets.all(12.r),
@@ -392,9 +373,6 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  Help Categories
-  // ============================
   Widget _buildHelpCategories() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -515,9 +493,6 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  FAQs
-  // ============================
   Widget _buildFAQs() {
     final filteredFaqs = _searchQuery.isEmpty
         ? _faqs
@@ -593,7 +568,6 @@ class _HelpScreenState extends State<HelpScreen> {
       ),
       child: Column(
         children: [
-          // السؤال
           GestureDetector(
             onTap: () {
               setState(() {
@@ -629,7 +603,6 @@ class _HelpScreenState extends State<HelpScreen> {
               ),
             ),
           ),
-          // الإجابة (تظهر عند التوسيع)
           if (isExpanded)
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
@@ -654,20 +627,15 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  Support Section
-  // ============================
   Widget _buildSupportSection() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ✅ التذاكر النشطة
         Expanded(
           flex: 2,
           child: _buildActiveTickets(),
         ),
         SizedBox(width: 10.w),
-        // ✅ تواصل مع الدعم
         Expanded(
           flex: 1,
           child: _buildContactSupport(),
@@ -676,9 +644,6 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  Active Tickets
-  // ============================
   Widget _buildActiveTickets() {
     return Container(
       padding: EdgeInsets.all(12.r),
@@ -845,9 +810,6 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  Contact Support
-  // ============================
   Widget _buildContactSupport() {
     return Container(
       padding: EdgeInsets.all(16.r),
@@ -913,9 +875,6 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ============================
-  //  Contact Options Dialog
-  // ============================
   void _showContactOptions() {
     showModalBottomSheet(
       context: context,

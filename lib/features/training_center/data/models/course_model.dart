@@ -1,4 +1,3 @@
-// lib/features/training_center/data/models/course_model.dart
 
 import 'package:equatable/equatable.dart';
 
@@ -18,7 +17,6 @@ class CourseModel extends Equatable {
   final int? enrolledCount;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  // ✅ أضف خاصية category
   final String? category;
 
   const CourseModel({
@@ -37,7 +35,7 @@ class CourseModel extends Equatable {
     this.enrolledCount,
     this.createdAt,
     this.updatedAt,
-    this.category, // ✅ أضفها هنا
+    this.category,
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) {
@@ -61,7 +59,7 @@ class CourseModel extends Equatable {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'])
           : null,
-      category: json['category'], // ✅ أضفها هنا
+      category: json['category'],
     );
   }
 
@@ -77,7 +75,7 @@ class CourseModel extends Equatable {
       'cover_image': coverImage,
       'status': status,
       'rejection_reason': rejectionReason,
-      'category': category, // ✅ أضفها هنا
+      'category': category,
     };
   }
 
@@ -98,6 +96,6 @@ class CourseModel extends Equatable {
         enrolledCount,
         createdAt,
         updatedAt,
-        category, // ✅ أضفها هنا
+        category,
       ];
 }

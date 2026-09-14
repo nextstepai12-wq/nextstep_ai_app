@@ -1,10 +1,8 @@
-// lib/features/training_center/ui/blocs/training_programs_bloc/training_programs_bloc.dart
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-// ✅ استيراد CourseModel بدلاً من TrainingProgramModel
-import '../../data/models/course_model.dart';
+import '../../data/models/training_program_model.dart';
 import '../../data/repos/training_center_repository.dart';
 
 part 'training_programs_event.dart';
@@ -22,7 +20,6 @@ class TrainingProgramsBloc
     on<SearchPrograms>(_onSearchPrograms);
   }
 
-  /// تحميل قائمة البرامج
   Future<void> _onLoadPrograms(
     LoadTrainingPrograms event,
     Emitter<TrainingProgramsState> emit,
@@ -34,7 +31,6 @@ class TrainingProgramsBloc
         category: event.category,
         searchQuery: event.searchQuery,
       );
-      // ✅ programs الآن من نوع List<CourseModel>
       emit(TrainingProgramsLoaded(
         programs: programs,
         currentCategory: event.category,
@@ -45,7 +41,6 @@ class TrainingProgramsBloc
     }
   }
 
-  /// تحميل تفاصيل برنامج
   Future<void> _onLoadProgramDetails(
     LoadProgramDetails event,
     Emitter<TrainingProgramsState> emit,
@@ -53,14 +48,12 @@ class TrainingProgramsBloc
     emit(TrainingProgramsLoading());
     try {
       final program = await repository.getProgramDetails(event.programId);
-      // ✅ program الآن من نوع CourseModel
       emit(TrainingProgramDetailsLoaded(program));
     } catch (e) {
       emit(TrainingProgramsError(e.toString()));
     }
   }
 
-  /// فلترة حسب الفئة
   void _onFilterByCategory(
     FilterProgramsByCategory event,
     Emitter<TrainingProgramsState> emit,
@@ -80,7 +73,6 @@ class TrainingProgramsBloc
     }
   }
 
-  /// البحث في البرامج
   void _onSearchPrograms(
     SearchPrograms event,
     Emitter<TrainingProgramsState> emit,

@@ -240,9 +240,6 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -274,9 +271,6 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
     );
   }
 
-  // ============================================================
-  //  Header
-  // ============================================================
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -340,9 +334,6 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
     );
   }
 
-  // ============================================================
-  //  Last Updated
-  // ============================================================
   Widget _buildLastUpdated() {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -374,9 +365,6 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
     );
   }
 
-  // ============================================================
-  //  Section Builder
-  // ============================================================
   Widget _buildSection({
     required String title,
     required IconData icon,
@@ -457,9 +445,6 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
     );
   }
 
-  // ============================================================
-  //  Contact Section
-  // ============================================================
   Widget _buildContactSection() {
     return Container(
       padding: const EdgeInsets.all(18),
@@ -554,9 +539,6 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
     );
   }
 
-  // ============================================================
-  //  Agreement Buttons
-  // ============================================================
   Widget _buildAgreementButtons() {
     return Row(
       children: [

@@ -1,4 +1,3 @@
-// lib/features/admin/ui/screens/admin_dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
@@ -30,7 +29,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   String? _errorMessage;
   int _unreadNotifications = 0;
 
-  // بيانات إحصائيات وهمية
   final Map<String, dynamic> _stats = {
     'users': 1250,
     'universities': 24,
@@ -123,9 +121,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     _loadUnreadNotifications();
   }
 
-  // ============================================================
-  //  تحميل بيانات المدير
-  // ============================================================
   Future<void> _loadAdminData() async {
     if (!mounted) return;
 
@@ -169,9 +164,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     }
   }
 
-  // ============================================================
-  //  تحميل عدد الإشعارات غير المقروءة
-  // ============================================================
   Future<void> _loadUnreadNotifications() async {
     try {
       final cached =
@@ -185,13 +177,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         });
       }
     } catch (e) {
-      // تجاهل الأخطاء
     }
   }
 
-  // ============================================================
-  //  التنقل لصفحة الإشعارات ✅
-  // ============================================================
   void _goToNotifications() {
     Navigator.push(
       context,
@@ -199,14 +187,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         builder: (context) => const AdminNotificationsScreen(),
       ),
     ).then((_) {
-      // عند العودة من صفحة الإشعارات، تحديث العدد
       _loadUnreadNotifications();
     });
   }
 
-  // ============================================================
-  //  التنقل للصفحات ✅
-  // ============================================================
   void _navigateTo(String route) {
     context.push(route);
   }
@@ -272,9 +256,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar مع زر الإشعارات ✅
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: const Color(0xFFF6F7FB),
@@ -301,7 +282,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         ),
       ),
       actions: [
-        // ✅ زر الإشعارات مع عداد
         Stack(
           children: [
             IconButton(
@@ -342,9 +322,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ============================================================
-  //  القائمة الجانبية ✅
-  // ============================================================
   Widget _buildDrawer() {
     return Drawer(
       child: SafeArea(
@@ -463,7 +440,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       _navigateTo('/admin/reports');
                     },
                   ),
-                  // في admin_dashboard_screen.dart - قائمة _buildDrawer
                   _buildDrawerItem(
                     icon: Icons.person_rounded,
                     title: 'الملف الشخصي',
@@ -1024,3 +1000,4 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 }
+

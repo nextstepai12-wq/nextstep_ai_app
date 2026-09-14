@@ -1,4 +1,3 @@
-// lib/features/admin/ui/screens/admin_settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
@@ -12,24 +11,18 @@ class AdminSettingsScreen extends StatefulWidget {
 
 class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     with SingleTickerProviderStateMixin {
-  // ============================================================
-  //  المتغيرات
-  // ============================================================
   bool _isLoading = true;
   bool _isSaving = false;
   String? _errorMessage;
 
-  // إعدادات LLM
   int _maxLLMCallsPerUser = 50;
   int _maxTokensPerUser = 10000;
   bool _enableRAG = true;
   String _selectedLLMModel = 'claude-3-sonnet-20240229';
 
-  // إعدادات التوصية
   bool _enableAutoRecommendations = true;
   int _minCompatibilityScore = 60;
 
-  // أوزان الأبعاد الستة
   final Map<String, double> _dimensionWeights = {
     'programming': 1.0,
     'math': 1.0,
@@ -39,12 +32,10 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     'management': 1.0,
   };
 
-  // إعدادات الأمان
   bool _requireEmailVerification = true;
   bool _enableTwoFactorAuth = false;
   bool _autoBlockSuspicious = true;
 
-  // إعدادات عامة
   bool _enableMaintenanceMode = false;
   String _selectedLanguage = 'ar';
 
@@ -62,9 +53,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  // ============================================================
-  //  دالة مساعدة لترجمة أسماء الأبعاد
-  // ============================================================
   String _getDimensionName(String key) {
     switch (key) {
       case 'programming':
@@ -84,9 +72,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     }
   }
 
-  // ============================================================
-  //  دورة الحياة
-  // ============================================================
   @override
   void initState() {
     super.initState();
@@ -114,9 +99,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     super.dispose();
   }
 
-  // ============================================================
-  //  تحميل الإعدادات من Hive
-  // ============================================================
   Future<void> _loadSettings() async {
     try {
       if (!mounted) return;
@@ -165,9 +147,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     }
   }
 
-  // ============================================================
-  //  حفظ الإعدادات
-  // ============================================================
   Future<void> _saveSettings() async {
     setState(() => _isSaving = true);
 
@@ -204,9 +183,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     }
   }
 
-  // ============================================================
-  //  بناء الواجهة
-  // ============================================================
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -255,9 +231,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -278,9 +251,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  رأس الصفحة
-  // ============================================================
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -344,9 +314,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  إعدادات الذكاء الاصطناعي (LLM)
-  // ============================================================
   Widget _buildLLMSettings() {
     return _buildSettingsCard(
       title: '🤖 إعدادات الذكاء الاصطناعي',
@@ -409,9 +376,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  إعدادات نظام التوصية
-  // ============================================================
   Widget _buildRecommendationSettings() {
     return _buildSettingsCard(
       title: '🎯 إعدادات نظام التوصية',
@@ -489,9 +453,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  إعدادات الأمان
-  // ============================================================
   Widget _buildSecuritySettings() {
     return _buildSettingsCard(
       title: '🔒 إعدادات الأمان',
@@ -520,9 +481,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  إعدادات عامة
-  // ============================================================
   Widget _buildGeneralSettings() {
     return _buildSettingsCard(
       title: '🌐 إعدادات عامة',
@@ -548,9 +506,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  بطاقة إعدادات عامة
-  // ============================================================
   Widget _buildSettingsCard({
     required String title,
     required IconData icon,
@@ -602,9 +557,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  دالة _buildSlider (المصححة بالكامل) ✅
-  // ============================================================
   Widget _buildSlider({
     required String label,
     required double value,
@@ -615,11 +567,10 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     String suffix = '',
     String? Function(double)? formatValue,
   }) {
-    // دالة مساعدة للحصول على النص المعروض بشكل آمن
     String getDisplayValue() {
       if (formatValue != null) {
         final result = formatValue(value);
-        return result ?? '${value.round()}$suffix'; // إذا كانت null، استخدم القيمة الافتراضية
+        return result ?? '${value.round()}$suffix';
       }
       return '${value.round()}$suffix';
     }
@@ -657,9 +608,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  دالة _buildSwitch
-  // ============================================================
   Widget _buildSwitch({
     required String label,
     required String subtitle,
@@ -686,9 +634,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  دالة _buildDropdown (المصححة)
-  // ============================================================
   Widget _buildDropdown({
     required String label,
     required String value,
@@ -740,9 +685,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  زر الحفظ
-  // ============================================================
   Widget _buildSaveButton() {
     return SizedBox(
       width: double.infinity,
@@ -780,9 +722,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  حالة الخطأ
-  // ============================================================
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -816,9 +755,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     );
   }
 
-  // ============================================================
-  //  دوال مساعدة
-  // ============================================================
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)

@@ -1,10 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'university_model.dart';
-
-// **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
 
 UniversityModel _$UniversityModelFromJson(Map<String, dynamic> json) =>
     UniversityModel(
@@ -39,3 +34,4 @@ Map<String, dynamic> _$UniversityModelToJson(UniversityModel instance) =>
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };
+

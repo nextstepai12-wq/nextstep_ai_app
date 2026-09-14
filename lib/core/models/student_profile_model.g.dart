@@ -1,10 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'student_profile_model.dart';
-
-// **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
 
 StudentProfileModel _$StudentProfileModelFromJson(Map<String, dynamic> json) =>
     StudentProfileModel(
@@ -50,3 +45,4 @@ Map<String, dynamic> _$StudentProfileModelToJson(
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };
+

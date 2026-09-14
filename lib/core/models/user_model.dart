@@ -22,8 +22,6 @@ class UserModel {
   @JsonKey(name: 'updated_at')
   final DateTime? updatedAt;
 
-  // البريد الإلكتروني غير مخزّن في جدول profiles؛
-  // يُمرَّر يدويًا من auth.currentUser.email عند الحاجة
   @JsonKey(includeFromJson: false, includeToJson: false)
   final String? email;
 
@@ -62,16 +60,13 @@ class UserModel {
     );
   }
 
-  // ✅ التحقق من دور المستخدم
   bool get isStudent => role == 'student';
   bool get isUniversity => role == 'university';
   bool get isAdmin => role == 'admin';
 
-  // ✅ الحصول على اسم العرض
   String get displayName =>
       fullName ?? email?.split('@').first ?? 'مستخدم';
 
-  // ✅ الحصول على المسار الرئيسي حسب الدور
   String get homeRoute {
     if (isStudent) return '/student';
     if (isUniversity) return '/university';

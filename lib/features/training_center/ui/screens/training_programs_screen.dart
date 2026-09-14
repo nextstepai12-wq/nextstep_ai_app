@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/training_programs_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -69,9 +68,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  AppBar
-  // ============================
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: IconButton(
@@ -122,17 +118,11 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  Body
-  // ============================
   Widget _buildBody() {
     return Column(
       children: [
-        // ✅ شريط البحث والفلاتر
         _buildSearchAndFilter(),
-        // ✅ تبديل العرض
         _buildViewToggle(),
-        // ✅ قائمة البرامج
         Expanded(
           child: _buildProgramsList(),
         ),
@@ -140,9 +130,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  Search and Filter Bar
-  // ============================
   Widget _buildSearchAndFilter() {
     return Container(
       padding: EdgeInsets.all(16.r),
@@ -159,7 +146,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
       ),
       child: Column(
         children: [
-          // ✅ شريط البحث
           Row(
             children: [
               Expanded(
@@ -197,7 +183,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
                 ),
               ),
               SizedBox(width: 12.w),
-              // ✅ زر الفلاتر
               Container(
                 height: 48.h,
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -229,7 +214,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
           ),
           SizedBox(height: 12.h),
 
-          // ✅ فلترة الحالة
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -273,16 +257,12 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  View Toggle (Grid/List)
-  // ============================
   Widget _buildViewToggle() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // ✅ تبديل العرض
           Container(
             decoration: BoxDecoration(
               color: Colors.grey.shade100,
@@ -311,7 +291,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
               ],
             ),
           ),
-          // ✅ ترتيب
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w),
             decoration: BoxDecoration(
@@ -377,9 +356,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  Programs List
-  // ============================
   Widget _buildProgramsList() {
     return BlocBuilder<TrainingProgramsBloc, TrainingProgramsState>(
       builder: (context, state) {
@@ -437,9 +413,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  Grid View
-  // ============================
   Widget _buildGridView(List programs) {
     return Padding(
       padding: EdgeInsets.all(8.r),
@@ -459,9 +432,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  List View
-  // ============================
   Widget _buildListView(List programs) {
     return ListView.builder(
       padding: EdgeInsets.all(8.r),
@@ -473,9 +443,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  Program Card (Grid)
-  // ============================
   Widget _buildProgramCard(dynamic program) {
     final status = _getProgramStatus(program);
     final statusColor = _getStatusColor(status);
@@ -512,7 +479,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ رأس البطاقة
             Padding(
               padding: EdgeInsets.all(12.r),
               child: Row(
@@ -577,7 +543,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
                 ],
               ),
             ),
-            // ✅ صورة البرنامج
             Container(
               height: 80.h,
               width: double.infinity,
@@ -598,7 +563,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
                     )
                   : null,
             ),
-            // ✅ محتوى البطاقة
             Padding(
               padding: EdgeInsets.all(12.r),
               child: Column(
@@ -660,9 +624,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  Program List Item
-  // ============================
   Widget _buildProgramListItem(dynamic program) {
     final status = _getProgramStatus(program);
     final statusColor = _getStatusColor(status);
@@ -699,7 +660,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
         },
         child: Row(
           children: [
-            // ✅ صورة مصغرة
             Container(
               width: 60.w,
               height: 60.h,
@@ -722,7 +682,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
                   : null,
             ),
             SizedBox(width: 12.w),
-            // ✅ المحتوى
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -807,9 +766,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  Empty State
-  // ============================
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -840,7 +796,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
           SizedBox(height: 24.h),
           ElevatedButton.icon(
             onPressed: () {
-              // TODO: الذهاب إلى صفحة إضافة برنامج
             },
             icon: const Icon(Icons.add),
             label: const Text('إضافة برنامج جديد'),
@@ -858,9 +813,6 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  Shimmer Loading
-  // ============================
   Widget _buildShimmerGrid() {
     return Shimmer.fromColors(
       baseColor: Colors.grey.shade300,
@@ -888,12 +840,8 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ============================
-  //  Helper Functions
-  // ============================
   String _getProgramStatus(dynamic program) {
     if (program.isActive) return 'معتمدة';
-    // يمكن إضافة منطق إضافي بناءً على بيانات البرنامج
     return 'قيد المراجعة';
   }
 
@@ -936,7 +884,7 @@ IconData _getStatusIcon(String status) {
     case 'بحاجة لتعديل':
       return Icons.edit_note_rounded;
     case 'مسودة':
-      return Icons.drafts_rounded; // ✅ تم التصحيح
+      return Icons.drafts_rounded;
     default:
       return Icons.circle_rounded;
   }
@@ -970,16 +918,13 @@ IconData _getStatusIcon(String status) {
   }
 
   void _applyFilter(String filter) {
-    // تطبيق الفلتر
     if (filter == 'الكل') {
       context.read<TrainingProgramsBloc>().add(const LoadTrainingPrograms());
     } else {
-      // يمكن إضافة منطق الفلتر حسب الحالة
       context.read<TrainingProgramsBloc>().add(const LoadTrainingPrograms());
     }
   }
 
   void _sortPrograms(String sort) {
-    // يمكن إضافة منطق الترتيب
   }
 }

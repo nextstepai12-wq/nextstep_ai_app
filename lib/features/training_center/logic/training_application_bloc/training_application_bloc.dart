@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/blocs/training_application_bloc/training_application_bloc.dart
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -18,7 +17,6 @@ class TrainingApplicationBloc
     on<ResetApplicationState>(_onReset);
   }
 
-  /// تقديم طلب انضمام
   Future<void> _onSubmitApplication(
     SubmitTrainingApplication event,
     Emitter<TrainingApplicationState> emit,
@@ -38,7 +36,6 @@ class TrainingApplicationBloc
     }
   }
 
-  /// إعادة تعيين الحالة
   void _onReset(
     ResetApplicationState event,
     Emitter<TrainingApplicationState> emit,

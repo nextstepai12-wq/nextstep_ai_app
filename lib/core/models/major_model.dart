@@ -68,7 +68,6 @@ class MajorModel {
 
   Map<String, dynamic> toJson() => _$MajorModelToJson(this);
 
-  // ✅ نسخة مع بيانات محدثة
   MajorModel copyWith({
     int? id,
     int? deanshipFacultyId,
@@ -103,28 +102,22 @@ class MajorModel {
     );
   }
 
-  // ✅ تنسيق الرسوم الدراسية
   String get formattedCreditHourFee {
     return '${creditHourFee.toStringAsFixed(2)} ₪';
   }
 
-  // ✅ تنسيق إجمالي الساعات
   String get formattedTotalCreditHours {
     return '$totalCreditHours ساعة';
   }
 
-  // ✅ تنسيق الحد الأدنى للمعدل
   String get formattedMinScore {
     return '${minHighSchoolScore.toStringAsFixed(2)}%';
   }
 
-  // ✅ التحقق من وجود صورة الخطة
   bool get hasStudyPlanImage => studyPlanImage != null && studyPlanImage!.isNotEmpty;
 
-  // ✅ التحقق من وجود فيديو
   bool get hasVideo => videoUrl != null && videoUrl!.isNotEmpty;
 
-  // ✅ الحصول على رابط صورة الغلاف
   String? get coverImageUrl {
     if (coverImage == null) return null;
     if (coverImage!.startsWith('http')) return coverImage;

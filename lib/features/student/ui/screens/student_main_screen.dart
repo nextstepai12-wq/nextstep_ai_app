@@ -1,4 +1,3 @@
-// lib/features/student/ui/student_main_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/features/student/ui/screens/student_home_screen.dart';
@@ -7,13 +6,9 @@ import 'package:nextstep_ai_app/features/student/ui/screens/recommendations_scre
 import 'package:nextstep_ai_app/features/student/ui/screens/chat_screen.dart';
 import 'package:nextstep_ai_app/features/student/ui/screens/profile_screen.dart';
 
-/// ============================================================
-///  الشاشة الرئيسية للطالب - تحتوي على BottomNavigationBar
-/// ============================================================
 class StudentMainScreen extends StatefulWidget {
   const StudentMainScreen({super.key});
 
-  // ✅ ✅ ✅ نقل tabNotifier إلى هنا (خارج الـ State)
   static final ValueNotifier<int> tabNotifier = ValueNotifier<int>(0);
 
   @override
@@ -23,7 +18,6 @@ class StudentMainScreen extends StatefulWidget {
 class _StudentMainScreenState extends State<StudentMainScreen> {
   int _currentIndex = 0;
 
-  // قائمة الشاشات
   final List<Widget> _screens = [
     const StudentHomeScreen(),
     const AssessmentScreen(),
@@ -32,7 +26,6 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     const ProfileScreen(),
   ];
 
-  // قائمة التبويبات
   final List<BottomNavigationBarItem> _bottomNavItems = const [
     BottomNavigationBarItem(
       icon: Icon(Icons.home_rounded),
@@ -59,7 +52,6 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ الوصول إلى tabNotifier عبر الـ Widget
     StudentMainScreen.tabNotifier.addListener(_onTabChanged);
   }
 

@@ -1,12 +1,11 @@
-// lib/features/training_center/ui/widgets/program_card.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../data/models/course_model.dart';
+import '../../data/models/training_program_model.dart';
 
 class ProgramCard extends StatelessWidget {
-  final CourseModel program; // ✅ تغيير النوع إلى CourseModel
+  final TrainingProgramModel program;
   final VoidCallback? onTap;
 
   const ProgramCard({
@@ -38,9 +37,9 @@ class ProgramCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
-              child: program.coverImage != null
+              child: program.imageUrl != null
                   ? Image.network(
-                      program.coverImage!,
+                      program.imageUrl!,
                       height: 80.h,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -94,8 +93,8 @@ class ProgramCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        program.price > 0
-                            ? '${program.price.toStringAsFixed(0)} ريال'
+                        program.price != null && program.price! > 0
+                            ? '${program.price!.toStringAsFixed(0)} ريال'
                             : 'مجاني',
                         style: TextStyle(
                           fontSize: 12.sp,

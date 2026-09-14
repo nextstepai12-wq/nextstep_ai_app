@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/blocs/training_application_bloc/training_application_event.dart
 
 part of 'training_application_bloc.dart';
 
@@ -9,7 +8,6 @@ abstract class TrainingApplicationEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// تقديم طلب انضمام لبرنامج تدريبي
 class SubmitTrainingApplication extends TrainingApplicationEvent {
   final String programId;
   final String name;
@@ -35,5 +33,4 @@ class SubmitTrainingApplication extends TrainingApplicationEvent {
   ];
 }
 
-/// إعادة تعيين حالة الطلب
 class ResetApplicationState extends TrainingApplicationEvent {}

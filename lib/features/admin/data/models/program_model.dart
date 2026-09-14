@@ -1,37 +1,36 @@
-// lib/features/admin/data/models/program_model.dart
 import 'package:hive_flutter/hive_flutter.dart';
 
-part 'program_model.g.dart'; // سيتم إنشاؤه بواسطة Hive Generator
+part 'program_model.g.dart';
 
 @HiveType(typeId: 0)
 class ProgramModel {
   @HiveField(0)
   final String id;
-  
+
   @HiveField(1)
   final String name;
-  
+
   @HiveField(2)
   final String description;
-  
+
   @HiveField(3)
-  final String type; // بكالوريوس, ماجستير, دكتوراه, دبلوم
-  
+  final String type;
+
   @HiveField(4)
-  final int duration; // عدد السنوات
-  
+  final int duration;
+
   @HiveField(5)
   final String universityId;
-  
+
   @HiveField(6)
   final bool isActive;
-  
+
   @HiveField(7)
-  final Map<String, double>? dimensions; // الأبعاد الستة
-  
+  final Map<String, double>? dimensions;
+
   @HiveField(8)
   final DateTime createdAt;
-  
+
   @HiveField(9)
   final DateTime updatedAt;
 
@@ -48,9 +47,6 @@ class ProgramModel {
     required this.updatedAt,
   });
 
-  // ============================================================
-  //  تحويل من JSON (من Supabase)
-  // ============================================================
   factory ProgramModel.fromJson(Map<String, dynamic> json) {
     return ProgramModel(
       id: json['id'] as String,
@@ -68,9 +64,6 @@ class ProgramModel {
     );
   }
 
-  // ============================================================
-  //  تحويل إلى JSON (للتخزين في Hive و Supabase)
-  // ============================================================
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -86,9 +79,6 @@ class ProgramModel {
     };
   }
 
-  // ============================================================
-  //  نسخة محدثة (للتعديل)
-  // ============================================================
   ProgramModel copyWith({
     String? id,
     String? name,
@@ -115,9 +105,6 @@ class ProgramModel {
     );
   }
 
-  // ============================================================
-  //  حساب نسبة التوافق مع الطالب (حسب SRS)
-  // ============================================================
   double calculateCompatibility(Map<String, double> studentProfile) {
     if (dimensions == null || dimensions!.isEmpty) return 0.0;
     if (studentProfile.isEmpty) return 0.0;
@@ -129,7 +116,6 @@ class ProgramModel {
       if (studentProfile.containsKey(key)) {
         final studentValue = studentProfile[key]!;
         final programValue = dimensions![key]!;
-        // حساب التشابه بين القيمتين (نسبة مئوية)
         final similarity = 100 - (studentValue - programValue).abs();
         totalScore += similarity.clamp(0, 100);
         dimensionsCount++;
@@ -139,9 +125,6 @@ class ProgramModel {
     return dimensionsCount > 0 ? totalScore / dimensionsCount : 0.0;
   }
 
-  // ============================================================
-  //  اسم البعد العربي
-  // ============================================================
   static String getDimensionName(String key) {
     switch (key) {
       case 'programming':

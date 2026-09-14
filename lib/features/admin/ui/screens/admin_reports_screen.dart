@@ -22,7 +22,6 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
   final List<String> _periods = ['هذا الأسبوع', 'هذا الشهر', 'هذا العام', 'كل الوقت'];
   final List<String> _reportTypes = ['عام', 'المستخدمين', 'الجامعات', 'التخصصات'];
 
-  // بيانات إحصائيات
   final Map<String, dynamic> _stats = {
     'total_users': 1250,
     'total_universities': 24,
@@ -34,7 +33,6 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
     'completion_rate': '78%',
   };
 
-  // بيانات الرسم البياني - المستخدمين
   final List<Map<String, dynamic>> _userChartData = [
     {'label': 'يناير', 'value': 850},
     {'label': 'فبراير', 'value': 920},
@@ -45,7 +43,6 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
     {'label': 'يوليو', 'value': 1250},
   ];
 
-  // بيانات الرسم البياني - الجامعات
   final List<Map<String, dynamic>> _universityChartData = [
     {'label': 'يناير', 'value': 18},
     {'label': 'فبراير', 'value': 19},
@@ -56,7 +53,6 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
     {'label': 'يوليو', 'value': 24},
   ];
 
-  // بيانات الجدول - أحدث المستخدمين
   final List<Map<String, dynamic>> _recentUsers = [
     {'name': 'أحمد محمد', 'email': 'ahmed@university.edu', 'role': 'طالب', 'date': '2026-08-14', 'status': 'نشط'},
     {'name': 'الجامعة الإسلامية', 'email': 'info@iugaza.edu', 'role': 'جامعة', 'date': '2026-08-14', 'status': 'نشط'},
@@ -498,7 +494,6 @@ Widget _buildChartCard({
     required List<Map<String, dynamic>> data,
     required Color color,
   }) {
-    // ✅ نحسب أعلى قيمة مرة واحدة خارج map بدل حسابها في كل تكرار
     final double maxValue = data.fold<double>(0, (max, d) {
       final v = (d['value'] as num).toDouble();
       return v > max ? v : max;
@@ -551,7 +546,6 @@ Widget _buildChartCard({
             height: 120,
             child: Row(
               children: data.map((item) {
-                // ✅ حماية إضافية: لو maxValue = 0 (كل القيم صفر) نتفادى القسمة على صفر
                 final double value = (item['value'] as num).toDouble();
                 final double height =
                     maxValue == 0 ? 0 : (value / maxValue * 100);

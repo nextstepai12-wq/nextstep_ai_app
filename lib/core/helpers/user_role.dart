@@ -45,7 +45,6 @@ extension UserRoleExtension on UserRole {
     }
   }
 
-  /// Maps a raw role string (e.g. from Supabase) to a [UserRole].
   static UserRole fromString(String? role) {
     switch (role) {
       case 'university':

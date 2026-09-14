@@ -32,14 +32,11 @@ class TermsScreen extends StatelessWidget {
     );
   }
 
- // ============================================================
-//  AppBar مخصص - السهم في الجانب الأيمن فقط ✅
-// ============================================================
 PreferredSizeWidget _buildAppBar(BuildContext context) {
   return AppBar(
     backgroundColor: Colors.white,
     elevation: 0,
-    leading: const SizedBox.shrink(), // ✅ إزالة السهم الأيسر
+    leading: const SizedBox.shrink(),
     actions: [
       Container(
         margin: const EdgeInsets.all(8),
@@ -71,11 +68,7 @@ PreferredSizeWidget _buildAppBar(BuildContext context) {
   );
 }
 
-  // ============================================================
-  //  باقي الكود كما هو...
-  // ============================================================
   Widget _buildHeader() {
-    // ... نفس الكود السابق
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

@@ -2,14 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 
-/// ============================================================
-///  شاشة إضافة / تعديل مستخدم — تصميم 2026
-///  صفحة كاملة مستقلة (وليست ديالوج منبثق) يُنتقل إليها عبر:
-///  context.push('/admin/users/add')
-///  أو في وضع التعديل:
-///  Navigator.push(context, MaterialPageRoute(builder: (_) =>
-///    AdminAddUserScreen(isEditing: true, userData: {...})));
-/// ============================================================
 class AdminAddUserScreen extends StatefulWidget {
   final bool isEditing;
   final Map<String, dynamic>? userData;
@@ -66,7 +58,6 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
   void initState() {
     super.initState();
 
-    // ✅ في وضع التعديل: تعبئة الحقول من البيانات الممرَّرة
     if (widget.isEditing && widget.userData != null) {
       final data = widget.userData!;
       _nameController.text = (data['name'] ?? '').toString();
@@ -101,19 +92,7 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
 
     setState(() => _isSubmitting = true);
 
-    // ⚠️ ملاحظة مهمة: إنشاء مستخدم من طرف الأدمن يجب أن يمر عبر مسار آمن
-    // (Supabase Edge Function أو Admin API بمفتاح service_role على السيرفر)،
-    // وليس مباشرة من تطبيق العميل (Client) الذي لا يملك صلاحيات admin.
-    // اربط هنا استدعاء دالتك الفعلية، مثال:
-    //
-    // await AdminService().createUser(
-    //   fullName: _nameController.text.trim(),
-    //   email: _emailController.text.trim(),
-    //   password: _passwordController.text,
-    //   role: _selectedRole,
-    // );
-
-    await Future.delayed(const Duration(milliseconds: 900)); // محاكاة الطلب
+    await Future.delayed(const Duration(milliseconds: 900));
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);
@@ -186,9 +165,6 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
     );
   }
 
-  // ============================================================
-  //  رأس الصفحة بتدرّج الهوية البصرية (نفس ألوان splash/login)
-  // ============================================================
   Widget _buildSliverHeader(BuildContext context) {
     return SliverAppBar(
       pinned: true,
@@ -252,9 +228,6 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
     );
   }
 
-  // ============================================================
-  //  محدد الدور — بطاقات قابلة للاختيار بدل Dropdown تقليدي
-  // ============================================================
   Widget _buildRoleSelector() {
     return Row(
       children: _roles.map((role) {
@@ -313,9 +286,6 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
     );
   }
 
-  // ============================================================
-  //  بطاقة الحقول
-  // ============================================================
   Widget _buildFormCard() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -375,7 +345,6 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
             ),
             validator: (v) {
-              // في وضع التعديل: الحقل اختياري، يُعتمد فقط إذا كُتب فيه شيء
               if (widget.isEditing && (v == null || v.isEmpty)) return null;
               if (v == null || v.isEmpty) return 'الرجاء إدخال كلمة المرور';
               if (v.length < 6) return 'يجب أن تكون 6 أحرف على الأقل';
@@ -400,7 +369,6 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
               onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
             ),
             validator: (v) {
-              // إذا كانت كلمة المرور فارغة في وضع التعديل، لا داعي للتحقق من التطابق
               if (widget.isEditing && _passwordController.text.isEmpty) return null;
               if (v != _passwordController.text) return 'كلمتا المرور غير متطابقتين';
               return null;
@@ -468,9 +436,6 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
     );
   }
 
-  // ============================================================
-  //  زر الحفظ
-  // ============================================================
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,

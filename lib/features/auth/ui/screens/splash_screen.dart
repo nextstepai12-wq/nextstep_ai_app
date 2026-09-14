@@ -15,31 +15,25 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  // المتحكم الرئيسي لحركة الدخول (logo + نصوص + زر)
   late final AnimationController _entrance;
 
-  // متحكم مستقل للحركة اللانهائية (تنفّس الشعار + توهج + جسيمات)
   late final AnimationController _ambient;
 
-  // ---- حركات الشعار ----
   late final Animation<double> _logoScale;
   late final Animation<double> _logoRotation;
   late final Animation<double> _logoOpacity;
   late final Animation<double> _glowPulse;
   late final Animation<double> _logoFloat;
 
-  // ---- حركات العنوان ----
   late final Animation<double> _titleOpacity;
   late final Animation<Offset> _titleSlide;
 
-  // ---- حركات العنوان الفرعي والوصف ----
   late final Animation<double> _subtitleOpacity;
   late final Animation<Offset> _subtitleSlide;
 
   late final Animation<double> _descOpacity;
   late final Animation<Offset> _descSlide;
 
-  // ---- حركات الزر ومؤشر التحميل ----
   late final Animation<double> _buttonOpacity;
   late final Animation<Offset> _buttonSlide;
   late final Animation<double> _buttonScale;
@@ -62,7 +56,6 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 4200),
     )..repeat();
 
-    // الشعار: يظهر بتكبير مرن + دوران خفيف
     _logoScale = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween(begin: 0.4, end: 1.08)
@@ -103,7 +96,6 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _ambient, curve: Curves.easeInOut),
     );
 
-    // العنوان الرئيسي: انزلاق لأعلى + fade + blur-in خفيف
     _titleOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _entrance,
@@ -119,7 +111,6 @@ class _SplashScreenState extends State<SplashScreen>
         curve: const Interval(0.28, 0.62, curve: Curves.easeOutCubic),
       ),
     );
-    // العنوان الفرعي
     _subtitleOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _entrance,
@@ -136,7 +127,6 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // الوصف
     _descOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _entrance,
@@ -153,7 +143,6 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // الزر
     _buttonOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _entrance,
@@ -193,7 +182,6 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _goToLogin() async {
-    // ✅ تحقق من حالة تسجيل الدخول وتوجيه المستخدم حسب دوره
     try {
       final isLoggedIn = await TokenManager.isLoggedIn();
       if (!isLoggedIn) {
@@ -230,7 +218,6 @@ class _SplashScreenState extends State<SplashScreen>
       body: GradientBackground(
         child: Stack(
           children: [
-            // جسيمات خلفية ناعمة تتحرك ببطء لإضفاء عمق (parallax خفيف)
             AnimatedBuilder(
               animation: _ambient,
               builder: (context, _) => IgnorePointer(
@@ -251,7 +238,6 @@ class _SplashScreenState extends State<SplashScreen>
                   children: [
                     const Spacer(flex: 3),
 
-                    // ---------------- الشعار ----------------
                     AnimatedBuilder(
                       animation: Listenable.merge([_entrance, _ambient]),
                       builder: (context, child) {
@@ -328,7 +314,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                     const SizedBox(height: 36),
 
-                    // ---------------- العنوان الرئيسي ----------------
                     AnimatedBuilder(
                       animation: _entrance,
                       builder: (context, child) {
@@ -383,7 +368,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                     const SizedBox(height: 14),
 
-                    // ---------------- العنوان الفرعي ----------------
                     FadeTransition(
                       opacity: _subtitleOpacity,
                       child: SlideTransition(
@@ -411,7 +395,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                     const SizedBox(height: 10),
 
-                    // ---------------- الوصف ----------------
                     FadeTransition(
                       opacity: _descOpacity,
                       child: SlideTransition(
@@ -436,7 +419,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                     const Spacer(flex: 4),
 
-                    // ---------------- مؤشر تحميل نقطي أنيق ----------------
                     FadeTransition(
                       opacity: _progressOpacity,
                       child: const _DotsLoader(),
@@ -444,7 +426,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                     const SizedBox(height: 20),
 
-                    // ---------------- الزر ----------------
                     FadeTransition(
                       opacity: _buttonOpacity,
                       child: SlideTransition(
@@ -527,7 +508,6 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-/// مؤشر تحميل بثلاث نقاط تنبض بشكل متتابع
 class _DotsLoader extends StatefulWidget {
   const _DotsLoader();
 
@@ -586,7 +566,6 @@ class _DotsLoaderState extends State<_DotsLoader>
   }
 }
 
-/// رسّام جسيمات خفيفة تتحرك ببطء في الخلفية لإضفاء عمق بصري حديث
 class _ParticlesPainter extends CustomPainter {
   _ParticlesPainter({required this.progress, required this.color});
 

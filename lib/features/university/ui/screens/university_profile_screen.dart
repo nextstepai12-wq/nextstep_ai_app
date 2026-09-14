@@ -20,7 +20,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
   bool _isSaving = false;
   String? _errorMessage;
 
-  // بيانات الجامعة
   String _universityName = '';
   String _userEmail = '';
   String _location = '';
@@ -30,7 +29,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
   String _visionMission = '';
   String _logo = '';
 
-  // Controllers
   final _nameController = TextEditingController();
   final _locationController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -90,7 +88,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
         }
 
         try {
-          // TODO: جلب بيانات الجامعة من Supabase
           final universityData = {
             'name': 'الجامعة الإسلامية',
             'location': 'غزة، فلسطين',
@@ -147,7 +144,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
         email: _userEmail,
       );
 
-      // TODO: تحديث بيانات الجامعة في Supabase
       await Future.delayed(const Duration(seconds: 1));
 
       setState(() {
@@ -336,9 +332,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
     );
   }
 
-  // ============================================================
-  //  Profile Header
-  // ============================================================
   Widget _buildProfileHeader() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -359,7 +352,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
       ),
       child: Column(
         children: [
-          // ✅ شعار الجامعة
           Container(
             width: 80,
             height: 80,
@@ -384,7 +376,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
           ),
           const SizedBox(height: 12),
 
-          // ✅ اسم الجامعة
           if (_isEditing)
             TextFormField(
               controller: _nameController,
@@ -427,7 +418,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
             ),
           const SizedBox(height: 4),
 
-          // ✅ البريد الإلكتروني
           Text(
             _userEmail.isNotEmpty ? _userEmail : 'university@nextstep.ai',
             style: TextStyle(
@@ -437,7 +427,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
           ),
           const SizedBox(height: 8),
 
-          // ✅ نوع الحساب
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             decoration: BoxDecoration(
@@ -458,9 +447,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
     );
   }
 
-  // ============================================================
-  //  Info Cards
-  // ============================================================
   Widget _buildInfoCards() {
     return Column(
       children: [
@@ -667,9 +653,6 @@ class _UniversityProfileScreenState extends State<UniversityProfileScreen>
     );
   }
 
-  // ============================================================
-  //  Edit Actions
-  // ============================================================
   Widget _buildEditActions() {
     return Container(
       padding: const EdgeInsets.all(16),

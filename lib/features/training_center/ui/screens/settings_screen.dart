@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/settings_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -17,7 +16,6 @@ class _SettingsScreenState extends State<SettingsScreen>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late TabController _tabController;
 
-  // متغيرات النماذج
   final TextEditingController _centerNameController =
       TextEditingController(text: 'مركز التدريب العالمي المحترف');
   final TextEditingController _registrationController =
@@ -33,7 +31,6 @@ class _SettingsScreenState extends State<SettingsScreen>
   String _selectedRole = 'editor';
   bool _isLoading = false;
 
-  // بيانات أعضاء الفريق
   final List<Map<String, dynamic>> _teamMembers = [
     {
       'name': 'أحمد حسن',
@@ -89,9 +86,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================
-  //  AppBar
-  // ============================
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: IconButton(
@@ -152,9 +146,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================
-  //  Tab Bar
-  // ============================
   PreferredSizeWidget _buildTabBar() {
     return TabBar(
       controller: _tabController,
@@ -177,9 +168,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================
-  //  Body
-  // ============================
   Widget _buildBody() {
     return TabBarView(
       controller: _tabController,
@@ -190,9 +178,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================
-  //  Center Tab
-  // ============================
   Widget _buildCenterTab() {
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.r),
@@ -250,9 +235,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================
-  //  Team Tab
-  // ============================
 Widget _buildTeamTab() {
   return SingleChildScrollView(
     padding: EdgeInsets.all(12.r),
@@ -260,7 +242,6 @@ Widget _buildTeamTab() {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ✅ رأس إدارة الأعضاء (محسن)
         Container(
           padding: EdgeInsets.all(12.r),
           decoration: BoxDecoration(
@@ -301,7 +282,6 @@ Widget _buildTeamTab() {
                   ],
                 ),
               ),
-              // ✅ زر دعوة عضو جديد
               SizedBox(
                 width: 120.w,
                 height: 36.h,
@@ -327,7 +307,6 @@ Widget _buildTeamTab() {
         ),
         SizedBox(height: 12.h),
 
-        // ✅ قائمة الأعضاء
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -353,9 +332,6 @@ Widget _buildTeamTab() {
     ),
   );
 }
-  // ============================
-  //  Widgets Helpers
-  // ============================
 
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
@@ -607,7 +583,6 @@ Widget _buildTeamMemberItem(Map<String, dynamic> member) {
     ),
     child: Row(
       children: [
-        // ✅ الصورة الرمزية
         Container(
           width: 32.w,
           height: 32.h,
@@ -628,7 +603,6 @@ Widget _buildTeamMemberItem(Map<String, dynamic> member) {
         ),
         SizedBox(width: 8.w),
 
-        // ✅ معلومات العضو
         Expanded(
           flex: 2,
           child: Column(
@@ -658,7 +632,6 @@ Widget _buildTeamMemberItem(Map<String, dynamic> member) {
         ),
         SizedBox(width: 6.w),
 
-        // ✅ الدور
         Flexible(
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
@@ -691,7 +664,6 @@ Widget _buildTeamMemberItem(Map<String, dynamic> member) {
         ),
         SizedBox(width: 4.w),
 
-        // ✅ الحالة
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -725,7 +697,6 @@ Widget _buildTeamMemberItem(Map<String, dynamic> member) {
           ],
         ),
 
-        // ✅ زر الحذف
         IconButton(
           onPressed: () {
             _showDeleteConfirmDialog(member);
@@ -796,9 +767,6 @@ Widget _buildEmptyTeamState() {
     ),
   );
 }
-  // ============================
-  //  Dialogs
-  // ============================
 
  void _showInviteDialog() {
   showDialog(
@@ -873,7 +841,6 @@ Widget _buildEmptyTeamState() {
                   ),
                 ),
                 SizedBox(height: 6.h),
-                // ✅ Row مع Expanded - مسافات أقل
                 Row(
                   children: [
                     _buildRoleOption(
@@ -1043,10 +1010,6 @@ Widget _buildEmptyTeamState() {
       },
     );
   }
-
-  // ============================
-  //  Actions
-  // ============================
 
   void _saveSettings() {
     setState(() {

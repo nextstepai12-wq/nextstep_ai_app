@@ -56,7 +56,6 @@ class UniversityModel {
 
   Map<String, dynamic> toJson() => _$UniversityModelToJson(this);
 
-  // ✅ نسخة مع بيانات محدثة
   UniversityModel copyWith({
     int? id,
     String? name,
@@ -85,16 +84,13 @@ class UniversityModel {
     );
   }
 
-  // ✅ الحصول على اسم الجامعة
   String get displayName => name;
 
-  // ✅ الحصول على رابط الشعار الكامل
   String? get logoUrl {
     if (logo == null) return null;
     if (logo!.startsWith('http')) return logo;
     return 'https://ylcotywynpebivixeeyp.supabase.co/storage/v1/object/public/$logo';
   }
 
-  // ✅ التحقق من وجود شعار
   bool get hasLogo => logo != null && logo!.isNotEmpty;
 }

@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/center_profile_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -44,9 +43,6 @@ class _CenterProfileScreenState extends State<CenterProfileScreen> {
     );
   }
 
-  // ============================
-  //  AppBar
-  // ============================
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: IconButton(
@@ -130,9 +126,6 @@ class _CenterProfileScreenState extends State<CenterProfileScreen> {
     );
   }
 
-  // ============================
-  //  Body
-  // ============================
   Widget _buildBody() {
     return BlocBuilder<TrainingCenterBloc, TrainingCenterState>(
       builder: (context, state) {
@@ -157,32 +150,24 @@ class _CenterProfileScreenState extends State<CenterProfileScreen> {
     );
   }
 
-  // ============================
-  //  Profile Content
-  // ============================
   Widget _buildProfileContent(dynamic center) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ✅ Hero Section - صورة الغلاف
           _buildHeroSection(center),
           SizedBox(height: 16.h),
 
-          // ✅ معلومات الملف الشخصي
           _buildProfileInfo(center),
           SizedBox(height: 20.h),
 
-          // ✅ إحصائيات الثقة
           _buildTrustStats(center),
           SizedBox(height: 20.h),
 
-          // ✅ الدورات المتاحة
           _buildCoursesSection(),
           SizedBox(height: 20.h),
 
-          // ✅ التواصل
           _buildContactSection(center),
           SizedBox(height: 16.h),
         ],
@@ -190,15 +175,9 @@ class _CenterProfileScreenState extends State<CenterProfileScreen> {
     );
   }
 
-  // ============================
-  //  Hero Section
-  // ============================
- // في center_profile_screen.dart - _buildHeroSection
-
 Widget _buildHeroSection(dynamic center) {
   return Stack(
     children: [
-      // صورة الغلاف
       Container(
         height: 200.h,
         width: double.infinity,
@@ -230,7 +209,6 @@ Widget _buildHeroSection(dynamic center) {
           ),
         ),
       ),
-      // صورة الملف الشخصي
       Positioned(
         bottom: -40.h,
         left: 16.w,
@@ -263,7 +241,6 @@ Widget _buildHeroSection(dynamic center) {
               : null,
         ),
       ),
-      // زر التقييم
       Positioned(
         bottom: -40.h,
         right: 16.w,
@@ -290,7 +267,7 @@ Widget _buildHeroSection(dynamic center) {
               ),
               SizedBox(width: 4.w),
               Text(
-                center.rating?.toStringAsFixed(1) ?? '4.8', // ✅ استخدام rating
+                center.rating?.toStringAsFixed(1) ?? '4.8',
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
@@ -299,7 +276,7 @@ Widget _buildHeroSection(dynamic center) {
               ),
               SizedBox(width: 2.w),
               Text(
-                '(${center.studentCount ?? 120})', // ✅ استخدام studentCount
+                '(${center.studentCount ?? 120})',
                 style: TextStyle(
                   fontSize: 10.sp,
                   color: Colors.grey.shade500,
@@ -312,9 +289,6 @@ Widget _buildHeroSection(dynamic center) {
     ],
   );
 }
-  // ============================
-  //  Profile Info
-  // ============================
 Widget _buildProfileInfo(dynamic center) {
   return Container(
     margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -322,7 +296,6 @@ Widget _buildProfileInfo(dynamic center) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ✅ اسم المركز
         Row(
           children: [
             Expanded(
@@ -366,7 +339,6 @@ Widget _buildProfileInfo(dynamic center) {
         ),
         SizedBox(height: 6.h),
 
-        // ✅ الوصف
         if (center.description != null)
           Text(
             center.description!,
@@ -378,7 +350,6 @@ Widget _buildProfileInfo(dynamic center) {
           ),
         SizedBox(height: 12.h),
 
-        // ✅ التخصصات
         if (center.specialties != null && center.specialties!.isNotEmpty)
           Wrap(
             spacing: 8.w,
@@ -403,12 +374,11 @@ Widget _buildProfileInfo(dynamic center) {
           ),
         SizedBox(height: 12.h),
 
-        // ✅ معلومات إضافية - استخدم location بدلاً من address
         Row(
           children: [
             _buildInfoChip(
               icon: Icons.location_on_rounded,
-              label: center.location ?? 'العنوان غير محدد', // ✅ location
+              label: center.location ?? 'العنوان غير محدد',
             ),
             SizedBox(width: 12.w),
             _buildInfoChip(
@@ -458,9 +428,6 @@ Widget _buildProfileInfo(dynamic center) {
     );
   }
 
-  // ============================
-  //  Trust Stats
-  // ============================
   Widget _buildTrustStats(dynamic center) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -554,9 +521,6 @@ Widget _buildProfileInfo(dynamic center) {
     );
   }
 
-  // ============================
-  //  Courses Section
-  // ============================
   Widget _buildCoursesSection() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -648,7 +612,6 @@ Widget _buildCourseCard(dynamic program) {
     ),
     child: Row(
       children: [
-        // ✅ صورة الدورة - استخدم coverImage بدلاً من imageUrl
         Container(
           width: 80.w,
           height: 60.h,
@@ -671,7 +634,6 @@ Widget _buildCourseCard(dynamic program) {
               : null,
         ),
         SizedBox(width: 12.w),
-        // ✅ معلومات الدورة
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -754,10 +716,6 @@ Widget _buildCourseCard(dynamic program) {
   );
 }
 
-
-  // ============================
-  //  Contact Section
-  // ============================
   Widget _buildContactSection(dynamic center) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -867,9 +825,6 @@ Widget _buildCourseCard(dynamic program) {
     );
   }
 
-  // ============================
-  //  Loading States
-  // ============================
   Widget _buildLoadingShimmer() {
     return Shimmer.fromColors(
       baseColor: Colors.grey.shade300,
@@ -939,9 +894,6 @@ Widget _buildCourseCard(dynamic program) {
     );
   }
 
-  // ============================
-  //  Empty & Error States
-  // ============================
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -1041,9 +993,6 @@ Widget _buildCourseCard(dynamic program) {
     );
   }
 
-  // ============================
-  //  Helper Functions
-  // ============================
   Future<void> _launchEmail(String email) async {
     final Uri emailUri = Uri(
       scheme: 'mailto',

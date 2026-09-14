@@ -1,12 +1,7 @@
-// lib/features/admin/ui/screens/admin_llm_usage_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 
-/// ============================================================
-///  شاشة مراقبة استخدام نموذج اللغة (LLM)
-///  مع تخزين محلي Offline-First
-/// ============================================================
 class AdminLlmUsageScreen extends StatefulWidget {
   const AdminLlmUsageScreen({super.key});
 
@@ -16,24 +11,18 @@ class AdminLlmUsageScreen extends StatefulWidget {
 
 class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     with SingleTickerProviderStateMixin {
-  // ============================================================
-  //  المتغيرات
-  // ============================================================
   bool _isLoading = true;
   String? _errorMessage;
   String _selectedPeriod = 'اليوم';
 
-  // بيانات الاستخدام
   int _totalCalls = 0;
   double _estimatedCost = 0.0;
   int _callsToday = 0;
   int _callsThisMonth = 0;
 
-  // الحدود
   int _dailyLimit = 1000;
   int _monthlyLimit = 30000;
 
-  // بيانات الرسم البياني (آخر 7 أيام)
   final List<Map<String, dynamic>> _chartData = const [
     {'day': 'السبت', 'calls': 45, 'tokens': 3200},
     {'day': 'الأحد', 'calls': 52, 'tokens': 4100},
@@ -44,7 +33,6 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     {'day': 'الجمعة', 'calls': 71, 'tokens': 5800},
   ];
 
-  // أحدث الاستعلامات
   final List<Map<String, dynamic>> _recentQueries = const [
     {
       'user': 'أحمد محمد',
@@ -94,9 +82,6 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
 
   final List<String> _periods = const ['اليوم', 'هذا الأسبوع', 'هذا الشهر'];
 
-  // ============================================================
-  //  دورة الحياة
-  // ============================================================
   @override
   void initState() {
     super.initState();
@@ -124,9 +109,6 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     super.dispose();
   }
 
-  // ============================================================
-  //  تحميل البيانات من Hive
-  // ============================================================
   Future<void> _loadData() async {
     try {
       if (!mounted) return;
@@ -135,13 +117,11 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
         _errorMessage = null;
       });
 
-      // قراءة بيانات استخدام LLM من Hive
       final usageData = await HiveStorage.getData('llm_usage_cache', 'usage');
 
       if (usageData != null && usageData.isNotEmpty) {
         setState(() {
           _totalCalls = usageData['total_calls'] as int? ?? 0;
-          // ✅ تحويل num إلى double بشكل آمن
           final costValue = usageData['estimated_cost'];
           _estimatedCost = costValue is double ? costValue : (costValue as num?)?.toDouble() ?? 0.0;
           _callsToday = usageData['calls_today'] as int? ?? 0;
@@ -167,9 +147,6 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     }
   }
 
-  // ============================================================
-  //  بناء الواجهة
-  // ============================================================
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -218,9 +195,6 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -247,9 +221,6 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     );
   }
 
-  // ============================================================
-  //  رأس الصفحة
-  // ============================================================
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -313,9 +284,6 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     );
   }
 
-  // ============================================================
-  //  فلتر الفترة
-  // ============================================================
   Widget _buildPeriodFilter() {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -376,9 +344,6 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     );
   }
 
-  // ============================================================
-  //  شبكة الإحصائيات
-  // ============================================================
   Widget _buildStatsGrid() {
     return GridView.count(
       shrinkWrap: true,
@@ -488,9 +453,6 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     );
   }
 
-  // ============================================================
-  //  قسم الرسم البياني
-  // ============================================================
   Widget _buildChartSection() {
     final maxCalls = _chartData.fold<int>(
       0,
@@ -607,15 +569,11 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     );
   }
 
-// ============================================================
-//  شريط نسبة الاستخدام (المصحح)
-// ============================================================
 Widget _buildUsageProgress() {
-  // ✅ تحويل num إلى double بشكل آمن
   final dailyPercentage = _dailyLimit > 0
       ? ((_callsToday / _dailyLimit) * 100).clamp(0, 100).toDouble()
       : 0.0;
-      
+
   final monthlyPercentage = _monthlyLimit > 0
       ? ((_callsThisMonth / _monthlyLimit) * 100).clamp(0, 100).toDouble()
       : 0.0;
@@ -648,7 +606,7 @@ Widget _buildUsageProgress() {
         const SizedBox(height: 12),
         _buildProgressItem(
           label: 'الاستخدام اليومي',
-          percentage: dailyPercentage, // ✅ الآن من نوع double
+          percentage: dailyPercentage,
           color: dailyPercentage > 80 ? Colors.red : Colors.green,
           current: _callsToday,
           total: _dailyLimit,
@@ -656,7 +614,7 @@ Widget _buildUsageProgress() {
         const SizedBox(height: 12),
         _buildProgressItem(
           label: 'الاستخدام الشهري',
-          percentage: monthlyPercentage, // ✅ الآن من نوع double
+          percentage: monthlyPercentage,
           color: monthlyPercentage > 80 ? Colors.red : Colors.green,
           current: _callsThisMonth,
           total: _monthlyLimit,
@@ -712,9 +670,6 @@ Widget _buildUsageProgress() {
     );
   }
 
-  // ============================================================
-  //  أحدث الاستعلامات
-  // ============================================================
   Widget _buildRecentQueries() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -762,7 +717,6 @@ Widget _buildUsageProgress() {
   }
 
   Widget _buildQueryItem(Map<String, dynamic> query) {
-    // ✅ تحويل cost من num إلى double بأمان
     final costValue = query['cost'];
     final cost = costValue is double ? costValue : (costValue as num?)?.toDouble() ?? 0.0;
 
@@ -878,9 +832,6 @@ Widget _buildUsageProgress() {
     );
   }
 
-  // ============================================================
-  //  حالة الخطأ
-  // ============================================================
   Widget _buildErrorState() {
     return Center(
       child: Padding(

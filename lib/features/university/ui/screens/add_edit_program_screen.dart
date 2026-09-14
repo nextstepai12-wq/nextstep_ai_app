@@ -20,7 +20,6 @@ class _AddEditProgramScreenState extends State<AddEditProgramScreen>
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  // Controllers
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _minScoreController = TextEditingController();
@@ -67,7 +66,6 @@ class _AddEditProgramScreenState extends State<AddEditProgramScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
 
-    // تحميل البيانات للتعديل
     if (widget.isEditing && widget.programData != null) {
       final data = widget.programData!;
       _nameController.text = data['name'] ?? '';
@@ -100,7 +98,6 @@ class _AddEditProgramScreenState extends State<AddEditProgramScreen>
     setState(() => _isLoading = true);
 
     try {
-      // TODO: حفظ التخصص في Supabase
       await Future.delayed(const Duration(seconds: 1));
 
       if (mounted) {
@@ -422,7 +419,7 @@ Widget _buildAdditionalInfo() {
             color: AppTheme.primaryContainer,
           ),
         ),
-        subtitle: Text( // ✅ إزالة const
+        subtitle: Text(
           'عرض التخصص للطلاب',
           style: TextStyle(
             fontSize: 12,

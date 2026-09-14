@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/training_center_details_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -42,7 +41,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
           }
 
           if (state is TrainingCenterLoaded) {
-            // إذا كانت الحالة تحوي قائمة المراكز، نبحث عن المركز المطلوب
             final center = state.centers.firstWhere(
               (c) => c.id == centerId,
               orElse: () => state.centers.first,
@@ -92,7 +90,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // صورة المركز
           Center(
             child: CircleAvatar(
               radius: 50.r,
@@ -110,7 +107,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
 
-          // اسم المركز
           Center(
             child: Text(
               center.name,
@@ -123,7 +119,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
 
-          // التقييم والطلاب
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -193,7 +188,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
           ],
           SizedBox(height: 16.h),
 
-          // الوصف
           if (center.description != null) ...[
             Text(
               'الوصف',
@@ -210,7 +204,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             SizedBox(height: 16.h),
           ],
 
-          // العنوان
           if (center.address != null) ...[
             Text(
               'العنوان',
@@ -239,7 +232,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             SizedBox(height: 16.h),
           ],
 
-          // الاتصال
           if (center.phone != null || center.email != null) ...[
             Text(
               'معلومات الاتصال',
@@ -284,7 +276,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             SizedBox(height: 16.h),
           ],
 
-          // التخصصات
           if (center.specialties != null && center.specialties!.isNotEmpty) ...[
             Text(
               'التخصصات',
@@ -318,7 +309,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             SizedBox(height: 16.h),
           ],
 
-          // زر عرض البرامج
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
