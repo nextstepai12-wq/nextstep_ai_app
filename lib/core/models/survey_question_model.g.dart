@@ -1,10 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'survey_question_model.dart';
-
-// **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
 
 SurveyQuestionModel _$SurveyQuestionModelFromJson(Map<String, dynamic> json) =>
     SurveyQuestionModel(
@@ -36,3 +31,4 @@ Map<String, dynamic> _$SurveyQuestionModelToJson(
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };
+

@@ -11,7 +11,7 @@ class SurveyQuestionModel {
   final String questionText;
 
   @JsonKey(name: 'type')
-  final String type; // 'multiple_choice', 'rating', 'text'
+  final String type;
 
   @JsonKey(name: 'order_index')
   final int orderIndex;
@@ -48,7 +48,6 @@ class SurveyQuestionModel {
 
   Map<String, dynamic> toJson() => _$SurveyQuestionModelToJson(this);
 
-  // ✅ نسخة مع بيانات محدثة
   SurveyQuestionModel copyWith({
     int? id,
     String? questionText,
@@ -73,7 +72,6 @@ class SurveyQuestionModel {
     );
   }
 
-  // ✅ الحصول على نوع السؤال بالعربية
   String get typeLabel {
     switch (type) {
       case 'multiple_choice':
@@ -87,13 +85,10 @@ class SurveyQuestionModel {
     }
   }
 
-  // ✅ التحقق من نشاط السؤال
   bool get isQuestionActive => isActive;
 
-  // ✅ التحقق من وجود حد أدنى للدرجة
   bool get hasMinScore => minScoreRequired != null;
 
-  // ✅ تنسيق الحد الأدنى للدرجة
   String get formattedMinScore {
     if (minScoreRequired == null) return 'غير محدد';
     return minScoreRequired!.toStringAsFixed(2);
