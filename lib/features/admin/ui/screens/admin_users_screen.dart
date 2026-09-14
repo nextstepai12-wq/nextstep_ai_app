@@ -1,4 +1,4 @@
-﻿// lib/features/admin/ui/screens/admin_users_screen.dart
+﻿
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
@@ -27,9 +27,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
 
   final List<String> _filterOptions = const ['الكل', 'طلاب', 'جامعات', 'إدارة'];
 
-  // ============================================================
-  //  دوال مساعدة
-  // ============================================================
   String _getRoleLabel(String role) {
     switch (role) {
       case 'student':
@@ -125,11 +122,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     return filtered;
   }
 
-// lib/features/admin/ui/screens/admin_users_screen.dart
-
-// ============================================================
-//  جلب المستخدمين باستخدام Admin API
-// ============================================================
 Future<void> _loadUsers() async {
   if (!mounted) return;
 
@@ -139,36 +131,26 @@ Future<void> _loadUsers() async {
   });
 
   try {
-    debugPrint('🔄 جاري جلب المستخدمين من Supabase Auth...');
 
-    // ✅ استخدام Admin API عبر SupabaseService
     final users = await SupabaseService().getAuthUsers();
 
-    debugPrint('📊 عدد المستخدمين من Auth: ${users.length}');
-
     if (users.isNotEmpty) {
-      // ✅ حفظ في Hive
       try {
         await HiveStorage.saveData('users_cache', 'users', users);
-        debugPrint('✅ تم حفظ ${users.length} مستخدم في Hive');
       } catch (e) {
-        debugPrint('⚠️ فشل حفظ في Hive: $e');
       }
 
       if (mounted) {
         setState(() {
-          _users = users;
+          _users = List<Map<String, dynamic>>.from(users);
           _isLoading = false;
           _errorMessage = null;
         });
-        debugPrint('✅ تم تحديث الواجهة بـ ${_users.length} مستخدم');
       }
     } else {
-      // ✅ محاولة قراءة من Hive
       try {
         final cached = await HiveStorage.getData('users_cache', 'users');
         if (cached != null && (cached as List).isNotEmpty) {
-          debugPrint('✅ تم تحميل ${cached.length} مستخدم من Hive');
           if (mounted) {
             setState(() {
               _users = List<Map<String, dynamic>>.from(cached);
@@ -189,13 +171,10 @@ Future<void> _loadUsers() async {
       }
     }
   } catch (e) {
-    debugPrint('❌ خطأ في جلب المستخدمين: $e');
 
-    // ✅ محاولة قراءة من Hive
     try {
       final cached = await HiveStorage.getData('users_cache', 'users');
       if (cached != null && (cached as List).isNotEmpty) {
-        debugPrint('✅ تم تحميل ${cached.length} مستخدم من Hive');
         if (mounted) {
           setState(() {
             _users = List<Map<String, dynamic>>.from(cached);
@@ -216,16 +195,10 @@ Future<void> _loadUsers() async {
     }
   }
 }
-  // ============================================================
-  //  تحديث البيانات
-  // ============================================================
   Future<void> _refreshUsers() async {
     await _loadUsers();
   }
 
-  // ============================================================
-  //  التنقل لصفحة إضافة مستخدم
-  // ============================================================
   Future<void> _goToAddUser() async {
     final result = await Navigator.push(
       context,
@@ -240,17 +213,10 @@ Future<void> _loadUsers() async {
     }
   }
 
-  // ============================================================
-  //  حذف مستخدم من Auth
-  // ============================================================
- // lib/features/admin/ui/screens/admin_users_screen.dart
-
 Future<void> _deleteUser(Map<String, dynamic> user) async {
   try {
-    // ✅ استخدام Admin API لحذف المستخدم
     await SupabaseService().deleteAuthUser(user['id']);
 
-    // حذف من Hive
     final cached = await HiveStorage.getData('users_cache', 'users');
     if (cached != null) {
       final List<Map<String, dynamic>> updatedUsers =
@@ -269,9 +235,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
   }
 }
 
-  // ============================================================
-  //  دورة الحياة
-  // ============================================================
   @override
   void initState() {
     super.initState();
@@ -299,13 +262,8 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     super.dispose();
   }
 
-  // ============================================================
-  //  بناء الواجهة
-  // ============================================================
   @override
   Widget build(BuildContext context) {
-    debugPrint('🔨 بناء الواجهة - عدد المستخدمين: ${_users.length}');
-    debugPrint('🔨 حالة التحميل: $_isLoading');
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -400,9 +358,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     );
   }
 
-  // ============================================================
-  //  رأس الصفحة
-  // ============================================================
   Widget _buildSliverHeader() {
     return SliverAppBar(
       pinned: true,
@@ -450,9 +405,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     );
   }
 
-  // ============================================================
-  //  شريط الإحصائيات
-  // ============================================================
   Widget _buildStatsRow() {
     final total = _users.length;
     final students = _users.where((u) => u['role'] == 'student').length;
@@ -535,9 +487,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     );
   }
 
-  // ============================================================
-  //  البحث والفلاتر
-  // ============================================================
   Widget _buildSearchAndFilter() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -605,9 +554,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     );
   }
 
-  // ============================================================
-  //  بطاقة مستخدم
-  // ============================================================
   Widget _buildUserCard(Map<String, dynamic> user) {
     final role = (user['role'] ?? 'student').toString();
     final roleColor = _getRoleColor(role);
@@ -786,9 +732,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     );
   }
 
-  // ============================================================
-  //  حالة فارغة
-  // ============================================================
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -820,9 +763,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     );
   }
 
-  // ============================================================
-  //  زر الإضافة
-  // ============================================================
   Widget _buildFAB() {
     return FloatingActionButton.extended(
       onPressed: _goToAddUser,
@@ -835,9 +775,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     );
   }
 
-  // ============================================================
-  //  خيارات المستخدم (Bottom Sheet)
-  // ============================================================
   void _showUserOptions(Map<String, dynamic> user) {
     showModalBottomSheet(
       context: context,
@@ -884,9 +821,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     );
   }
 
-  // ============================================================
-  //  عرض تفاصيل المستخدم
-  // ============================================================
   void _showUserDetails(Map<String, dynamic> user) {
     final String initial = (user['name'] ?? '?').toString().isNotEmpty
         ? (user['name'] ?? '?')[0]
@@ -1058,9 +992,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     );
   }
 
-  // ============================================================
-  //  التنقل لتعديل مستخدم
-  // ============================================================
   Future<void> _goToEditUser(Map<String, dynamic> user) async {
     final result = await Navigator.push(
       context,
@@ -1078,9 +1009,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     }
   }
 
-  // ============================================================
-  //  نافذة تأكيد الحذف
-  // ============================================================
   void _showDeleteDialog(Map<String, dynamic> user) {
     showDialog(
       context: context,
@@ -1130,9 +1058,6 @@ Future<void> _deleteUser(Map<String, dynamic> user) async {
     );
   }
 
-  // ============================================================
-  //  مكونات مساعدة
-  // ============================================================
   Widget _buildOptionTile({
     required IconData icon,
     required String title,

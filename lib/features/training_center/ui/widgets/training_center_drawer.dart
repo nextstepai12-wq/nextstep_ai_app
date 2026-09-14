@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/widgets/training_center_drawer.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -20,10 +19,8 @@ class TrainingCenterDrawer extends StatelessWidget {
         textDirection: TextDirection.rtl,
         child: Column(
           children: [
-            // ✅ رأس القائمة - معلومات المركز
             _buildDrawerHeader(context),
 
-            // ✅ قائمة العناصر
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -96,7 +93,6 @@ class TrainingCenterDrawer extends StatelessWidget {
               ),
             ),
 
-            // ✅ نسخة التطبيق في الأسفل
             Padding(
               padding: EdgeInsets.all(16.r),
               child: Text(
@@ -113,9 +109,6 @@ class TrainingCenterDrawer extends StatelessWidget {
     );
   }
 
-  // ============================
-  //  رأس القائمة الجانبية
-  // ============================
   Widget _buildDrawerHeader(BuildContext context) {
     return BlocBuilder<TrainingCenterBloc, TrainingCenterState>(
       builder: (context, state) {
@@ -144,7 +137,6 @@ class TrainingCenterDrawer extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // ✅ شعار المركز
               CircleAvatar(
                 radius: 40.r,
                 backgroundColor: Colors.white,
@@ -160,7 +152,6 @@ class TrainingCenterDrawer extends StatelessWidget {
               ),
               SizedBox(height: 8.h),
 
-              // ✅ اسم المركز
               if (isLoading)
                 Container(
                   width: 100.w,
@@ -180,7 +171,6 @@ class TrainingCenterDrawer extends StatelessWidget {
                 ),
               SizedBox(height: 4.h),
 
-              // ✅ حالة المركز
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                 decoration: BoxDecoration(
@@ -202,9 +192,6 @@ class TrainingCenterDrawer extends StatelessWidget {
     );
   }
 
-  // ============================
-  //  عنصر القائمة
-  // ============================
   Widget _buildDrawerItem(
     BuildContext context, {
     required IconData icon,
@@ -240,7 +227,7 @@ class TrainingCenterDrawer extends StatelessWidget {
           : null,
       onTap: onTap ??
           () {
-            Navigator.pop(context); // إغلاق القائمة
+            Navigator.pop(context);
             if (route != null) {
               context.push(route);
             }
@@ -249,9 +236,6 @@ class TrainingCenterDrawer extends StatelessWidget {
     );
   }
 
-  // ============================
-  //  فاصل
-  // ============================
   Widget _buildDivider() {
     return Divider(
       height: 1.h,
@@ -262,9 +246,6 @@ class TrainingCenterDrawer extends StatelessWidget {
     );
   }
 
-  // ============================
-  //  حوار تسجيل الخروج
-  // ============================
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -307,3 +288,4 @@ class TrainingCenterDrawer extends StatelessWidget {
     );
   }
 }
+

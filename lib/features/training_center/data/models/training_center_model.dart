@@ -1,4 +1,3 @@
-// lib/features/training_center/data/models/training_center_model.dart
 
 import 'package:equatable/equatable.dart';
 
@@ -19,7 +18,7 @@ class TrainingCenterModel extends Equatable {
   final double? rating;
   final int? studentCount;
   final int? programsCount;
-  final List<String>? specialties; // ✅ أضف هذه الخاصية
+  final List<String>? specialties;
 
   const TrainingCenterModel({
     required this.id,
@@ -38,7 +37,7 @@ class TrainingCenterModel extends Equatable {
     this.rating,
     this.studentCount,
     this.programsCount,
-    this.specialties, // ✅ أضفها هنا
+    this.specialties,
   });
 
   factory TrainingCenterModel.fromJson(Map<String, dynamic> json) {
@@ -67,7 +66,7 @@ class TrainingCenterModel extends Equatable {
       programsCount: json['programs_count'],
       specialties: json['specialties'] != null
           ? List<String>.from(json['specialties'])
-          : null, // ✅ أضفها هنا مع التحويل
+          : null,
     );
   }
 
@@ -86,7 +85,7 @@ class TrainingCenterModel extends Equatable {
       'rating': rating,
       'student_count': studentCount,
       'programs_count': programsCount,
-      'specialties': specialties, // ✅ أضفها هنا
+      'specialties': specialties,
     };
   }
 
@@ -108,6 +107,6 @@ class TrainingCenterModel extends Equatable {
         rating,
         studentCount,
         programsCount,
-        specialties, // ✅ أضفها هنا
+        specialties,
       ];
 }

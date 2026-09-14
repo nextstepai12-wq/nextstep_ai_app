@@ -20,7 +20,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
   bool _isLoading = true;
   String? _errorMessage;
 
-  // بيانات إحصائيات
   final Map<String, dynamic> _stats = {
     'users': 1250,
     'universities': 24,

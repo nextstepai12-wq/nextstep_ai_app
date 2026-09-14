@@ -209,9 +209,6 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -243,9 +240,6 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  Header
-  // ============================================================
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -309,9 +303,6 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  Last Updated
-  // ============================================================
   Widget _buildLastUpdated() {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -343,9 +334,6 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  Section Builder
-  // ============================================================
   Widget _buildSection({
     required String title,
     required IconData icon,
@@ -426,9 +414,6 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  Contact Section
-  // ============================================================
   Widget _buildContactSection() {
     return Container(
       padding: const EdgeInsets.all(18),
@@ -523,9 +508,6 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  Agreement Buttons
-  // ============================================================
   Widget _buildAgreementButtons() {
     return Row(
       children: [

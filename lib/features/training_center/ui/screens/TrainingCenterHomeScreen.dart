@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/training_center_home_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +12,6 @@ import '../widgets/center_stat_card.dart';
 import '../widgets/training_center_drawer.dart';
 import '../screens/notifications_screen.dart' as training;
 
-
 class TrainingCenterHomeScreen extends StatefulWidget {
   const TrainingCenterHomeScreen({super.key});
 
@@ -25,7 +23,6 @@ class TrainingCenterHomeScreen extends StatefulWidget {
 class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // ✅ بيانات وهمية للإحصائيات (سيتم استبدالها ببيانات حقيقية)
   final Map<String, dynamic> _mockStats = {
     'programsCount': 12,
     'studentsCount': 156,
@@ -49,9 +46,6 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen> {
     );
   }
 
-  // ============================
-  //  AppBar
-  // ============================
 PreferredSizeWidget _buildAppBar() {
   return AppBar(
     leading: IconButton(
@@ -88,7 +82,6 @@ PreferredSizeWidget _buildAppBar() {
           IconButton(
             icon: Icon(Icons.notifications_outlined, size: 22.sp),
             onPressed: () {
-              // ✅ استخدم pushNamed
               context.push('/training-center/notifications');
             },
             padding: EdgeInsets.zero,
@@ -136,9 +129,6 @@ PreferredSizeWidget _buildAppBar() {
   );
 }
 
-  // ============================
-  //  Body
-  // ============================
   Widget _buildBody() {
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
@@ -159,9 +149,6 @@ PreferredSizeWidget _buildAppBar() {
     );
   }
 
-  // ============================
-  //  Welcome Section
-  // ============================
   Widget _buildWelcomeSection() {
     return BlocBuilder<TrainingCenterBloc, TrainingCenterState>(
       builder: (context, state) {
@@ -239,9 +226,6 @@ PreferredSizeWidget _buildAppBar() {
     );
   }
 
-  // ============================
-  //  Statistics Section
-  // ============================
   Widget _buildStatisticsSection() {
     final stats = _mockStats;
 
@@ -280,9 +264,6 @@ PreferredSizeWidget _buildAppBar() {
     );
   }
 
-  // ============================
-  //  Programs Section
-  // ============================
   Widget _buildProgramsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -461,9 +442,6 @@ PreferredSizeWidget _buildAppBar() {
     );
   }
 
-// ============================
-//  Recommended Centers Section (المصحح)
-// ============================
 Widget _buildRecommendedCentersSection() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,7 +468,7 @@ Widget _buildRecommendedCentersSection() {
             }
 
             return SizedBox(
-              height: 85.h, // ✅ تقليل الارتفاع
+              height: 85.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: centers.length > 5 ? 5 : centers.length,
@@ -540,14 +518,11 @@ Widget _buildRecommendedCentersSection() {
   );
 }
 
-// ============================
-//  Recommended Center Item (المصحح)
-// ============================
 Widget _buildRecommendedCenterItem(dynamic center) {
   return Container(
-    width: 120.w, // ✅ تقليل العرض
-    margin: EdgeInsets.only(left: 8.w), // ✅ تغيير من right إلى left (RTL)
-    padding: EdgeInsets.all(8.r), // ✅ تقليل padding
+    width: 120.w,
+    margin: EdgeInsets.only(left: 8.w),
+    padding: EdgeInsets.all(8.r),
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(10.r),
@@ -561,11 +536,11 @@ Widget _buildRecommendedCenterItem(dynamic center) {
       ],
     ),
     child: Column(
-      mainAxisSize: MainAxisSize.min, // ✅ إضافة هذا لمنع التمدد
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CircleAvatar(
-          radius: 16.r, // ✅ تقليل حجم الصورة
+          radius: 16.r,
           backgroundColor: Colors.grey.shade200,
           backgroundImage: center.logoUrl != null
               ? NetworkImage(center.logoUrl!)
@@ -573,17 +548,17 @@ Widget _buildRecommendedCenterItem(dynamic center) {
           child: center.logoUrl == null
               ? Icon(
                   Icons.business_rounded,
-                  size: 16.sp, // ✅ تقليل حجم الأيقونة
+                  size: 16.sp,
                   color: Colors.grey.shade600,
                 )
               : null,
         ),
-        SizedBox(height: 2.h), // ✅ تقليل المسافة
-        Flexible( // ✅ استخدام Flexible لمنع التمدد
+        SizedBox(height: 2.h),
+        Flexible(
           child: Text(
             center.name ?? 'مركز تدريب',
             style: TextStyle(
-              fontSize: 9.sp, // ✅ تقليل حجم الخط
+              fontSize: 9.sp,
               fontWeight: FontWeight.w500,
               color: Colors.grey.shade800,
             ),
@@ -598,14 +573,14 @@ Widget _buildRecommendedCenterItem(dynamic center) {
           children: [
             Icon(
               Icons.star_rounded,
-              size: 8.sp, // ✅ تقليل حجم الأيقونة
+              size: 8.sp,
               color: Colors.amber.shade600,
             ),
             SizedBox(width: 1.w),
             Text(
               '4.5',
               style: TextStyle(
-                fontSize: 8.sp, // ✅ تقليل حجم الخط
+                fontSize: 8.sp,
                 color: Colors.grey.shade600,
               ),
             ),
@@ -616,13 +591,9 @@ Widget _buildRecommendedCenterItem(dynamic center) {
   );
 }
 
-
-// ============================
-//  Empty Centers State (المصحح)
-// ============================
 Widget _buildEmptyCentersState() {
   return Container(
-    height: 75.h, // ✅ تقليل الارتفاع
+    height: 75.h,
     padding: EdgeInsets.symmetric(horizontal: 12.w),
     decoration: BoxDecoration(
       color: Colors.grey.shade50,
@@ -641,15 +612,12 @@ Widget _buildEmptyCentersState() {
   );
 }
 
-// ============================
-//  Recommended Centers Shimmer (المصحح)
-// ============================
 Widget _buildRecommendedCentersShimmer() {
   return Shimmer.fromColors(
     baseColor: Colors.grey.shade300,
     highlightColor: Colors.grey.shade100,
     child: SizedBox(
-      height: 75.h, // ✅ تقليل الارتفاع
+      height: 75.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: 3,

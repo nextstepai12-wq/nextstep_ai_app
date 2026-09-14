@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/dashboard_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,7 +19,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isDataLoaded = false;
 
-  // ✅ بيانات وهمية للإحصائيات (سيتم استبدالها ببيانات حقيقية من الـ API)
   final Map<String, dynamic> _mockStats = {
     'totalCourses': 12,
     'pendingCourses': 3,
@@ -51,9 +49,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ============================
-  //  AppBar
-  // ============================
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: IconButton(
@@ -197,9 +192,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ============================
-  //  Body
-  // ============================
   Widget _buildBody() {
     return SingleChildScrollView(
       padding: EdgeInsets.all(14.r),
@@ -221,9 +213,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ============================
-  //  Welcome Header
-  // ============================
   Widget _buildWelcomeHeader() {
     return BlocBuilder<TrainingCenterBloc, TrainingCenterState>(
       builder: (context, state) {
@@ -296,9 +285,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ============================
-  //  Capacity Alert Banner
-  // ============================
   Widget _buildCapacityAlert() {
     return Container(
       padding: EdgeInsets.all(14.r),
@@ -373,9 +359,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ============================
-  //  Metric Cards
-  // ============================
   Widget _buildMetricCards() {
     final stats = _mockStats;
 
@@ -518,9 +501,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ============================
-  //  Charts Section
-  // ============================
   Widget _buildChartsSection() {
     return Container(
       padding: EdgeInsets.all(16.r),
@@ -626,9 +606,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ============================
-  //  Recent Activity
-  // ============================
   Widget _buildRecentActivity() {
     return Container(
       padding: EdgeInsets.all(16.r),

@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 
-/// ============================================================
-///  شاشة إضافة / تعديل جامعة — تصميم 2026
-///  صفحة كاملة مستقلة (وليست ديالوج منبثق) يُنتقل إليها عبر:
-///  context.push('/admin/universities/add')
-/// ============================================================
 class AdminAddUniversityScreen extends StatefulWidget {
   final bool isEditing;
   final Map<String, dynamic>? universityData;
@@ -85,18 +80,6 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
-
-    // TODO: اربط هنا الاستدعاء الفعلي لإنشاء/تحديث الجامعة عبر Supabase
-    // مثال:
-    // await UniversityService().save(
-    //   name: _nameController.text.trim(),
-    //   location: _locationController.text.trim(),
-    //   email: _emailController.text.trim(),
-    //   phone: _phoneController.text.trim(),
-    //   website: _websiteController.text.trim(),
-    //   status: _selectedStatus,
-    //   isEditing: widget.isEditing,
-    // );
 
     await Future.delayed(const Duration(milliseconds: 900));
 
@@ -224,9 +207,6 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
     );
   }
 
-  // ============================================================
-  //  محدد الحالة — بطاقات قابلة للاختيار
-  // ============================================================
   Widget _buildStatusSelector() {
     return Row(
       children: _statuses.map((s) {
@@ -280,9 +260,6 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
     );
   }
 
-  // ============================================================
-  //  بطاقة الحقول
-  // ============================================================
   Widget _buildFormCard() {
     return Container(
       padding: const EdgeInsets.all(20),

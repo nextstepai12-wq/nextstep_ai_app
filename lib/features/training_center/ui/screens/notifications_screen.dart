@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/notifications_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -398,7 +397,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // ✅ دالة _buildNotificationItem المصححة
   Widget _buildNotificationItem(Map<String, dynamic> notification) {
     final isRead = notification['isRead'] as bool;
     final icon = _getNotificationIcon(notification['type']);
@@ -411,7 +409,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       decoration: BoxDecoration(
         color: isRead ? Colors.white : Colors.blue.shade50,
         borderRadius: BorderRadius.circular(16.r),
-        // ✅ إضافة الحد فقط للإشعارات غير المقروءة
         border: isRead
             ? null
             : Border(

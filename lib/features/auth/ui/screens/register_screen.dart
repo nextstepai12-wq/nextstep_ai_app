@@ -134,30 +134,23 @@ Future<void> _register() async {
   setState(() => _isLoading = true);
 
   try {
-        debugPrint('📊 _selectedPath = $_selectedPath');
 
-    // 1️⃣ إنشاء حساب في Supabase Auth
     final authResponse = await _supabase.signUpWithEmail(
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
-      userMetadata: {
-        'full_name': _fullNameController.text.trim(),
-        'role': 'student',
-      },
+      fullName: _fullNameController.text.trim(),
+      role: 'student',
     );
 
     if (authResponse.user == null) {
       throw Exception('فشل إنشاء الحساب');
     }
 
-    // ✅ user.id هو UUID (String)
     final userId = authResponse.user!.id;
 
-    // 2️⃣ إنشاء ملف الطالب في جدول student_profiles
-    // ✅ نستخدم الدالة الجديدة upsertStudentProfileWithUuid
     await _supabase.upsertStudentProfileWithUuid(
       StudentProfileModel(
-        userId: userId, // ✅ String (سيتم تحويله إلى int داخل الدالة)
+        userId: userId,
         studentType: _selectedPath,
         phone: _selectedPhoneCode! + _phoneController.text.trim(),
         highSchoolScore: _selectedPath == 'new_student'
@@ -172,7 +165,7 @@ Future<void> _register() async {
         currentMajorId: _selectedPath == 'university_student'
             ? int.tryParse(_majorController.text)
             : null,
-        academicLevel: _selectedYear, // ✅ استخدم academicLevel بدلاً من academicYear
+        academicLevel: _selectedYear,
         gpa: _selectedPath == 'university_student'
             ? double.tryParse(_gpaController.text)
             : null,
@@ -273,9 +266,6 @@ Future<void> _register() async {
     );
   }
 
-  // ============================================================
-  //  خلفية زخرفية
-  // ============================================================
   Widget _buildBackgroundDecor(Size size) {
     return Stack(
       children: [
@@ -317,9 +307,6 @@ Future<void> _register() async {
     );
   }
 
-  // ============================================================
-  //  الرأس
-  // ============================================================
   Widget _buildHeader() {
     return Column(
       children: [
@@ -381,9 +368,6 @@ Future<void> _register() async {
     );
   }
 
-  // ============================================================
-  //  اختيار المسار
-  // ============================================================
 Widget _buildPathSelection() {
   return Row(
     children: [
@@ -402,8 +386,8 @@ Widget _buildPathSelection() {
           title: 'طالب جامعي',
           subtitle: 'لتطوير مسارك الأكاديمي والمهني',
           icon: Icons.local_library_rounded,
-          isSelected: _selectedPath == 'university_student',  // ✅ تم التصحيح
-          onTap: () => setState(() => _selectedPath = 'university_student'),  // ✅ تم التصحيح
+          isSelected: _selectedPath == 'university_student',
+          onTap: () => setState(() => _selectedPath = 'university_student'),
         ),
       ),
     ],
@@ -496,9 +480,6 @@ Widget _buildPathSelection() {
     );
   }
 
-  // ============================================================
-  //  الفورم (Glass Card)
-  // ============================================================
   Widget _buildForm() {
     return Container(
       padding: const EdgeInsets.all(22),
@@ -623,9 +604,6 @@ Widget _buildPathSelection() {
     );
   }
 
-  // ============================================================
-  //  عناصر مساعدة موحّدة للحقول
-  // ============================================================
   InputDecoration _fieldDecoration({
     required String hint,
     required IconData icon,

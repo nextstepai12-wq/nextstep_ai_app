@@ -1,4 +1,4 @@
-﻿// lib/features/student/ui/screens/assessment_screen.dart
+﻿
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -6,10 +6,6 @@ import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 
-/// ============================================================
-///  شاشة التقييم الذكي (AI Assessment)
-///  تجمع بيانات الطالب لبناء ملفه الشخصي
-/// ============================================================
 class AssessmentScreen extends StatefulWidget {
   const AssessmentScreen({super.key});
 
@@ -19,9 +15,6 @@ class AssessmentScreen extends StatefulWidget {
 
 class _AssessmentScreenState extends State<AssessmentScreen>
     with SingleTickerProviderStateMixin {
-  // ============================================================
-  //  المتغيرات
-  // ============================================================
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -47,9 +40,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  // ============================================================
-  //  أسئلة افتراضية
-  // ============================================================
   List<Map<String, dynamic>> _getDefaultQuestions() {
     return [
       {
@@ -91,9 +81,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     ];
   }
 
-  // ============================================================
-  //  دوال مساعدة
-  // ============================================================
   String _getDimensionName(String key) {
     switch (key) {
       case 'programming':
@@ -141,18 +128,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
   }
 
   void _debugPrintQuestions() {
-    debugPrint('📊 ==== DEBUG QUESTIONS ====');
-    debugPrint('📊 عدد الأسئلة: ${_questions.length}');
     for (int i = 0; i < _questions.length; i++) {
-      debugPrint('📊 السؤال ${i + 1}: ${_questions[i]['question_text']}');
-      debugPrint('📊 الخيارات: ${_questions[i]['options']}');
     }
-    debugPrint('📊 ========================');
   }
 
-  // ============================================================
-  //  اختيار إجابة
-  // ============================================================
   void _selectAnswer(int questionIndex, int optionIndex) {
     setState(() {
       _answers[questionIndex] = optionIndex;
@@ -172,9 +151,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     }
   }
 
-  // ============================================================
-  //  حساب النتائج
-  // ============================================================
   void _calculateResults() {
     final Map<String, List<int>> dimensionAnswers = {};
 
@@ -203,12 +179,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       _dimensions.updateAll((key, value) => results[key] ?? 50.0);
     });
 
-    debugPrint('📊 نتائج التقييم: $_dimensions');
   }
 
-  // ============================================================
-  //  تحميل الإجابات المحفوظة
-  // ============================================================
   Future<void> _loadSavedAnswers() async {
     try {
       final saved = await HiveStorage.getData('assessment_cache', 'answers');
@@ -219,9 +191,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     } catch (_) {}
   }
 
-  // ============================================================
-  //  تحميل الأسئلة
-  // ============================================================
   Future<void> _loadQuestions() async {
     if (!mounted) return;
 
@@ -231,9 +200,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     });
 
     try {
-      debugPrint('🔄 جاري جلب أسئلة التقييم...');
 
-      // ✅ 1. محاولة جلب من Hive أولاً (Offline-First)
       try {
         final cached = await HiveStorage.getData('assessment_cache', 'questions');
         if (cached != null && (cached as List).isNotEmpty) {
@@ -247,16 +214,13 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               _updateProgress();
               _errorMessage = null;
             });
-            debugPrint('✅ تم تحميل ${_questions.length} سؤال من Hive');
             _debugPrintQuestions();
             return;
           }
         }
       } catch (e) {
-        debugPrint('⚠️ فشل قراءة Hive: $e');
       }
 
-      // ✅ 2. جلب الأسئلة من Supabase
       final supabase = SupabaseService();
       final response = await supabase.client
           .from('survey_questions')
@@ -310,13 +274,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         }).toList();
 
         _totalQuestions = _questions.length;
-        debugPrint('📊 تم تحميل $_totalQuestions سؤال من Supabase');
 
         try {
           await HiveStorage.saveData('assessment_cache', 'questions', _questions);
-          debugPrint('✅ تم حفظ $_totalQuestions سؤال في Hive');
         } catch (e) {
-          debugPrint('⚠️ فشل حفظ الأسئلة في Hive: $e');
         }
 
         await _loadSavedAnswers();
@@ -330,7 +291,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           _debugPrintQuestions();
         }
       } else {
-        debugPrint('⚠️ لا توجد أسئلة في Supabase، استخدام أسئلة افتراضية');
         _questions = _getDefaultQuestions();
         _totalQuestions = _questions.length;
 
@@ -348,7 +308,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         }
       }
     } catch (e) {
-      debugPrint('❌ خطأ في جلب الأسئلة: $e');
 
       _questions = _getDefaultQuestions();
       _totalQuestions = _questions.length;
@@ -364,9 +323,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     }
   }
 
-  // ============================================================
-  //  حفظ النتائج
-  // ============================================================
   Future<void> _submitAssessment() async {
     if (_answers.length < _totalQuestions) {
       _showSnackBar(
@@ -412,9 +368,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     }
   }
 
-  // ============================================================
-  //  دورة الحياة
-  // ============================================================
   @override
   void initState() {
     super.initState();
@@ -442,14 +395,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     super.dispose();
   }
 
-  // ============================================================
-  //  بناء الجسم الرئيسي
-  // ============================================================
   Widget _buildBody() {
-    debugPrint('🔨 بناء الواجهة - عدد الأسئلة: ${_questions.length}');
-    debugPrint('🔨 حالة التحميل: $_isLoading');
-    debugPrint('🔨 المؤشر الحالي: $_currentQuestionIndex');
-    debugPrint('🔨 إجمالي الأسئلة: $_totalQuestions');
 
     if (_isLoading) {
       return const Center(
@@ -511,9 +457,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ============================================================
-  //  بناء الواجهة الرئيسية
-  // ============================================================
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -526,9 +469,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -549,9 +489,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ============================================================
-  //  شريط التقدم
-  // ============================================================
   Widget _buildProgressBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -602,9 +539,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ============================================================
-  //  بطاقة السؤال
-  // ============================================================
   Widget _buildQuestionCard() {
     if (_questions.isEmpty || _currentQuestionIndex >= _questions.length) {
       return const Center(
@@ -620,15 +554,11 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     final dimensionIcon = _getDimensionIcon(dimension);
     final dimensionName = _getDimensionName(dimension);
 
-    debugPrint('📝 عرض السؤال ${_currentQuestionIndex + 1}: ${question['question_text']}');
-    debugPrint('📝 الخيارات: $options');
-
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // مؤشر السؤال
           Row(
             children: [
               Container(
@@ -665,7 +595,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             ],
           ),
           const SizedBox(height: 20),
-          // نص السؤال
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -763,7 +692,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             ),
           ),
           const SizedBox(height: 16),
-          // أزرار التنقل
           Row(
             children: [
               if (_currentQuestionIndex > 0)
@@ -822,9 +750,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ============================================================
-  //  بطاقة النتائج
-  // ============================================================
   Widget _buildResultsCard() {
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -978,9 +903,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ============================================================
-  //  دوال مساعدة
-  // ============================================================
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)

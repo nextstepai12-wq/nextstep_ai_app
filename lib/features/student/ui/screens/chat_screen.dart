@@ -20,7 +20,6 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isTyping = false;
   String _userName = '';
 
-  // أسئلة مقترحة
   final List<String> _suggestedQuestions = [
     'ما هو أفضل تخصص يناسبني؟',
     'كيف أختار جامعتي؟',
@@ -47,10 +46,6 @@ class _ChatScreenState extends State<ChatScreen> {
         _userName = cachedData['name']!;
       }
 
-      // ✅ جلب تاريخ المحادثة من قاعدة البيانات
-      // TODO: استدعاء API لجلب المحادثات السابقة
-
-      // رسائل ترحيبية
       _messages = [
         {
           'isUser': false,
@@ -78,7 +73,6 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
 
-    // إضافة رسالة المستخدم
     setState(() {
       _messages.add({
         'isUser': true,
@@ -91,8 +85,6 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
 
     try {
-      // ✅ استدعاء AI API للحصول على الرد
-      // TODO: استدعاء API للذكاء الاصطناعي
       await Future.delayed(const Duration(seconds: 1));
 
       final response = _getAIResponse(message.trim());
@@ -192,7 +184,6 @@ class _ChatScreenState extends State<ChatScreen> {
         appBar: _buildAppBar(),
         body: Column(
           children: [
-            // Messages Area
             Expanded(
               child: _isLoading
                   ? const Center(
@@ -205,14 +196,11 @@ class _ChatScreenState extends State<ChatScreen> {
                       : _buildMessagesList(),
             ),
 
-            // Suggested Questions
             if (_messages.length <= 2 && !_isLoading)
               _buildSuggestedQuestions(),
 
-            // Typing Indicator
             if (_isTyping) _buildTypingIndicator(),
 
-            // Input Area
             _buildInputArea(),
           ],
         ),
@@ -261,7 +249,6 @@ leading: const SizedBox.shrink(),
             color: AppTheme.primaryContainer,
           ),
           onPressed: () {
-            // TODO: حذف تاريخ المحادثة
           },
         ),
       ],

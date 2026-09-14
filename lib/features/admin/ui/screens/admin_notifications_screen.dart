@@ -1,12 +1,7 @@
-// lib/features/admin/ui/screens/admin_notifications_screen.dart
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 
-/// ============================================================
-///  شاشة إدارة الإشعارات — تصميم احترافي 2026
-///  مع تخزين محلي Offline-First
-/// ============================================================
 class AdminNotificationsScreen extends StatefulWidget {
   const AdminNotificationsScreen({super.key});
 
@@ -17,20 +12,15 @@ class AdminNotificationsScreen extends StatefulWidget {
 
 class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     with SingleTickerProviderStateMixin {
-  // ============================================================
-  //  المتغيرات
-  // ============================================================
   bool _isLoading = true;
   String? _errorMessage;
   String _selectedTab = 'الكل';
 
-  // إحصائيات
   int _totalNotifications = 0;
   int _unreadCount = 0;
   int _sentCount = 0;
   int _readCount = 0;
 
-  // قائمة الإشعارات
   List<Map<String, dynamic>> _notifications = [];
 
   final List<String> _tabs = ['الكل', 'غير مقروء', 'مقروء', 'مرسلة'];
@@ -39,9 +29,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  // ============================================================
-  //  دورة الحياة
-  // ============================================================
   @override
   void initState() {
     super.initState();
@@ -69,9 +56,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     super.dispose();
   }
 
-  // ============================================================
-  //  تحميل البيانات من Hive
-  // ============================================================
   Future<void> _loadData() async {
     try {
       if (!mounted) return;
@@ -80,7 +64,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
         _errorMessage = null;
       });
 
-      // قراءة الإشعارات من Hive
       final cached =
           await HiveStorage.getData('notifications_cache', 'notifications');
 
@@ -88,7 +71,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
         _notifications = List<Map<String, dynamic>>.from(cached);
         _updateStats();
       } else {
-        // بيانات وهمية للعرض
         _notifications = _getMockNotifications();
         await HiveStorage.saveData(
             'notifications_cache', 'notifications', _notifications);
@@ -133,9 +115,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     return _notifications;
   }
 
-  // ============================================================
-  //  بيانات وهمية للعرض
-  // ============================================================
   List<Map<String, dynamic>> _getMockNotifications() {
     return [
       {
@@ -206,9 +185,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     ];
   }
 
-  // ============================================================
-  //  بناء الواجهة
-  // ============================================================
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -260,9 +236,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -296,9 +269,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     );
   }
 
-  // ============================================================
-  //  شريط الإحصائيات
-  // ============================================================
   Widget _buildStatsRow() {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -397,9 +367,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     );
   }
 
-  // ============================================================
-  //  التبويبات
-  // ============================================================
   Widget _buildTabs() {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -437,9 +404,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     );
   }
 
-  // ============================================================
-  //  بطاقة الإشعار (تصميم احترافي)
-  // ============================================================
   Widget _buildNotificationCard(Map<String, dynamic> notification) {
     final isUnread = notification['status'] == 'غير مقروء';
     final isSent = notification['status'] == 'مرسلة';
@@ -468,7 +432,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     final icon = typeIcons[notification['type']] ?? Icons.notifications_rounded;
     final typeLabel = typeLabels[notification['type']] ?? 'عام';
 
-    // لون الأولوية
     Color priorityColor = Colors.grey;
     String priorityLabel = 'عادي';
     if (priority == 'urgent') {
@@ -514,7 +477,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // الصف الأول: الأيقونة والمعلومات الرئيسية
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -613,7 +575,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
             ],
           ),
           const SizedBox(height: 8),
-          // نص الإشعار
           Text(
             notification['message'] as String,
             style: TextStyle(
@@ -625,7 +586,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 10),
-          // الصف السفلي: الوقت والإحصائيات
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -684,9 +644,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     );
   }
 
-  // ============================================================
-  //  زر الإضافة
-  // ============================================================
   Widget _buildFAB() {
     return FloatingActionButton.extended(
       onPressed: () => _showSendNotificationDialog(context),
@@ -699,9 +656,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     );
   }
 
-  // ============================================================
-  //  تحديد الكل كمقروء
-  // ============================================================
   Future<void> _markAllAsRead() async {
     if (_unreadCount == 0) {
       _showSnackBar('جميع الإشعارات مقروءة بالفعل', Colors.blue);
@@ -722,9 +676,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     _showSnackBar('✅ تم تحديد جميع الإشعارات كمقروءة', Colors.green);
   }
 
-  // ============================================================
-  //  حالة فارغة
-  // ============================================================
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -770,9 +721,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     );
   }
 
-  // ============================================================
-  //  حالة الخطأ
-  // ============================================================
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -806,9 +754,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     );
   }
 
-  // ============================================================
-  //  نافذة إرسال إشعار جديد - ✅ مصحح RTL
-  // ============================================================
   void _showSendNotificationDialog(BuildContext context) {
     final titleController = TextEditingController();
     final messageController = TextEditingController();
@@ -820,7 +765,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) => Directionality(
-        textDirection: TextDirection.rtl, // ✅ ضمان RTL
+        textDirection: TextDirection.rtl,
         child: AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Row(
@@ -858,7 +803,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // عنوان الإشعار
                 TextField(
                   controller: titleController,
                   textDirection: TextDirection.rtl,
@@ -882,7 +826,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                   ),
                 ),
                 const SizedBox(height: 14),
-                // نص الإشعار
                 TextField(
                   controller: messageController,
                   textDirection: TextDirection.rtl,
@@ -907,10 +850,9 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                   ),
                 ),
                 const SizedBox(height: 14),
-                // الفئة المستهدفة
                 DropdownButtonFormField<String>(
                   initialValue: selectedTarget,
-                  isExpanded: true, // ✅ يوسع المساحة
+                  isExpanded: true,
                   decoration: InputDecoration(
                     labelText: 'الفئة المستهدفة',
                     border: OutlineInputBorder(
@@ -945,7 +887,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                   },
                 ),
                 const SizedBox(height: 14),
-                // نوع الإشعار والأولوية - ✅ استخدام Expanded لحل مشكلة overflow
                 Row(
                   children: [
                     Expanded(
@@ -1062,7 +1003,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                   'author': 'مدير النظام',
                 };
 
-                // حفظ في Hive
                 final cached = await HiveStorage.getData(
                     'notifications_cache', 'notifications');
                 List<Map<String, dynamic>> notifications =
@@ -1095,9 +1035,6 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     );
   }
 
-  // ============================================================
-  //  دوال مساعدة
-  // ============================================================
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)

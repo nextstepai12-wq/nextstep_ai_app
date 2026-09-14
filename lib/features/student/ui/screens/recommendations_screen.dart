@@ -1,14 +1,10 @@
-﻿// lib/features/student/ui/screens/recommendations_screen.dart
+﻿
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 
-/// ============================================================
-///  شاشة التوصيات - تعرض التخصصات والجامعات المناسبة
-///  بناءً على نتائج التقييم الذكي (الأبعاد الستة)
-/// ============================================================
 class RecommendationsScreen extends StatefulWidget {
   const RecommendationsScreen({super.key});
 
@@ -18,31 +14,22 @@ class RecommendationsScreen extends StatefulWidget {
 
 class _RecommendationsScreenState extends State<RecommendationsScreen>
     with SingleTickerProviderStateMixin {
-  // ============================================================
-  //  المتغيرات
-  // ============================================================
   bool _isLoading = true;
   String? _errorMessage;
   String _selectedFilter = 'الكل';
 
-  // نتائج التقييم (الأبعاد الستة)
   Map<String, double> _dimensions = {};
 
-  // قائمة التخصصات الموصى بها
   List<Map<String, dynamic>> _recommendations = [];
   List<Map<String, dynamic>> _allMajors = [];
   List<Map<String, dynamic>> _allUniversities = [];
 
   final List<String> _filterOptions = ['الكل', 'هندسة', 'علوم', 'إدارة', 'طب'];
 
-  // الأنيميشن
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  // ============================================================
-  //  دوال مساعدة
-  // ============================================================
   String _getDimensionName(String key) {
     switch (key) {
       case 'programming':
@@ -87,9 +74,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     return Colors.red;
   }
 
-  // ============================================================
-  //  حساب التوافق بين الطالب والتخصص
-  // ============================================================
   double _calculateCompatibility(
     Map<String, double> studentDimensions,
     Map<String, dynamic> major,
@@ -104,7 +88,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
       if (majorDimensions.containsKey(key)) {
         final studentValue = studentDimensions[key] ?? 0;
         final majorValue = (majorDimensions[key] as num?)?.toDouble() ?? 0;
-        // الفرق بين القيمتين، كلما قل الفرق زاد التوافق
         final difference = (studentValue - majorValue).abs();
         final score = 100 - difference;
         totalScore += score.clamp(0, 100);
@@ -115,9 +98,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     return count > 0 ? totalScore / count : 0.0;
   }
 
-  // ============================================================
-  //  تحميل البيانات
-  // ============================================================
   Future<void> _loadData() async {
     if (!mounted) return;
 
@@ -127,13 +107,10 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     });
 
     try {
-      // ✅ 1. جلب نتائج التقييم من Hive
       final savedResults = await HiveStorage.getData('assessment_cache', 'results');
       if (savedResults != null && savedResults.isNotEmpty) {
         _dimensions = Map<String, double>.from(savedResults);
-        debugPrint('📊 تم تحميل نتائج التقييم: $_dimensions');
       } else {
-        // استخدام قيم افتراضية إذا لم توجد نتائج
         _dimensions = {
           'programming': 60.0,
           'math': 55.0,
@@ -142,10 +119,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
           'practical': 50.0,
           'management': 45.0,
         };
-        debugPrint('⚠️ استخدام قيم افتراضية للتقييم');
       }
 
-      // ✅ 2. جلب التخصصات من Supabase
       final supabase = SupabaseService();
       final majorsResponse = await supabase.client
           .from('programs')
@@ -156,7 +131,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
       if (majorsResponse != null && majorsResponse.isNotEmpty) {
         _allMajors = List<Map<String, dynamic>>.from(majorsResponse);
 
-        // ✅ 3. حساب التوصيات
         _recommendations = _allMajors.map((major) {
           final compatibility = _calculateCompatibility(_dimensions, major);
           return {
@@ -167,21 +141,15 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
           };
         }).toList();
 
-        // ترتيب حسب نسبة التوافق (الأعلى أولاً)
         _recommendations.sort((a, b) {
           final aScore = (a['compatibility'] as num?)?.toDouble() ?? 0;
           final bScore = (b['compatibility'] as num?)?.toDouble() ?? 0;
           return bScore.compareTo(aScore);
         });
 
-        debugPrint('📊 تم حساب ${_recommendations.length} توصية');
-
-        // ✅ حفظ في Hive
         await HiveStorage.saveData('recommendations_cache', 'recommendations', _recommendations);
       } else {
-        // ✅ استخدام بيانات وهمية
         _recommendations = _getMockRecommendations();
-        debugPrint('⚠️ استخدام توصيات افتراضية');
       }
 
       if (mounted) {
@@ -191,9 +159,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
         });
       }
     } catch (e) {
-      debugPrint('❌ خطأ في تحميل التوصيات: $e');
 
-      // ✅ استخدام بيانات وهمية
       _recommendations = _getMockRecommendations();
 
       if (mounted) {
@@ -205,9 +171,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     }
   }
 
-  // ============================================================
-  //  توصيات افتراضية
-  // ============================================================
   List<Map<String, dynamic>> _getMockRecommendations() {
     return [
       {
@@ -285,9 +248,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     ];
   }
 
-  // ============================================================
-  //  دورة الحياة
-  // ============================================================
   @override
   void initState() {
     super.initState();
@@ -315,9 +275,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     super.dispose();
   }
 
-  // ============================================================
-  //  بناء الواجهة
-  // ============================================================
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -368,9 +325,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -391,9 +345,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ============================================================
-  //  رأس الصفحة
-  // ============================================================
   Widget _buildSliverHeader() {
     return SliverAppBar(
       pinned: true,
@@ -424,9 +375,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ============================================================
-  //  ملخص الأبعاد
-  // ============================================================
   Widget _buildDimensionsSummary() {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -483,9 +431,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ============================================================
-  //  فلترة
-  // ============================================================
   Widget _buildFilter() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -525,9 +470,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ============================================================
-  //  بطاقة التوصية
-  // ============================================================
   Widget _buildRecommendationCard(Map<String, dynamic> recommendation) {
     final compatibility = (recommendation['compatibility'] as num?)?.toDouble() ?? 0;
     final color = _getScoreColor(compatibility);
@@ -695,9 +637,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ============================================================
-  //  حالة فارغة
-  // ============================================================
   Widget _buildEmptyState() {
     return Center(
       child: Padding(

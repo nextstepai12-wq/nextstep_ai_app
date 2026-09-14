@@ -1,10 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'program_model.dart';
-
-// **************************************************************************
-// TypeAdapterGenerator
-// **************************************************************************
 
 class ProgramModelAdapter extends TypeAdapter<ProgramModel> {
   @override
@@ -66,3 +61,4 @@ class ProgramModelAdapter extends TypeAdapter<ProgramModel> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+

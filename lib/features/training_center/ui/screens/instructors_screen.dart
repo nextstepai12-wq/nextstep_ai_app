@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/instructors_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -59,9 +58,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 
-  // ============================
-  //  AppBar
-  // ============================
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: IconButton(
@@ -92,7 +88,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
         ],
       ),
       actions: [
-        // زر إضافة مدرب
         Container(
           height: 32.h,
           padding: EdgeInsets.symmetric(horizontal: 10.w),
@@ -149,21 +144,15 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 
-  // ============================
-  //  Body
-  // ============================
   Widget _buildBody() {
     return Column(
       children: [
-        // ✅ بطاقات الإحصائيات
         _buildStatsCards(),
         SizedBox(height: 8.h),
 
-        // ✅ شريط البحث والفلاتر
         _buildSearchAndFilter(),
         SizedBox(height: 8.h),
 
-        // ✅ قائمة المدربين
         Expanded(
           child: _buildInstructorsList(),
         ),
@@ -171,9 +160,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 
-  // ============================
-  //  Stats Cards
-  // ============================
   Widget _buildStatsCards() {
     return BlocBuilder<TrainingCenterBloc, TrainingCenterState>(
       builder: (context, state) {
@@ -317,9 +303,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 
-  // ============================
-  //  Search and Filter
-  // ============================
   Widget _buildSearchAndFilter() {
     return Container(
       padding: EdgeInsets.all(12.r),
@@ -372,7 +355,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 ),
               ),
               SizedBox(width: 10.w),
-              // فلتر الأقسام
               Container(
                 height: 44.h,
                 padding: EdgeInsets.symmetric(horizontal: 12.w),
@@ -415,7 +397,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 ),
               ),
               SizedBox(width: 10.w),
-              // زر الفلتر
               Container(
                 height: 44.h,
                 width: 44.w,
@@ -441,9 +422,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 
-  // ============================
-  //  Instructors List
-  // ============================
   Widget _buildInstructorsList() {
     final instructors = [
       {
@@ -503,7 +481,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     ];
 
     final filteredInstructors = instructors.where((instructor) {
-// ✅ صحيح - تحويل إلى String باستخدام .toString()
       final matchesSearch = instructor['name']
               .toString()
               .toLowerCase()
@@ -531,9 +508,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 
-  // ============================
-  //  Instructor Card
-  // ============================
   Widget _buildInstructorCard(Map<String, dynamic> instructor) {
     final isActive = instructor['status'] == 'نشط';
 
@@ -555,10 +529,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ✅ رأس البطاقة
           Row(
             children: [
-              // صورة المدرب
               Container(
                 width: 56.w,
                 height: 56.h,
@@ -578,7 +550,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 ),
               ),
               SizedBox(width: 12.w),
-              // معلومات المدرب
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -609,7 +580,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                   ],
                 ),
               ),
-              // زر المزيد
               IconButton(
                 onPressed: () {},
                 icon: Icon(
@@ -624,10 +594,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
           ),
           SizedBox(height: 10.h),
 
-          // ✅ التقييم والدورات
           Row(
             children: [
-              // التقييم
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
@@ -661,7 +629,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 ),
               ),
               SizedBox(width: 10.w),
-              // عدد الدورات
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 decoration: BoxDecoration(
@@ -691,11 +658,9 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
           ),
           SizedBox(height: 10.h),
 
-          // ✅ الحالة والأزرار
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // حالة المدرب
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
@@ -733,7 +698,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                   ],
                 ),
               ),
-              // أزرار الإجراءات
               Row(
                 children: [
                   IconButton(
@@ -768,9 +732,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 
-  // ============================
-  //  Empty State
-  // ============================
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -822,9 +783,6 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 
-  // ============================
-  //  Instructor Details Dialog
-  // ============================
   void _showInstructorDetails(
       BuildContext context, Map<String, dynamic> instructor) {
     showDialog(
@@ -944,3 +902,4 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 }
+

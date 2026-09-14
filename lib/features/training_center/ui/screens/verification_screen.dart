@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/verification_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -23,7 +22,7 @@ class _VerificationScreenState extends State<VerificationScreen>
     _pulseController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
-    )..repeat(reverse: true); // ✅ تصحيح: reverse كمعامل لـ repeat
+    )..repeat(reverse: true);
     _pulseAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
       CurvedAnimation(
         parent: _pulseController,
@@ -47,9 +46,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ============================
-  //  AppBar
-  // ============================
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: IconButton(
@@ -109,9 +105,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ============================
-  //  Body
-  // ============================
   Widget _buildBody() {
     return Container(
       decoration: BoxDecoration(
@@ -165,9 +158,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ============================
-  //  Status Icon
-  // ============================
   Widget _buildStatusIcon() {
     return Stack(
       alignment: Alignment.center,
@@ -226,9 +216,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ============================
-  //  Title
-  // ============================
   Widget _buildTitle() {
     return Column(
       children: [
@@ -252,9 +239,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ============================
-  //  Description
-  // ============================
   Widget _buildDescription() {
     return Container(
       padding: EdgeInsets.all(16.r),
@@ -299,9 +283,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ============================
-  //  Status Badge
-  // ============================
   Widget _buildStatusBadge() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
@@ -339,9 +320,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ============================
-  //  Progress Tracker (المصحح)
-  // ============================
   Widget _buildProgressTracker() {
     final steps = [
       {'label': 'بيانات الحساب', 'completed': true},
@@ -354,23 +332,19 @@ class _VerificationScreenState extends State<VerificationScreen>
       children: [
         Stack(
           children: [
-            // الخط الخلفي
             Container(
               height: 2.h,
               width: double.infinity,
               color: Colors.grey.shade200,
             ),
-            // الخط النشط
             Container(
               height: 2.h,
               width: 75.w,
               color: Colors.blue.shade700,
             ),
-            // النقاط
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: steps.asMap().entries.map((entry) {
-                // ✅ استخدام _ بدلاً من index لأننا لا نستخدمه
                 final step = entry.value;
                 final isCompleted = step['completed'] as bool;
                 final isCurrent = step['current'] as bool? ?? false;
@@ -448,9 +422,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ============================
-  //  Actions
-  // ============================
   Widget _buildActions() {
     return Column(
       children: [
@@ -502,9 +473,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 
-  // ============================
-  //  Contact Support Dialog
-  // ============================
   void _showContactSupportDialog() {
     showModalBottomSheet(
       context: context,

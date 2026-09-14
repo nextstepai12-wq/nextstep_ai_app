@@ -1,4 +1,4 @@
-﻿// lib/features/admin/ui/screens/admin_universities_screen.dart
+﻿
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
@@ -27,10 +27,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
   List<Map<String, dynamic>> _universities = [];
 
   final List<String> _filterOptions = ['الكل', 'نشط', 'قيد الانتظار', 'محظور'];
-
-  // ============================================================
-  //  دوال مساعدة للتعامل مع البيانات
-  // ============================================================
 
   String _getStatusDisplay(String? status) {
     switch (status) {
@@ -126,9 +122,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     return filtered;
   }
 
-  // ============================================================
-  //  تحميل الجامعات من Supabase
-  // ============================================================
   Future<void> _loadUniversities() async {
     if (!mounted) return;
 
@@ -138,11 +131,9 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     });
 
     try {
-      debugPrint('🔄 جاري جلب الجامعات من Supabase...');
 
       final supabase = SupabaseService();
 
-      // ✅ جلب الجامعات من Supabase
       final response = await supabase.client
           .from('universities')
           .select('*')
@@ -151,14 +142,9 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
       if (response != null && response.isNotEmpty) {
         final universities = List<Map<String, dynamic>>.from(response);
 
-        debugPrint('📊 عدد الجامعات من Supabase: ${universities.length}');
-
-        // ✅ حفظ في Hive
         try {
           await HiveStorage.saveData('universities_cache', 'universities', universities);
-          debugPrint('✅ تم حفظ ${universities.length} جامعة في Hive');
         } catch (e) {
-          debugPrint('⚠️ فشل حفظ في Hive: $e');
         }
 
         if (mounted) {
@@ -167,14 +153,11 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
             _isLoading = false;
             _errorMessage = null;
           });
-          debugPrint('✅ تم تحديث الواجهة بـ ${_universities.length} جامعة');
         }
       } else {
-        // ✅ محاولة قراءة من Hive
         try {
           final cached = await HiveStorage.getData('universities_cache', 'universities');
           if (cached != null && (cached as List).isNotEmpty) {
-            debugPrint('✅ تم تحميل ${cached.length} جامعة من Hive');
             if (mounted) {
               setState(() {
                 _universities = List<Map<String, dynamic>>.from(cached);
@@ -195,13 +178,10 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
         }
       }
     } catch (e) {
-      debugPrint('❌ خطأ في جلب الجامعات: $e');
 
-      // ✅ محاولة قراءة من Hive
       try {
         final cached = await HiveStorage.getData('universities_cache', 'universities');
         if (cached != null && (cached as List).isNotEmpty) {
-          debugPrint('✅ تم تحميل ${cached.length} جامعة من Hive');
           if (mounted) {
             setState(() {
               _universities = List<Map<String, dynamic>>.from(cached);
@@ -223,16 +203,10 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     }
   }
 
-  // ============================================================
-  //  تحديث البيانات
-  // ============================================================
   Future<void> _refreshUniversities() async {
     await _loadUniversities();
   }
 
-  // ============================================================
-  //  التنقل لصفحة إضافة جامعة
-  // ============================================================
   Future<void> _goToAddUniversity() async {
     final result = await Navigator.push(
       context,
@@ -247,9 +221,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     }
   }
 
-  // ============================================================
-  //  التنقل لتعديل جامعة
-  // ============================================================
   Future<void> _goToEditUniversity(Map<String, dynamic> university) async {
     final result = await Navigator.push(
       context,
@@ -267,9 +238,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     }
   }
 
-  // ============================================================
-  //  حذف جامعة
-  // ============================================================
   Future<void> _deleteUniversity(Map<String, dynamic> university) async {
     try {
       final supabase = SupabaseService();
@@ -297,9 +265,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     }
   }
 
-  // ============================================================
-  //  دورة الحياة
-  // ============================================================
   @override
   void initState() {
     super.initState();
@@ -420,9 +385,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     );
   }
 
-  // ============================================================
-  //  رأس الصفحة
-  // ============================================================
   Widget _buildSliverHeader() {
     return SliverAppBar(
       pinned: true,
@@ -470,9 +432,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     );
   }
 
-  // ============================================================
-  //  شريط الإحصائيات
-  // ============================================================
   Widget _buildStatsRow() {
     final total = _universities.length;
     final active = _universities.where((u) {
@@ -561,9 +520,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     );
   }
 
-  // ============================================================
-  //  البحث والفلاتر
-  // ============================================================
   Widget _buildSearchAndFilter() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -631,9 +587,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     );
   }
 
-  // ============================================================
-  //  بطاقة جامعة
-  // ============================================================
   Widget _buildUniversityCard(Map<String, dynamic> university) {
     final status = (university['status'] ?? 'active').toString();
     final statusDisplay = _getStatusDisplay(status);
@@ -867,9 +820,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     );
   }
 
-  // ============================================================
-  //  خيارات الجامعة (Bottom Sheet)
-  // ============================================================
   void _showUniversityOptions(Map<String, dynamic> university) {
     showModalBottomSheet(
       context: context,
@@ -916,9 +866,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     );
   }
 
-  // ============================================================
-  //  عرض تفاصيل الجامعة
-  // ============================================================
   void _showUniversityDetails(Map<String, dynamic> university) {
     final status = (university['status'] ?? 'active').toString();
     final statusDisplay = _getStatusDisplay(status);
@@ -1080,9 +1027,6 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     );
   }
 
-  // ============================================================
-  //  نافذة تأكيد الحذف
-  // ============================================================
   void _showDeleteDialog(Map<String, dynamic> university) {
     showDialog(
       context: context,

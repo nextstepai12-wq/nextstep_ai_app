@@ -70,7 +70,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
     });
 
     try {
-      // TODO: استدعاء API لإرسال الرسالة
       await Future.delayed(const Duration(seconds: 2));
 
       if (mounted) {
@@ -173,9 +172,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -207,9 +203,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
     );
   }
 
-  // ============================================================
-  //  Header
-  // ============================================================
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -273,9 +266,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
     );
   }
 
-  // ============================================================
-  //  Contact Info
-  // ============================================================
   Widget _buildContactInfo() {
     return Container(
       padding: const EdgeInsets.all(18),
@@ -366,9 +356,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
     );
   }
 
-  // ============================================================
-  //  Form
-  // ============================================================
   Widget _buildForm() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -416,7 +403,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
             ),
             const SizedBox(height: 16),
 
-            // الاسم
             _buildTextField(
               controller: _nameController,
               label: 'الاسم الكامل',
@@ -434,7 +420,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
             ),
             const SizedBox(height: 14),
 
-            // البريد الإلكتروني
             _buildTextField(
               controller: _emailController,
               label: 'البريد الإلكتروني',
@@ -453,7 +438,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
             ),
             const SizedBox(height: 14),
 
-            // الموضوع
             _buildDropdownField(
               label: 'الموضوع',
               hint: 'اختر الموضوع',
@@ -475,7 +459,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
             ),
             const SizedBox(height: 14),
 
-            // الرسالة
             _buildTextField(
               controller: _messageController,
               label: 'الرسالة',
@@ -494,7 +477,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
             ),
             const SizedBox(height: 24),
 
-            // زر الإرسال
             _buildSubmitButton(),
           ],
         ),
@@ -683,9 +665,6 @@ class _ContactUsScreenState extends State<ContactUsScreen>
     );
   }
 
-  // ============================================================
-  //  Social Section
-  // ============================================================
   Widget _buildSocialSection() {
     return Container(
       padding: const EdgeInsets.all(18),

@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/training_application_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -66,7 +65,6 @@ class _TrainingApplicationScreenState
             key: _formKey,
             child: Column(
               children: [
-                // حقل الاسم
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
@@ -83,7 +81,6 @@ class _TrainingApplicationScreenState
                 ),
                 SizedBox(height: 16.h),
 
-                // حقل البريد الإلكتروني
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
@@ -104,7 +101,6 @@ class _TrainingApplicationScreenState
                 ),
                 SizedBox(height: 16.h),
 
-                // حقل رقم الهاتف
                 TextFormField(
                   controller: _phoneController,
                   decoration: const InputDecoration(
@@ -122,7 +118,6 @@ class _TrainingApplicationScreenState
                 ),
                 SizedBox(height: 16.h),
 
-                // حقل ملاحظات إضافية
                 TextFormField(
                   controller: _notesController,
                   decoration: const InputDecoration(
@@ -134,7 +129,6 @@ class _TrainingApplicationScreenState
                 ),
                 SizedBox(height: 24.h),
 
-                // زر الإرسال
                 BlocBuilder<TrainingApplicationBloc, TrainingApplicationState>(
                   builder: (context, state) {
                     if (state is TrainingApplicationLoading) {

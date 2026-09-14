@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/blocs/training_center_bloc/training_center_bloc.dart
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -13,18 +12,17 @@ class TrainingCenterBloc extends Bloc<TrainingCenterEvent, TrainingCenterState> 
   final TrainingCenterRepository repository;
 
   TrainingCenterBloc({required this.repository})
-      : super(TrainingCenterInitial()) {  // ✅ إزالة const
+      : super(TrainingCenterInitial()) {
     on<LoadTrainingCenters>(_onLoadCenters);
     on<LoadTrainingCenterDetails>(_onLoadCenterDetails);
     on<RefreshTrainingCenters>(_onRefreshCenters);
   }
 
-  /// تحميل قائمة مراكز التدريب
   Future<void> _onLoadCenters(
     LoadTrainingCenters event,
     Emitter<TrainingCenterState> emit,
   ) async {
-    emit(TrainingCenterLoading());  // ✅ إزالة const
+    emit(TrainingCenterLoading());
     try {
       final centers = await repository.getTrainingCenters(
         searchQuery: event.searchQuery,
@@ -36,12 +34,11 @@ class TrainingCenterBloc extends Bloc<TrainingCenterEvent, TrainingCenterState> 
     }
   }
 
-  /// تحميل تفاصيل مركز تدريب
   Future<void> _onLoadCenterDetails(
     LoadTrainingCenterDetails event,
     Emitter<TrainingCenterState> emit,
   ) async {
-    emit(TrainingCenterLoading());  // ✅ إزالة const
+    emit(TrainingCenterLoading());
     try {
       final center = await repository.getTrainingCenterDetails(event.centerId);
       emit(TrainingCenterDetailsLoaded(center));
@@ -50,11 +47,10 @@ class TrainingCenterBloc extends Bloc<TrainingCenterEvent, TrainingCenterState> 
     }
   }
 
-  /// تحديث القائمة
   Future<void> _onRefreshCenters(
     RefreshTrainingCenters event,
     Emitter<TrainingCenterState> emit,
   ) async {
-    add(LoadTrainingCenters());  // ✅ إزالة const
+    add(LoadTrainingCenters());
   }
 }

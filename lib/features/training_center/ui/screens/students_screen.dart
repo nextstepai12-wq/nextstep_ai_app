@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/screens/students_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -58,9 +57,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
-  // ============================
-  //  AppBar
-  // ============================
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: IconButton(
@@ -147,9 +143,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
-  // ============================
-  //  Body
-  // ============================
   Widget _buildBody() {
     return Column(
       children: [
@@ -163,9 +156,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
-  // ============================
-  //  Search and Filter
-  // ============================
   Widget _buildSearchAndFilter() {
     return Container(
       padding: EdgeInsets.all(16.r),
@@ -256,9 +246,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
-  // ============================
-  //  Stats Cards (المصحح)
-  // ============================
   Widget _buildStatsCards() {
     return BlocBuilder<TrainingCenterBloc, TrainingCenterState>(
       builder: (context, state) {
@@ -267,7 +254,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
         }
 
         if (state is TrainingCenterLoaded) {
-          // ✅ استخدام بيانات وهمية مباشرة
           const totalStudents = 156;
           const completionRate = 68;
           const certificatesIssued = 432;
@@ -403,9 +389,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
-  // ============================
-  //  Students List
-  // ============================
   Widget _buildStudentsList() {
     final students = [
       {
@@ -481,9 +464,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
-  // ============================
-  //  Student Card
-  // ============================
   Widget _buildStudentCard(Map<String, String> student) {
     final statusColor = _getStatusColor(student['status']!);
     final statusBg = _getStatusBackground(student['status']!);
@@ -631,9 +611,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
-  // ============================
-  //  Empty State
-  // ============================
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -685,9 +662,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
-  // ============================
-  //  Helper Functions
-  // ============================
   Color _getStatusColor(String status) {
     switch (status) {
       case 'نشط':
@@ -718,9 +692,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     }
   }
 
-  // ============================
-  //  Certificate Dialog
-  // ============================
   void _showCertificateDialog(BuildContext context, Map<String, String> student) {
     showDialog(
       context: context,

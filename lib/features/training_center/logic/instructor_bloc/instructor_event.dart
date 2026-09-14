@@ -1,4 +1,3 @@
-// lib/features/training_center/ui/blocs/instructor_bloc/instructor_event.dart
 
 part of 'instructor_bloc.dart';
 
@@ -9,7 +8,6 @@ abstract class InstructorEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// تحميل ملف مدرب معين
 class LoadInstructorProfile extends InstructorEvent {
   final String instructorId;
 
@@ -19,7 +17,6 @@ class LoadInstructorProfile extends InstructorEvent {
   List<Object?> get props => [instructorId];
 }
 
-/// تحميل قائمة المدربين في مركز معين
 class LoadInstructorsForCenter extends InstructorEvent {
   final String centerId;
 
