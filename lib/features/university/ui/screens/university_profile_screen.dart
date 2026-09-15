@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Dummy data — replace with API models later.
@@ -50,6 +52,24 @@ const UniversityProfile _university = UniversityProfile(
 
 class UniversityProfileScreen extends StatelessWidget {
   const UniversityProfileScreen({super.key});
+
+  void _onNavChanged(BuildContext context, int index) {
+    if (index == 4) return;
+    switch (index) {
+      case 0:
+        context.go('/university');
+        break;
+      case 1:
+        context.go('/university/programs');
+        break;
+      case 2:
+        context.go('/university/analytics');
+        break;
+      case 3:
+        context.go('/university/students');
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,13 +193,17 @@ class UniversityProfileScreen extends StatelessWidget {
                           color: c.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 100),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
               ],
             ),
           ),
+        ),
+        bottomNavigationBar: UniversityBottomNav(
+          currentIndex: 4,
+          onChanged: (int index) => _onNavChanged(context, index),
         ),
       ),
     );
