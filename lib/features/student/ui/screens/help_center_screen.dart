@@ -16,7 +16,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  // قائمة الأسئلة الشائعة
   final List<Map<String, String>> _faqs = [
     {
       'question': 'ما هو NextStep AI؟',
@@ -60,7 +59,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
     },
   ];
 
-  // قائمة المواضيع
   final List<Map<String, dynamic>> _topics = [
     {
       'title': 'حسابي',
@@ -142,9 +140,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -176,9 +171,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
     );
   }
 
-  // ============================================================
-  //  Header
-  // ============================================================
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -242,9 +234,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
     );
   }
 
-  // ============================================================
-  //  Topics Section
-  // ============================================================
   Widget _buildTopicsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,9 +394,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
     );
   }
 
-  // ============================================================
-  //  FAQs Section
-  // ============================================================
   Widget _buildFAQsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,7 +411,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
             ),
             TextButton(
               onPressed: () {
-                // TODO: البحث في الأسئلة
               },
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.secondary,
@@ -444,7 +429,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
           Center(
             child: TextButton(
               onPressed: () {
-                // TODO: عرض جميع الأسئلة
               },
               child: const Text('عرض المزيد من الأسئلة'),
             ),
@@ -506,9 +490,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
     );
   }
 
-  // ============================================================
-  //  Contact Section
-  // ============================================================
   Widget _buildContactSection() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -645,9 +626,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
     );
   }
 
-  // ============================================================
-  //  Helpers
-  // ============================================================
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
