@@ -62,7 +62,6 @@ class _ShareAppScreenState extends State<ShareAppScreen>
   }
 
   void _copyLink() {
-    // TODO: نسخ الرابط للحافظة
     _showSnackBar('تم نسخ الرابط بنجاح! 📋');
   }
 
@@ -146,9 +145,6 @@ class _ShareAppScreenState extends State<ShareAppScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -180,9 +176,6 @@ class _ShareAppScreenState extends State<ShareAppScreen>
     );
   }
 
-  // ============================================================
-  //  Header
-  // ============================================================
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -246,9 +239,6 @@ class _ShareAppScreenState extends State<ShareAppScreen>
     );
   }
 
-  // ============================================================
-  //  QR Code Section
-  // ============================================================
   Widget _buildQRCodeSection() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -323,9 +313,6 @@ class _ShareAppScreenState extends State<ShareAppScreen>
     );
   }
 
-  // ============================================================
-  //  Share Buttons
-  // ============================================================
   Widget _buildShareButtons() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -429,9 +416,6 @@ class _ShareAppScreenState extends State<ShareAppScreen>
     );
   }
 
-  // ============================================================
-  //  Social Section
-  // ============================================================
   Widget _buildSocialSection() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -548,9 +532,6 @@ class _ShareAppScreenState extends State<ShareAppScreen>
     );
   }
 
-  // ============================================================
-  //  App Info
-  // ============================================================
   Widget _buildAppInfo() {
     return Container(
       padding: const EdgeInsets.all(20),
