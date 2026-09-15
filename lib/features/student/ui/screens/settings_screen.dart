@@ -16,7 +16,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     with SingleTickerProviderStateMixin {
   final SupabaseService _supabase = SupabaseService();
 
-  // إعدادات التطبيق
   bool _isLoading = true;
   bool _isDarkMode = false;
   bool _notifications = true;
@@ -25,7 +24,6 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _locationServices = false;
   bool _dataSaver = false;
 
-  // اللغة
   String _selectedLanguage = 'ar';
   final Map<String, String> _languages = {
     'ar': 'العربية',
@@ -66,7 +64,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     });
 
     try {
-      // TODO: تحميل الإعدادات من SharedPreferences
       await Future.delayed(const Duration(milliseconds: 500));
 
       if (mounted) {
@@ -240,9 +237,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -260,9 +254,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================================================
-  //  Profile Card
-  // ============================================================
   Widget _buildProfileCard() {
     return InkWell(
       onTap: () => context.push('/profile'),
@@ -333,9 +324,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================================================
-  //  Preferences Section
-  // ============================================================
   Widget _buildPreferencesSection() {
     return _buildSection(
       title: 'التفضيلات',
@@ -391,9 +379,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================================================
-  //  Appearance Section
-  // ============================================================
   Widget _buildAppearanceSection() {
     return _buildSection(
       title: 'المظهر',
@@ -419,9 +404,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================================================
-  //  Privacy Section
-  // ============================================================
   Widget _buildPrivacySection() {
     return _buildSection(
       title: 'الخصوصية والأمان',
@@ -461,9 +443,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================================================
-  //  Support Section
-  // ============================================================
   Widget _buildSupportSection() {
     return _buildSection(
       title: 'الدعم والمساعدة',
@@ -498,9 +477,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================================================
-  //  About Section
-  // ============================================================
   Widget _buildAboutSection() {
     return _buildSection(
       title: 'حول التطبيق',
@@ -535,9 +511,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================================================
-  //  Logout Button
-  // ============================================================
   Widget _buildLogoutButton() {
     return SizedBox(
       width: double.infinity,
@@ -558,9 +531,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================================================
-  //  Helper Widgets
-  // ============================================================
   Widget _buildSection({
     required String title,
     required IconData icon,
@@ -791,9 +761,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ============================================================
-  //  URL Launcher
-  // ============================================================
   Future<void> _launchURL(String url) async {
     try {
       final Uri uri = Uri.parse(url);
@@ -807,3 +774,4 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
 }
+
