@@ -67,47 +67,38 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ✅ Hero Header
                   _buildHeroHeader(data),
 
                   const SizedBox(height: 24),
 
-                  // ✅ Match Score
                   _buildMatchScore(data),
 
                   const SizedBox(height: 24),
 
-                  // ✅ Overview
                   _buildOverview(data),
 
                   const SizedBox(height: 20),
 
-                  // ✅ Quick Info Grid
                   _buildQuickInfoGrid(data),
 
                   const SizedBox(height: 20),
 
-                  // ✅ Description
                   _buildDescription(data),
 
                   const SizedBox(height: 20),
 
-                  // ✅ Career Opportunities
                   _buildCareerOpportunities(data),
 
                   const SizedBox(height: 20),
 
-                  // ✅ Requirements
                   _buildRequirements(data),
 
                   const SizedBox(height: 20),
 
-                  // ✅ Similar Majors
                   _buildSimilarMajors(),
 
                   const SizedBox(height: 30),
 
-                  // ✅ Actions
                   _buildActions(),
                 ],
               ),
@@ -202,9 +193,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     );
   }
 
-  // ============================================================
-  //  Hero Header
-  // ============================================================
   Widget _buildHeroHeader(Map<String, dynamic> data) {
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -230,7 +218,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Category Tag
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
@@ -248,7 +235,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
           ),
           const SizedBox(height: 16),
 
-          // Title
           Text(
             data['name'] ?? 'التخصص',
             style: const TextStyle(
@@ -260,7 +246,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
           ),
           const SizedBox(height: 6),
 
-          // University
           Row(
             children: [
               Icon(
@@ -280,7 +265,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
           ),
           const SizedBox(height: 16),
 
-          // Stats Row
           Row(
             children: [
               _buildHeroStat(
@@ -340,9 +324,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     );
   }
 
-  // ============================================================
-  //  Match Score
-  // ============================================================
   Widget _buildMatchScore(Map<String, dynamic> data) {
     final match = (data['match'] as int?) ?? 0;
     final color = _getMatchColor(match);
@@ -426,9 +407,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     return const Color(0xFFDC2626);
   }
 
-  // ============================================================
-  //  Overview
-  // ============================================================
   Widget _buildOverview(Map<String, dynamic> data) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -486,9 +464,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     );
   }
 
-  // ============================================================
-  //  Quick Info Grid
-  // ============================================================
   Widget _buildQuickInfoGrid(Map<String, dynamic> data) {
     final items = [
       {
@@ -581,9 +556,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     );
   }
 
-  // ============================================================
-  //  Description
-  // ============================================================
   Widget _buildDescription(Map<String, dynamic> data) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -642,9 +614,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     );
   }
 
-  // ============================================================
-  //  Career Opportunities
-  // ============================================================
   Widget _buildCareerOpportunities(Map<String, dynamic> data) {
     final careers = (data['career'] as String?)?.split('،') ?? [
       'مهندس برمجيات',
@@ -724,9 +693,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     );
   }
 
-  // ============================================================
-  //  Requirements
-  // ============================================================
   Widget _buildRequirements(Map<String, dynamic> data) {
     final requirements = (data['requirements'] as List?) ??
     [
@@ -811,9 +777,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     );
   }
 
-  // ============================================================
-  //  Similar Majors
-  // ============================================================
   Widget _buildSimilarMajors() {
     final similar = [
       {'name': 'هندسة البرمجيات', 'match': 88, 'university': 'الجامعة الإسلامية'},
@@ -922,9 +885,6 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     );
   }
 
-  // ============================================================
-  //  Actions
-  // ============================================================
   Widget _buildActions() {
     return Row(
       children: [
