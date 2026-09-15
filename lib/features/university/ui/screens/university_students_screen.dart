@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Dummy data — replace with API models later.
@@ -220,6 +222,24 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen> {
     );
   }
 
+  void _onNavChanged(int index) {
+    if (index == 3) return;
+    switch (index) {
+      case 0:
+        context.go('/university');
+        break;
+      case 1:
+        context.go('/university/programs');
+        break;
+      case 2:
+        context.go('/university/analytics');
+        break;
+      case 4:
+        context.go('/university/settings');
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final AppColors c = context.appColors;
@@ -288,13 +308,13 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen> {
                       },
                     ),
                   ),
-                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
               ],
             ),
             Positioned(
               left: 0,
               right: 0,
-              bottom: 92,
+              bottom: 16,
               child: Center(
                 child: AnimatedBuilder(
                   animation: _scrollController,
@@ -311,6 +331,10 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen> {
               ),
             ),
           ],
+        ),
+        bottomNavigationBar: UniversityBottomNav(
+          currentIndex: 3,
+          onChanged: _onNavChanged,
         ),
       ),
     );
