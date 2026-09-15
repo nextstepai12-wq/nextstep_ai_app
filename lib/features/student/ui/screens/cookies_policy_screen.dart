@@ -205,7 +205,6 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
                 ),
               ),
             ),
-            // Floating Consent Banner
             if (_showConsent)
               Positioned(
                 bottom: 0,
@@ -219,9 +218,6 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -253,9 +249,6 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  Header
-  // ============================================================
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -319,9 +312,6 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  Last Updated
-  // ============================================================
   Widget _buildLastUpdated() {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -353,9 +343,6 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  Section Builder
-  // ============================================================
   Widget _buildSection({
     required String title,
     required IconData icon,
@@ -447,9 +434,6 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
     return spans;
   }
 
-  // ============================================================
-  //  Contact Section
-  // ============================================================
   Widget _buildContactSection() {
     return Container(
       padding: const EdgeInsets.all(18),
@@ -544,9 +528,6 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  Consent Buttons
-  // ============================================================
   Widget _buildConsentButtons() {
     return Row(
       children: [
@@ -589,9 +570,6 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
     );
   }
 
-  // ============================================================
-  //  Consent Banner (Floating)
-  // ============================================================
   Widget _buildConsentBanner() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
