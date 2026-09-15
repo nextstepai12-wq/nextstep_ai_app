@@ -14,13 +14,11 @@ class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   final SupabaseService _supabase = SupabaseService();
 
-  // حالة الصفحة
   bool _isLoading = true;
   bool _isEditing = false;
   bool _isSaving = false;
   String? _errorMessage;
 
-  // بيانات المستخدم
   String _userName = '';
   String _userEmail = '';
   String _userRole = '';
@@ -34,12 +32,10 @@ class _ProfileScreenState extends State<ProfileScreen>
   String _major = '';
   String _academicYear = '';
 
-  // Controllers
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _cityController = TextEditingController();
 
-  // Animation
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -95,7 +91,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       }
 
       try {
-        // ✅ استخدام الدالة الجديدة getStudentProfileByUuid
         final profile = await _supabase.getStudentProfileByUuid(user.id);
         if (profile != null) {
           setState(() {
@@ -106,13 +101,12 @@ class _ProfileScreenState extends State<ProfileScreen>
             _gpa = profile.gpa?.toString() ?? '';
             _university = profile.currentUniversityId?.toString() ?? '';
             _major = profile.currentMajorId?.toString() ?? '';
-            _academicYear = profile.academicLevel ?? ''; // ✅ استخدم academicLevel
+            _academicYear = profile.academicLevel ?? '';
             _phoneController.text = _phone;
             _cityController.text = _city;
           });
         }
       } catch (e) {
-        debugPrint('❌ خطأ في جلب ملف الطالب: $e');
       }
     }
 
@@ -149,7 +143,6 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       final user = _supabase.currentUser;
       if (user != null) {
-        // TODO: تحديث بيانات المستخدم في Supabase
         await Future.delayed(const Duration(seconds: 1));
       }
 
@@ -258,9 +251,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -292,9 +282,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ============================================================
-  //  Error State
-  // ============================================================
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -329,9 +316,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ============================================================
-  //  Profile Header (Hero Section)
-  // ============================================================
   Widget _buildProfileHeader() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -352,7 +336,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
       child: Column(
         children: [
-          // Avatar
           Stack(
             children: [
               Container(
@@ -398,7 +381,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
           const SizedBox(height: 14),
 
-          // Name
           if (_isEditing)
             TextFormField(
               controller: _nameController,
@@ -448,7 +430,6 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
           const SizedBox(height: 4),
 
-          // Email
           Text(
             _userEmail.isNotEmpty ? _userEmail : 'student@nextstep.ai',
             style: TextStyle(
@@ -458,7 +439,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
           const SizedBox(height: 10),
 
-          // Role Badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
@@ -498,9 +478,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ============================================================
-  //  Stats Section
-  // ============================================================
   Widget _buildStatsSection() {
     final isTawjihi = _studentType == 'tawjihi';
 
@@ -593,9 +570,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ============================================================
-  //  Info Cards
-  // ============================================================
   Widget _buildInfoCards() {
     final isTawjihi = _studentType == 'tawjihi';
 
@@ -886,9 +860,6 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ============================================================
-  //  Edit Actions
-  // ============================================================
   Widget _buildEditActions() {
     return Container(
       padding: const EdgeInsets.all(16),
