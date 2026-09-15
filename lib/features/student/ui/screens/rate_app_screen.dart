@@ -170,9 +170,6 @@ class _RateAppScreenState extends State<RateAppScreen>
     );
   }
 
-  // ============================================================
-  //  AppBar
-  // ============================================================
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -204,9 +201,6 @@ class _RateAppScreenState extends State<RateAppScreen>
     );
   }
 
-  // ============================================================
-  //  Header
-  // ============================================================
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -270,9 +264,6 @@ class _RateAppScreenState extends State<RateAppScreen>
     );
   }
 
-  // ============================================================
-  //  ✅ Rating Section (محسّن مع Material)
-  // ============================================================
 Widget _buildRatingSection() {
   return Material(
     color: Colors.transparent,
@@ -318,7 +309,6 @@ Widget _buildRatingSection() {
             ],
           ),
           const SizedBox(height: 16),
-          // ✅ النجوم في صف مرن
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (index) {
@@ -361,9 +351,6 @@ Widget _buildRatingSection() {
   );
 }
 
-  // ============================================================
-  //  Feedback Section
-  // ============================================================
   Widget _buildFeedbackSection() {
     return Material(
       color: Colors.transparent,
@@ -448,9 +435,6 @@ Widget _buildRatingSection() {
     );
   }
 
-  // ============================================================
-  //  Comment Section
-  // ============================================================
   Widget _buildCommentSection() {
     return Material(
       color: Colors.transparent,
@@ -541,9 +525,6 @@ Widget _buildRatingSection() {
     );
   }
 
-  // ============================================================
-  //  Submit Button
-  // ============================================================
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
@@ -586,9 +567,6 @@ Widget _buildRatingSection() {
     );
   }
 
-  // ============================================================
-  //  Skip Button
-  // ============================================================
   Widget _buildSkipButton() {
     return TextButton(
       onPressed: () => Navigator.pop(context),
@@ -603,9 +581,6 @@ Widget _buildRatingSection() {
     );
   }
 
-  // ============================================================
-  //  Success View
-  // ============================================================
   Widget _buildSuccessView() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
