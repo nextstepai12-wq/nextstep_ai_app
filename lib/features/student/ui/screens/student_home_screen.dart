@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/features/student/ui/screens/student_main_screen.dart';
-import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
 
 class StudentHomeScreen extends StatefulWidget {
@@ -14,11 +13,15 @@ class StudentHomeScreen extends StatefulWidget {
 }
 
 class _StudentHomeScreenState extends State<StudentHomeScreen> {
-  final SupabaseService _supabase = SupabaseService();
-
   String _userName = 'طالب';
   String _userEmail = '';
-  Map<String, dynamic>? _profileData;
+  Map<String, dynamic>? _profileData = {
+    'student_type': 'tawjihi',
+    'phone': '0599 123 456',
+    'city': 'غزة',
+    'high_school_score': 92,
+    'gpa': 0,
+  };
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -67,35 +70,6 @@ Future<void> _loadUserData() async {
         _userEmail = cachedData['email'] ?? '';
       });
     }
-
-    final user = _supabase.currentUser;
-    if (user != null) {
-      final userData = await _supabase.getUser(user.id);
-      if (userData != null) {
-        if (!mounted) return;
-        setState(() {
-          _userName = userData.displayName;
-          _userEmail = user.email ?? '';
-        });
-      }
-
-      try {
-        final profile = await _supabase.getStudentProfileByUuid(user.id);
-        if (profile != null) {
-          if (!mounted) return;
-          setState(() {
-            _profileData = {
-              'student_type': profile.studentType,
-              'phone': profile.phone,
-              'city': profile.city,
-              'high_school_score': profile.highSchoolScore,
-              'gpa': profile.gpa,
-            };
-          });
-        }
-      } catch (e) {
-      }
-    }
   } catch (e) {
     if (!mounted) return;
     setState(() {
@@ -111,7 +85,6 @@ Future<void> _loadUserData() async {
 }
   Future<void> _logout() async {
     await TokenManager.clearAll();
-    await _supabase.signOut();
     if (mounted) {
       context.pushReplacement('/login');
     }

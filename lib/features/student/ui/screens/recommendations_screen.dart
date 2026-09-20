@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
-import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 
 class RecommendationsScreen extends StatefulWidget {
   const RecommendationsScreen({super.key});
@@ -15,14 +14,11 @@ class RecommendationsScreen extends StatefulWidget {
 class _RecommendationsScreenState extends State<RecommendationsScreen>
     with SingleTickerProviderStateMixin {
   bool _isLoading = true;
-  String? _errorMessage;
   String _selectedFilter = 'الكل';
 
   Map<String, double> _dimensions = {};
 
   List<Map<String, dynamic>> _recommendations = [];
-  List<Map<String, dynamic>> _allMajors = [];
-  List<Map<String, dynamic>> _allUniversities = [];
 
   final List<String> _filterOptions = ['الكل', 'هندسة', 'علوم', 'إدارة', 'طب'];
 
@@ -74,36 +70,11 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     return Colors.red;
   }
 
-  double _calculateCompatibility(
-    Map<String, double> studentDimensions,
-    Map<String, dynamic> major,
-  ) {
-    final majorDimensions = major['dimensions'] ?? {};
-    if (majorDimensions.isEmpty) return 0.0;
-
-    double totalScore = 0;
-    int count = 0;
-
-    for (var key in studentDimensions.keys) {
-      if (majorDimensions.containsKey(key)) {
-        final studentValue = studentDimensions[key] ?? 0;
-        final majorValue = (majorDimensions[key] as num?)?.toDouble() ?? 0;
-        final difference = (studentValue - majorValue).abs();
-        final score = 100 - difference;
-        totalScore += score.clamp(0, 100);
-        count++;
-      }
-    }
-
-    return count > 0 ? totalScore / count : 0.0;
-  }
-
   Future<void> _loadData() async {
     if (!mounted) return;
 
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
     });
 
     try {
@@ -121,36 +92,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
         };
       }
 
-      final supabase = SupabaseService();
-      final majorsResponse = await supabase.client
-          .from('programs')
-          .select('*, universities(name, location)')
-          .eq('is_active', true)
-          .order('name');
-
-      if (majorsResponse != null && majorsResponse.isNotEmpty) {
-        _allMajors = List<Map<String, dynamic>>.from(majorsResponse);
-
-        _recommendations = _allMajors.map((major) {
-          final compatibility = _calculateCompatibility(_dimensions, major);
-          return {
-            ...major,
-            'compatibility': compatibility,
-            'university_name': major['universities']?['name'] ?? 'جامعة غير محددة',
-            'university_location': major['universities']?['location'] ?? '',
-          };
-        }).toList();
-
-        _recommendations.sort((a, b) {
-          final aScore = (a['compatibility'] as num?)?.toDouble() ?? 0;
-          final bScore = (b['compatibility'] as num?)?.toDouble() ?? 0;
-          return bScore.compareTo(aScore);
-        });
-
-        await HiveStorage.saveData('recommendations_cache', 'recommendations', _recommendations);
-      } else {
-        _recommendations = _getMockRecommendations();
-      }
+      _recommendations = _getMockRecommendations();
 
       if (mounted) {
         setState(() {
@@ -165,7 +107,6 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'فشل تحميل التوصيات: ${e.toString()}';
         });
       }
     }

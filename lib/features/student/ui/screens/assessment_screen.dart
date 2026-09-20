@@ -1,10 +1,8 @@
 ﻿
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
-import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 
 class AssessmentScreen extends StatefulWidget {
   const AssessmentScreen({super.key});
@@ -221,91 +219,20 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       } catch (e) {
       }
 
-      final supabase = SupabaseService();
-      final response = await supabase.client
-          .from('survey_questions')
-          .select('*')
-          .eq('is_active', true)
-          .order('order_index')
-          .timeout(const Duration(seconds: 10));
+      _questions = _getDefaultQuestions();
+      _totalQuestions = _questions.length;
 
-      if (response != null && response.isNotEmpty) {
-        final questions = List<Map<String, dynamic>>.from(response);
+      try {
+        await HiveStorage.saveData('assessment_cache', 'questions', _questions);
+      } catch (_) {}
 
-        _questions = questions.map((q) {
-          List<String> options = ['نعم جداً', 'أحياناً', 'لا أبداً'];
-
-          if (q['options'] != null) {
-            if (q['options'] is List) {
-              options = List<String>.from(q['options']);
-            } else if (q['options'] is String) {
-              try {
-                final parsed = q['options'] as String;
-                if (parsed.startsWith('[')) {
-                  final List<dynamic> parsedList = jsonDecode(parsed);
-                  options = parsedList.map((e) => e.toString()).toList();
-                } else {
-                  options = parsed.split(',').map((s) => s.trim()).toList();
-                }
-              } catch (_) {
-                options = ['نعم جداً', 'أحياناً', 'لا أبداً'];
-              }
-            }
-          }
-
-          if (options.isEmpty) {
-            options = ['نعم جداً', 'أحياناً', 'لا أبداً'];
-          }
-
-          String dimension = 'general';
-          if (q['interest_id'] != null) {
-            dimension = 'interest';
-          } else if (q['type'] != null) {
-            dimension = q['type'].toString();
-          }
-
-          return {
-            'id': q['id'],
-            'question_text': q['question_text'] ?? 'سؤال',
-            'dimension': dimension,
-            'options': options,
-            'order_index': q['order_index'] ?? 0,
-          };
-        }).toList();
-
-        _totalQuestions = _questions.length;
-
-        try {
-          await HiveStorage.saveData('assessment_cache', 'questions', _questions);
-        } catch (e) {
-        }
-
-        await _loadSavedAnswers();
-
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-            _updateProgress();
-            _errorMessage = null;
-          });
-          _debugPrintQuestions();
-        }
-      } else {
-        _questions = _getDefaultQuestions();
-        _totalQuestions = _questions.length;
-
-        try {
-          await HiveStorage.saveData('assessment_cache', 'questions', _questions);
-        } catch (_) {}
-
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-            _updateProgress();
-            _errorMessage = 'لا توجد أسئلة - عرض أسئلة افتراضية';
-          });
-          _debugPrintQuestions();
-        }
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _updateProgress();
+          _errorMessage = null;
+        });
+        _debugPrintQuestions();
       }
     } catch (e) {
 
@@ -340,17 +267,6 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       _calculateResults();
 
       await HiveStorage.saveData('assessment_cache', 'results', _dimensions);
-
-      final supabase = SupabaseService();
-      final user = supabase.currentUser;
-
-      if (user != null) {
-        await supabase.client.from('student_profiles').upsert({
-          'user_id': user.id,
-          'assessment_results': _dimensions,
-          'completed_at': DateTime.now().toIso8601String(),
-        });
-      }
 
       await HiveStorage.saveData('assessment_cache', 'completed', true);
 

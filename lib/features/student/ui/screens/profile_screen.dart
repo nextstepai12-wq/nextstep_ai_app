@@ -1,6 +1,5 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
-import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -12,8 +11,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
-  final SupabaseService _supabase = SupabaseService();
-
   bool _isLoading = true;
   bool _isEditing = false;
   bool _isSaving = false;
@@ -78,37 +75,13 @@ class _ProfileScreenState extends State<ProfileScreen>
       _userId = cachedData['userId'] ?? '';
     }
 
-    final user = _supabase.currentUser;
-    if (user != null) {
-      final userData = await _supabase.getUser(user.id);
-      if (userData != null) {
-        setState(() {
-          _userName = userData.displayName;
-          _userEmail = user.email ?? '';
-          _userRole = userData.role ?? 'student';
-          _nameController.text = _userName;
-        });
-      }
-
-      try {
-        final profile = await _supabase.getStudentProfileByUuid(user.id);
-        if (profile != null) {
-          setState(() {
-            _phone = profile.phone ?? '';
-            _city = profile.city ?? '';
-            _studentType = profile.studentType ?? 'tawjihi';
-            _highSchoolScore = profile.highSchoolScore?.toString() ?? '';
-            _gpa = profile.gpa?.toString() ?? '';
-            _university = profile.currentUniversityId?.toString() ?? '';
-            _major = profile.currentMajorId?.toString() ?? '';
-            _academicYear = profile.academicLevel ?? '';
-            _phoneController.text = _phone;
-            _cityController.text = _city;
-          });
-        }
-      } catch (e) {
-      }
-    }
+    if (_phone.isEmpty) _phone = '0599 123 456';
+    if (_city.isEmpty) _city = 'غزة';
+    _studentType = 'tawjihi';
+    _highSchoolScore = '92';
+    _gpa = '3.7';
+    _phoneController.text = _phone;
+    _cityController.text = _city;
 
     if (mounted) {
       setState(() {
@@ -140,11 +113,6 @@ class _ProfileScreenState extends State<ProfileScreen>
         name: _nameController.text,
         email: _userEmail,
       );
-
-      final user = _supabase.currentUser;
-      if (user != null) {
-        await Future.delayed(const Duration(seconds: 1));
-      }
 
       setState(() {
         _userName = _nameController.text;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
-import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -14,8 +13,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen>
     with SingleTickerProviderStateMixin {
-  final SupabaseService _supabase = SupabaseService();
-
   bool _isLoading = true;
   bool _isDarkMode = false;
   bool _notifications = true;
@@ -83,7 +80,6 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   Future<void> _logout() async {
     await TokenManager.clearAll();
-    await _supabase.signOut();
     if (mounted) {
       context.pushReplacement('/login');
     }
