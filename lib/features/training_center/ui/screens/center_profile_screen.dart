@@ -1,511 +1,399 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../logic/training_center_bloc/training_center_bloc.dart';
-import '../../logic/training_programs_bloc/training_programs_bloc.dart';
-import '../widgets/training_center_drawer.dart';
+import '../theme/training_colors.dart';
 
-class CenterProfileScreen extends StatefulWidget {
+class CenterProfileScreen extends StatelessWidget {
   const CenterProfileScreen({super.key});
 
-  @override
-  State<CenterProfileScreen> createState() => _CenterProfileScreenState();
-}
-
-class _CenterProfileScreenState extends State<CenterProfileScreen> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool _isDataLoaded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_isDataLoaded) {
-        context.read<TrainingCenterBloc>().add(const LoadTrainingCenters());
-        context.read<TrainingProgramsBloc>().add(const LoadTrainingPrograms());
-        _isDataLoaded = true;
-      }
-    });
-  }
+  static const String _companyName = 'شركة التدريب التقني';
+  static const String _registrationNumber = '1010456789';
+  static const String _memberSince = '2021';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
-      appBar: _buildAppBar(),
-      drawer: const TrainingCenterDrawer(),
-      body: _buildBody(),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.menu_rounded),
-        onPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-      ),
-      title: Row(
+      backgroundColor: TrainingColors.background,
+      body: ListView(
+        padding: EdgeInsets.only(bottom: 32.h),
+        physics: const BouncingScrollPhysics(),
         children: [
-          Icon(
-            Icons.business_center_rounded,
-            color: Colors.blue.shade700,
-            size: 22.sp,
-          ),
-          SizedBox(width: 6.w),
-          Flexible(
-            child: Text(
-              'الملف التعريفي',
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue.shade900,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(
-            Icons.edit_rounded,
-            size: 22.sp,
-          ),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('سيتم فتح صفحة تعديل الملف قريباً ✏️'),
-                duration: Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-        ),
-        SizedBox(width: 4.w),
-        IconButton(
-          icon: Icon(
-            Icons.share_rounded,
-            size: 22.sp,
-          ),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('جاري مشاركة الملف التعريفي 📤'),
-                duration: Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-        ),
-        SizedBox(width: 4.w),
-        CircleAvatar(
-          radius: 16.r,
-          backgroundColor: Colors.grey.shade300,
-          child: Icon(
-            Icons.person,
-            size: 18.sp,
-            color: Colors.grey.shade700,
-          ),
-        ),
-        SizedBox(width: 4.w),
-      ],
-      centerTitle: false,
-      elevation: 0,
-      backgroundColor: Colors.white.withValues(alpha: 0.92),
-    );
-  }
-
-  Widget _buildBody() {
-    return BlocBuilder<TrainingCenterBloc, TrainingCenterState>(
-      builder: (context, state) {
-        if (state is TrainingCenterLoading) {
-          return _buildLoadingShimmer();
-        }
-
-        if (state is TrainingCenterLoaded) {
-          if (state.centers.isEmpty) {
-            return _buildEmptyState();
-          }
-          final center = state.centers.first;
-          return _buildProfileContent(center);
-        }
-
-        if (state is TrainingCenterError) {
-          return _buildErrorState(state.message);
-        }
-
-        return const Center(child: Text('لا توجد بيانات'));
-      },
-    );
-  }
-
-  Widget _buildProfileContent(dynamic center) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeroSection(center),
+          _buildHeaderWithStats(context),
+          SizedBox(height: 20.h),
+          _buildCompletionStrip(context),
           SizedBox(height: 16.h),
-
-          _buildProfileInfo(center),
+          _buildQuickAccess(context),
           SizedBox(height: 20.h),
-
-          _buildTrustStats(center),
+          _buildManagementSection(context),
           SizedBox(height: 20.h),
-
-          _buildCoursesSection(),
+          _buildFinanceSection(context),
+          SizedBox(height: 24.h),
+          _buildLogout(context),
           SizedBox(height: 20.h),
-
-          _buildContactSection(center),
-          SizedBox(height: 16.h),
+          _buildFooter(),
         ],
       ),
     );
   }
 
-Widget _buildHeroSection(dynamic center) {
-  return Stack(
-    children: [
-      Container(
-        height: 200.h,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue.shade700, Colors.blue.shade400],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+  // ───────────────────────────────────────────────────────────────────────────
+  // 1 & 2. Company header + overlapping stats
+  // ───────────────────────────────────────────────────────────────────────────
+
+  Widget _buildHeaderWithStats(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 26.h),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          _buildHeader(context),
+          Positioned(
+            bottom: -26.h,
+            left: 16.w,
+            right: 16.w,
+            child: _buildStatsCard(),
           ),
-        ),
-        child: ShaderMask(
-          shaderCallback: (rect) {
-            return LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.black.withValues(alpha: 0.3), Colors.transparent],
-            ).createShader(rect);
-          },
-          blendMode: BlendMode.darken,
-          child: Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(
-                  'https://images.unsplash.com/photo-1544531585-f9848d68c8b4?w=800&h=400&fit=crop',
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ),
+        ],
       ),
-      Positioned(
-        bottom: -40.h,
-        left: 16.w,
-        child: Container(
-          width: 100.w,
-          height: 100.h,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4.w),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.shade300,
-                blurRadius: 12.r,
-                offset: Offset(0, 4.h),
-              ),
-            ],
-            image: center.logoUrl != null
-                ? DecorationImage(
-                    image: NetworkImage(center.logoUrl!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          child: center.logoUrl == null
-              ? Icon(
-                  Icons.business_rounded,
-                  size: 50.sp,
-                  color: Colors.blue.shade700,
-                )
-              : null,
-        ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final double topInset = MediaQuery.of(context).padding.top;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(16.w, topInset + 14.h, 16.w, 46.h),
+      decoration: BoxDecoration(
+        gradient: TrainingColors.headerGradient,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24.r)),
+        boxShadow: TrainingColors.headerShadow,
       ),
-      Positioned(
-        bottom: -40.h,
-        right: 16.w,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.shade300,
-                blurRadius: 8.r,
-                offset: Offset(0, 4.h),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.star_rounded,
-                color: Colors.amber.shade600,
-                size: 16.sp,
-              ),
-              SizedBox(width: 4.w),
-              Text(
-                center.rating?.toStringAsFixed(1) ?? '4.8',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-              SizedBox(width: 2.w),
-              Text(
-                '(${center.studentCount ?? 120})',
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  color: Colors.grey.shade500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ],
-  );
-}
-Widget _buildProfileInfo(dynamic center) {
-  return Container(
-    margin: EdgeInsets.symmetric(horizontal: 16.w),
-    padding: EdgeInsets.only(top: 48.h),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                center.name ?? 'مركز التدريب',
-                style: TextStyle(
-                  fontSize: 22.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -30.h,
+            left: -40.w,
+            child: Container(
+              width: 150.w,
+              height: 150.w,
               decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.green.shade200),
+                color: Colors.white.withValues(alpha: 0.05),
+                shape: BoxShape.circle,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+            ),
+          ),
+          Positioned(
+            bottom: -50.h,
+            right: -50.w,
+            child: Container(
+              width: 170.w,
+              height: 170.w,
+              decoration: BoxDecoration(
+                color: TrainingColors.accent.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Column(
+            children: [
+              Row(
                 children: [
-                  Icon(
-                    Icons.verified_rounded,
-                    color: Colors.green.shade700,
-                    size: 14.sp,
+                  _headerCircleButton(
+                    icon: Icons.settings_rounded,
+                    onTap: () => context.push('/training-center/settings'),
                   ),
-                  SizedBox(width: 4.w),
-                  Text(
-                    'مركز موثق',
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      color: Colors.green.shade700,
-                      fontWeight: FontWeight.w600,
+                  const Spacer(),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 5.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(999.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.domain_rounded,
+                          size: 15.sp,
+                          color: TrainingColors.accent,
+                        ),
+                        SizedBox(width: 5.w),
+                        Text(
+                          'حساب منشأة معتمد',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                            color: TrainingColors.onPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  _headerCircleButton(
+                    icon: Icons.notifications_none_rounded,
+                    showDot: true,
+                    onTap: () => context.push('/training-center/notifications'),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.h),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 80.w,
+                    height: 80.w,
+                    decoration: const BoxDecoration(
+                      color: TrainingColors.surface,
+                      shape: BoxShape.circle,
+                      boxShadow: TrainingColors.softShadow,
+                    ),
+                    child: Icon(
+                      Icons.hub_rounded,
+                      size: 38.sp,
+                      color: TrainingColors.primary,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 24.w,
+                      height: 24.w,
+                      decoration: BoxDecoration(
+                        color: TrainingColors.accent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: TrainingColors.surface,
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.verified_rounded,
+                        size: 13.sp,
+                        color: TrainingColors.onAccent,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 6.h),
-
-        if (center.description != null)
-          Text(
-            center.description!,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey.shade600,
-              height: 1.6,
-            ),
-          ),
-        SizedBox(height: 12.h),
-
-        if (center.specialties != null && center.specialties!.isNotEmpty)
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            children: center.specialties!.map<Widget>((specialty) {
-              return Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: Colors.blue.shade200),
+              SizedBox(height: 12.h),
+              Text(
+                _companyName,
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 19.sp,
+                  fontWeight: FontWeight.w800,
+                  color: TrainingColors.onPrimary,
                 ),
-                child: Text(
-                  specialty,
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: Colors.blue.shade700,
+              ),
+              SizedBox(height: 4.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.check_circle_rounded,
+                    size: 14.sp,
+                    color: const Color(0xFF7FE3B8),
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'حساب شركة موثّق',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 11.5.sp,
+                      color: const Color(0xFF9EE9C9),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    '•',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 10.sp,
+                      color: Colors.white.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'س.ت: $_registrationNumber',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 11.5.sp,
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8.w,
+                runSpacing: 6.h,
+                children: [
+                  _trustBadge(
+                    icon: Icons.star_rounded,
+                    iconColor: const Color(0xFFFFB95F),
+                    text: '4.8',
+                    trailing: 'تقييم المنشأة',
+                  ),
+                  _trustBadge(
+                    icon: Icons.verified_user_rounded,
+                    iconColor: const Color(0xFFACC7FF),
+                    text: 'عضو معتمد منذ $_memberSince',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _headerCircleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    bool showDot = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40.w,
+        height: 40.w,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          shape: BoxShape.circle,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(icon, size: 20.sp, color: TrainingColors.onPrimary),
+            if (showDot)
+              Positioned(
+                top: 9.h,
+                left: 9.w,
+                child: Container(
+                  width: 9.w,
+                  height: 9.w,
+                  decoration: BoxDecoration(
+                    color: TrainingColors.danger,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: TrainingColors.primaryContainer,
+                      width: 1.5,
+                    ),
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-        SizedBox(height: 12.h),
-
-        Row(
-          children: [
-            _buildInfoChip(
-              icon: Icons.location_on_rounded,
-              label: center.location ?? 'العنوان غير محدد',
-            ),
-            SizedBox(width: 12.w),
-            _buildInfoChip(
-              icon: Icons.calendar_today_rounded,
-              label: 'تأسس: ${center.createdAt?.year ?? 2022}',
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
-
-  Widget _buildInfoChip({
-    required IconData icon,
-    required String label,
-  }) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 14.sp,
-              color: Colors.grey.shade600,
-            ),
-            SizedBox(width: 6.w),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11.sp,
-                  color: Colors.grey.shade600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTrustStats(dynamic center) {
+  Widget _trustBadge({
+    required IconData icon,
+    required Color iconColor,
+    required String text,
+    String? trailing,
+  }) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade100,
-            blurRadius: 8.r,
-            offset: Offset(0, 2.h),
-          ),
-        ],
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(999.r),
       ),
       child: Row(
         children: [
-          _buildStatItem(
-            icon: Icons.menu_book_rounded,
-            iconColor: Colors.blue.shade700,
-            value: center.programsCount?.toString() ?? '12',
-            label: 'دورة متاحة',
+          Icon(icon, size: 14.sp, color: iconColor),
+          SizedBox(width: 4.w),
+          Text(
+            text,
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 10.5.sp,
+              fontWeight: FontWeight.w700,
+              color: TrainingColors.onPrimary,
+            ),
           ),
-          _buildStatDivider(),
-          _buildStatItem(
-            icon: Icons.groups_rounded,
-            iconColor: Colors.green.shade700,
-            value: center.studentCount?.toString() ?? '1,500',
-            label: 'طالب خريج',
-          ),
-          _buildStatDivider(),
-          _buildStatItem(
-            icon: Icons.verified_user_rounded,
-            iconColor: Colors.purple.shade700,
-            value: center.createdAt?.year.toString() ?? '2022',
-            label: 'عضو موثق منذ',
-          ),
+          if (trailing != null) ...[
+            SizedBox(width: 4.w),
+            Text(
+              trailing,
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 10.sp,
+                color: Colors.white.withValues(alpha: 0.8),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildStatItem({
-    required IconData icon,
-    required Color iconColor,
-    required String value,
-    required String label,
-  }) {
+  Widget _buildStatsCard() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 12.h),
+      decoration: BoxDecoration(
+        color: TrainingColors.surface,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: TrainingColors.cardShadow,
+      ),
+      child: Row(
+        children: [
+          _statItem(Icons.menu_book_rounded, '16', 'الدورات'),
+          _statDivider(),
+          _statItem(Icons.engineering_rounded, '8', 'تدريب ميداني'),
+          _statDivider(),
+          _statItem(Icons.groups_rounded, '3,240', 'المتدربون'),
+          _statDivider(),
+          _statItem(Icons.badge_rounded, '12', 'المدربون'),
+        ],
+      ),
+    );
+  }
+
+  Widget _statItem(IconData icon, String value, String label) {
     return Expanded(
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(8.r),
+            width: 30.w,
+            height: 30.w,
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10.r),
+              color: TrainingColors.navySoft,
+              borderRadius: BorderRadius.circular(9.r),
             ),
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 22.sp,
-            ),
+            child: Icon(icon, size: 17.sp, color: TrainingColors.primary),
           ),
           SizedBox(height: 6.h),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade800,
+              fontFamily: 'Cairo',
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w800,
+              height: 1.0,
+              color: TrainingColors.primary,
             ),
           ),
+          SizedBox(height: 3.h),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
+              fontFamily: 'Cairo',
               fontSize: 10.sp,
-              color: Colors.grey.shade500,
+              color: TrainingColors.textSecondary,
             ),
           ),
         ],
@@ -513,359 +401,211 @@ Widget _buildProfileInfo(dynamic center) {
     );
   }
 
-  Widget _buildStatDivider() {
+  Widget _statDivider() {
     return Container(
       width: 1,
-      height: 50.h,
-      color: Colors.grey.shade200,
+      height: 42.h,
+      color: TrainingColors.divider,
     );
   }
 
-  Widget _buildCoursesSection() {
+  // ───────────────────────────────────────────────────────────────────────────
+  // 3. Profile completion strip
+  // ───────────────────────────────────────────────────────────────────────────
+
+  Widget _buildCompletionStrip(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'الدورات المتاحة',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  context.push('/training-center/programs');
-                },
-                child: Text(
-                  'عرض الكل',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.blue.shade700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          BlocBuilder<TrainingProgramsBloc, TrainingProgramsState>(
-            builder: (context, state) {
-              if (state is TrainingProgramsLoading) {
-                return _buildCoursesShimmer();
-              }
-
-              if (state is TrainingProgramsLoaded) {
-                final programs = state.programs.take(3).toList();
-                if (programs.isEmpty) {
-                  return Container(
-                    padding: EdgeInsets.all(24.r),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'لا توجد دورات متاحة حالياً',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return Column(
-                  children: programs.map((program) {
-                    return _buildCourseCard(program);
-                  }).toList(),
-                );
-              }
-
-              return const SizedBox.shrink();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-Widget _buildCourseCard(dynamic program) {
-  return Container(
-    margin: EdgeInsets.only(bottom: 10.h),
-    padding: EdgeInsets.all(12.r),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12.r),
-      border: Border.all(color: Colors.grey.shade200),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.shade100,
-          blurRadius: 4.r,
-          offset: Offset(0, 2.h),
-        ),
-      ],
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 80.w,
-          height: 60.h,
-          decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(8.r),
-            image: program.coverImage != null
-                ? DecorationImage(
-                    image: NetworkImage(program.coverImage!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          child: program.coverImage == null
-              ? Icon(
-                  Icons.menu_book_rounded,
-                  color: Colors.blue.shade300,
-                  size: 28.sp,
-                )
-              : null,
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                program.title,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade800,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(6.r),
-                    ),
-                    child: Text(
-                      program.category ?? 'عام',
-                      style: TextStyle(
-                        fontSize: 9.sp,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 6.w),
-                  Text(
-                    'مستوى ${program.level ?? 'مبتدئ'}',
-                    style: TextStyle(
-                      fontSize: 9.sp,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 4.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.star_rounded,
-                        color: Colors.amber.shade600,
-                        size: 12.sp,
-                      ),
-                      SizedBox(width: 2.w),
-                      Text(
-                        program.rating?.toStringAsFixed(1) ?? '4.8',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    program.price > 0
-                        ? '${program.price.toStringAsFixed(0)} ريال'
-                        : 'مجاني',
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade700,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-  Widget _buildContactSection(dynamic center) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade700, Colors.indigo.shade500],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
+        color: TrainingColors.accentSoft,
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'تواصل معنا',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'نحن هنا لمساعدتك في رحلتك التعليمية',
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-          ),
-          SizedBox(height: 12.h),
           Row(
-            children: [
-              _buildContactButton(
-                icon: Icons.language_rounded,
-                label: 'الموقع',
-                onTap: () {},
-              ),
-              SizedBox(width: 10.w),
-              _buildContactButton(
-                icon: Icons.email_rounded,
-                label: 'البريد',
-                onTap: () {
-                  if (center.email != null) {
-                    _launchEmail(center.email!);
-                  }
-                },
-              ),
-              SizedBox(width: 10.w),
-              _buildContactButton(
-                icon: Icons.chat_rounded,
-                label: 'دردشة',
-                onTap: () {},
-              ),
-              SizedBox(width: 10.w),
-              _buildContactButton(
-                icon: Icons.phone_rounded,
-                label: 'اتصال',
-                onTap: () {
-                  if (center.phone != null) {
-                    _launchPhone(center.phone!);
-                  }
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 8.h),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-          child: Column(
             children: [
               Icon(
-                icon,
-                color: Colors.white,
+                Icons.task_alt_rounded,
                 size: 20.sp,
+                color: TrainingColors.accent,
               ),
-              SizedBox(height: 2.h),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 9.sp,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  'اكتمال ملف المنشأة 80%',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF7A3E00),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => context.push('/training-center/settings'),
+                behavior: HitTestBehavior.opaque,
+                child: Row(
+                  children: [
+                    Text(
+                      'أكمل البيانات',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 11.5.sp,
+                        fontWeight: FontWeight.w700,
+                        color: TrainingColors.accent,
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_back_rounded,
+                      size: 15.sp,
+                      color: TrainingColors.accent,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
+          SizedBox(height: 10.h),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999.r),
+            child: SizedBox(
+              height: 8.h,
+              child: const Stack(
+                children: [
+                  Positioned.fill(
+                    child: ColoredBox(color: TrainingColors.surface),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: FractionallySizedBox(
+                      widthFactor: 0.8,
+                      heightFactor: 1,
+                      child: ColoredBox(color: TrainingColors.accent),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildLoadingShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(16.r),
+  // ───────────────────────────────────────────────────────────────────────────
+  // Quick access bento
+  // ───────────────────────────────────────────────────────────────────────────
+
+  Widget _buildQuickAccess(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
+        children: [
+          Expanded(
+            child: _quickCard(
+              context,
+              title: 'إضافة دورة جديدة',
+              subtitle: 'نشر منهج أو جدول تدريبي',
+              icon: Icons.add_chart_rounded,
+              topTrailing: Container(
+                padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: TrainingColors.accentSoft,
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+                child: Text(
+                  'جديد',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 9.5.sp,
+                    fontWeight: FontWeight.w800,
+                    color: TrainingColors.accent,
+                  ),
+                ),
+              ),
+              onTap: () => context.push('/training-center/programs'),
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: _quickCard(
+              context,
+              title: 'الاعتمادات والرخص',
+              subtitle: 'تحديث رخصة التدريب المهني',
+              icon: Icons.verified_rounded,
+              topTrailing: Text(
+                'TVTC',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w800,
+                  color: TrainingColors.textMuted,
+                ),
+              ),
+              onTap: () => context.push('/training-center/verification'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Widget topTrailing,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: TrainingColors.surface,
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: TrainingColors.softShadow,
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 200.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
+            Row(
+              children: [
+                Container(
+                  width: 30.w,
+                  height: 30.w,
+                  decoration: BoxDecoration(
+                    color: TrainingColors.navySoft,
+                    borderRadius: BorderRadius.circular(9.r),
+                  ),
+                  child: Icon(icon, size: 17.sp, color: TrainingColors.primary),
+                ),
+                const Spacer(),
+                topTrailing,
+              ],
+            ),
+            SizedBox(height: 10.h),
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w800,
+                color: TrainingColors.primary,
               ),
             ),
-            SizedBox(height: 16.h),
-            Container(
-              height: 100.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Container(
-              height: 80.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Container(
-              height: 150.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
+            SizedBox(height: 2.h),
+            Text(
+              subtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 10.5.sp,
+                height: 1.5,
+                color: TrainingColors.textSecondary,
               ),
             ),
           ],
@@ -874,142 +614,397 @@ Widget _buildCourseCard(dynamic program) {
     );
   }
 
-  Widget _buildCoursesShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
+  // ───────────────────────────────────────────────────────────────────────────
+  // Menu sections
+  // ───────────────────────────────────────────────────────────────────────────
+
+  Widget _buildManagementSection(BuildContext context) {
+    return _menuSection(
+      title: 'إدارة المنشأة',
+      headerIcon: Icons.corporate_fare_rounded,
+      rows: [
+        _menuRow(
+          context,
+          icon: Icons.apartment_rounded,
+          title: 'بيانات الشركة القانونية',
+          subtitle: 'السجل التجاري، العنوان والتراخيص المهنية',
+          onTap: () => context.push('/training-center/settings'),
+        ),
+        _menuRow(
+          context,
+          icon: Icons.groups_rounded,
+          title: 'المدربون المعتمدون',
+          subtitle: 'ملفات المحاضرين، التقييمات والجداول',
+          hint: '12 مدرب',
+          onTap: () => context.push('/training-center/instructors'),
+        ),
+        _menuRow(
+          context,
+          icon: Icons.assignment_rounded,
+          title: 'طلبات التسجيل الجديدة',
+          subtitle: 'قبول المتدربين واعتماد الفواتير',
+          badge: '5 جديد',
+          onTap: () => context.push('/training-center/registration-requests'),
+        ),
+        _menuRow(
+          context,
+          icon: Icons.query_stats_rounded,
+          title: 'التقارير والإحصائيات',
+          subtitle: 'أداء البرامج، الحضور ومعدلات الإكمال',
+          onTap: () => context.push('/training-center/dashboard'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFinanceSection(BuildContext context) {
+    return _menuSection(
+      title: 'المالية والحساب',
+      headerIcon: Icons.account_balance_wallet_rounded,
+      rows: [
+        _menuRow(
+          context,
+          icon: Icons.payments_rounded,
+          title: 'المحفظة المالية للشركة',
+          subtitle: 'الرصيد المتاح: 2,450 ر.س',
+          iconBackground: TrainingColors.accentSoft,
+          iconColor: TrainingColors.accent,
+          onTap: () => _comingSoon(context, 'المحفظة المالية'),
+        ),
+        _menuRow(
+          context,
+          icon: Icons.account_balance_rounded,
+          title: 'طرق الاستلام والتحويل البنكي',
+          subtitle: 'الحسابات البنكية المعتمدة للشركة (IBAN)',
+          onTap: () => _comingSoon(context, 'طرق الاستلام'),
+        ),
+        _menuRow(
+          context,
+          icon: Icons.admin_panel_settings_rounded,
+          title: 'إعدادات الحساب والصلاحيات',
+          subtitle: 'إدارة مديري النظام وفروع الشركة',
+          onTap: () => context.push('/training-center/settings'),
+        ),
+        _menuRow(
+          context,
+          icon: Icons.support_agent_rounded,
+          title: 'الدعم الفني المخصص للشركات',
+          subtitle: 'مدير حساب مخصص 24/7 للمنشآت',
+          showDot: true,
+          onTap: () => context.push('/training-center/help'),
+        ),
+      ],
+    );
+  }
+
+  Widget _menuSection({
+    required String title,
+    required IconData headerIcon,
+    required List<Widget> rows,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Column(
-        children: List.generate(
-          3,
-          (index) => Container(
-            height: 80.h,
-            margin: EdgeInsets.only(bottom: 10.h),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(headerIcon, size: 18.sp, color: TrainingColors.primary),
+              SizedBox(width: 6.w),
+              Text(
+                title,
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w800,
+                  color: TrainingColors.primary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
+              color: TrainingColors.surface,
+              borderRadius: BorderRadius.circular(16.r),
+              boxShadow: TrainingColors.softShadow,
             ),
+            child: Column(
+              children: [
+                for (int i = 0; i < rows.length; i++) ...[
+                  rows[i],
+                  if (i != rows.length - 1)
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: TrainingColors.divider,
+                      indent: 60.w,
+                      endIndent: 12.w,
+                    ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _menuRow(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    String? hint,
+    String? badge,
+    bool showDot = false,
+    Color? iconBackground,
+    Color? iconColor,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        constraints: BoxConstraints(minHeight: 60.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        child: Row(
+          children: [
+            Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: iconBackground ?? TrainingColors.navySoft,
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(
+                icon,
+                size: 20.sp,
+                color: iconColor ?? TrainingColors.primary,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 13.5.sp,
+                            fontWeight: FontWeight.w700,
+                            color: TrainingColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      if (hint != null) ...[
+                        SizedBox(width: 6.w),
+                        _pill(
+                          hint,
+                          background: TrainingColors.surfaceMuted,
+                          textColor: TrainingColors.primary,
+                        ),
+                      ],
+                      if (showDot) ...[
+                        SizedBox(width: 6.w),
+                        Container(
+                          width: 7.w,
+                          height: 7.w,
+                          decoration: const BoxDecoration(
+                            color: TrainingColors.accent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  SizedBox(height: 3.h),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 11.sp,
+                      color: TrainingColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            if (badge != null) ...[
+              _pill(
+                badge,
+                background: TrainingColors.dangerSoft,
+                textColor: TrainingColors.danger,
+              ),
+              SizedBox(width: 6.w),
+            ],
+            Icon(
+              Icons.chevron_left_rounded,
+              size: 20.sp,
+              color: TrainingColors.textMuted,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _pill(
+    String text, {
+    required Color background,
+    required Color textColor,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999.r),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontFamily: 'Cairo',
+          fontSize: 9.5.sp,
+          fontWeight: FontWeight.w800,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Logout + footer
+  // ───────────────────────────────────────────────────────────────────────────
+
+  Widget _buildLogout(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: GestureDetector(
+        onTap: () => _showLogoutDialog(context),
+        child: Container(
+          height: 50.h,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: TrainingColors.dangerSoft,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.logout_rounded,
+                size: 19.sp,
+                color: TrainingColors.danger,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'تسجيل الخروج من حساب المنشأة',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w800,
+                  color: TrainingColors.danger,
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.business_center_rounded,
-            size: 80.sp,
-            color: Colors.grey.shade300,
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'لا يوجد مركز تدريب',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+  Widget _buildFooter() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.verified_rounded,
+              size: 15.sp,
+              color: TrainingColors.textMuted,
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'لم يتم إعداد الملف التعريفي للمركز بعد',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey.shade500,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          ElevatedButton.icon(
-            onPressed: () {
-              context
-                  .read<TrainingCenterBloc>()
-                  .add(const LoadTrainingCenters());
-            },
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text('إعادة المحاولة'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade700,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+            SizedBox(width: 5.w),
+            Text(
+              'بوابة المنشآت التدريبية المعتمدة',
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 11.sp,
+                color: TrainingColors.textMuted,
               ),
             ),
+          ],
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          'الإصدار 1.0.0 • جميع الحقوق محفوظة لشركة التدريب التقني',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 10.sp,
+            color: TrainingColors.textMuted.withValues(alpha: 0.8),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildErrorState(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.error_outline_rounded,
-            size: 80.sp,
-            color: Colors.red.shade400,
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'حدث خطأ',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+  // ───────────────────────────────────────────────────────────────────────────
+  // Actions
+  // ───────────────────────────────────────────────────────────────────────────
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            message,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey.shade500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 16.h),
-          ElevatedButton.icon(
-            onPressed: () {
-              context
-                  .read<TrainingCenterBloc>()
-                  .add(const LoadTrainingCenters());
-            },
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text('إعادة المحاولة'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade700,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+            title: const Text('تسجيل الخروج'),
+            content: const Text('هل أنت متأكد من رغبتك في تسجيل الخروج؟'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('إلغاء'),
               ),
-            ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  context.go('/login');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: TrainingColors.danger,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('تأكيد'),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Future<void> _launchEmail(String email) async {
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: email,
-    );
-    if (await canLaunchUrl(emailUri)) {
-      await launchUrl(emailUri);
-    }
-  }
-
-  Future<void> _launchPhone(String phone) async {
-    final Uri phoneUri = Uri(
-      scheme: 'tel',
-      path: phone,
-    );
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    }
+  void _comingSoon(BuildContext context, String label) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('$label: قريباً'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
   }
 }

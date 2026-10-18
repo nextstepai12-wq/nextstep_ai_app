@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
-import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,748 +10,574 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen>
-    with SingleTickerProviderStateMixin {
-  final SupabaseService _supabase = SupabaseService();
-
+class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
-  bool _isDarkMode = false;
-  bool _notifications = true;
-  bool _soundEnabled = true;
-  bool _autoSave = true;
-  bool _locationServices = false;
-  bool _dataSaver = false;
 
-  String _selectedLanguage = 'ar';
-  final Map<String, String> _languages = {
-    'ar': 'العربية',
-    'en': 'English',
-    'fr': 'Français',
-    'tr': 'Türkçe',
-  };
+  // Notification switches
+  bool _recommendations = true;
+  bool _assessmentDeadlines = true;
+  bool _hapticSound = false;
 
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+  // Theme: 0 = light, 1 = dark, 2 = auto
+  int _themeMode = 0;
+
+  String _userName = '';
+  String _userEmail = '';
+
+  String _selectedLanguage = 'العربية';
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.05),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
-    );
     _loadSettings();
   }
 
   Future<void> _loadSettings() async {
     if (!mounted) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-
+      final data = await TokenManager.getUserData();
       if (mounted) {
         setState(() {
+          _userName = data['name'] ?? '';
+          _userEmail = data['email'] ?? '';
           _isLoading = false;
-          _animationController.forward();
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _logout() async {
     await TokenManager.clearAll();
-    await _supabase.signOut();
     if (mounted) {
-      context.pushReplacement('/login');
+      context.go('/login');
     }
   }
 
   void _showLogoutDialog() {
-    showDialog(
+    final c = Theme.of(context).extension<AppColors>() ?? AppColors.light;
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        margin: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 32, offset: const Offset(0, 12))],
         ),
-        title: const Text('تسجيل الخروج'),
-        content: const Text('هل أنت متأكد من رغبتك في تسجيل الخروج؟'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _logout();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade700,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('تسجيل الخروج'),
-          ),
-        ],
-        actionsAlignment: MainAxisAlignment.center,
-      ),
-    );
-  }
-
-  void _showLanguageDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text('اختر اللغة'),
-        content: Column(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: _languages.entries.map((entry) {
-            return RadioListTile<String>(
-              title: Text(entry.value),
-              value: entry.key,
-              groupValue: _selectedLanguage,
-              onChanged: (value) {
-                setState(() {
-                  _selectedLanguage = value!;
-                });
-                Navigator.pop(context);
-                _showSnackBar('تم تغيير اللغة إلى ${entry.value}');
-              },
-              activeColor: AppTheme.primary,
-            );
-          }).toList(),
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(color: c.danger.withValues(alpha: 0.12), shape: BoxShape.circle),
+              child: Icon(Icons.warning_amber_rounded, color: c.danger, size: 28),
+            ),
+            const SizedBox(height: 14),
+            Text('هل أنت متأكد من تسجيل الخروج؟', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: c.textPrimary)),
+            const SizedBox(height: 6),
+            Text(
+              'سيتم حفظ كافة نتائجك وتوصياتك الأكاديمية تلقائياً في السحابة لتبقى آمنة.',
+              style: TextStyle(fontSize: 13, color: c.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: c.surfaceAlt,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text('إلغاء الأمر', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: c.textPrimary)),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _logout();
+                    },
+                    child: Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: c.danger,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Text('نعم، تسجيل الخروج', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  void _showSnackBar(String message, {bool isSuccess = true}) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          backgroundColor:
-              isSuccess ? const Color(0xFF22C55E) : const Color(0xFFDC2626),
-          content: Row(
-            children: [
-              Icon(
-                isSuccess
-                    ? Icons.check_circle_outline_rounded
-                    : Icons.error_outline_rounded,
-                color: Colors.white,
-                size: 20,
+  void _showLanguagePicker() {
+    final c = Theme.of(context).extension<AppColors>() ?? AppColors.light;
+    final languages = [
+      {'name': 'العربية', 'flag': '🇸🇦', 'code': 'ar'},
+      {'name': 'English', 'flag': '🇺🇸', 'code': 'en'},
+      {'name': 'Français', 'flag': '🇫🇷', 'code': 'fr'},
+      {'name': 'Türkçe', 'flag': '🇹🇷', 'code': 'tr'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        margin: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 32, offset: const Offset(0, 12))],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('اختر اللغة', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: c.textPrimary)),
+            const SizedBox(height: 16),
+            ...languages.map((lang) {
+              final isSelected = lang['name'] == _selectedLanguage;
+              return GestureDetector(
+                onTap: () {
+                  setState(() => _selectedLanguage = lang['name']!);
+                  Navigator.pop(ctx);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected ? c.primary.withValues(alpha: 0.08) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isSelected ? c.primary.withValues(alpha: 0.3) : c.divider,
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(lang['flag']!, style: const TextStyle(fontSize: 22)),
+                      const SizedBox(width: 12),
+                      Text(lang['name']!, style: TextStyle(fontSize: 15, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500, color: c.textPrimary)),
+                      const Spacer(),
+                      if (isSelected) Icon(Icons.check_circle_rounded, color: c.primary, size: 22),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).extension<AppColors>() ?? AppColors.light;
+    final initials = _userName.isNotEmpty ? _userName[0].toUpperCase() : 'ط';
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: c.background,
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator(color: c.primary))
+            : CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(child: _buildTopBar(c)),
+                  SliverToBoxAdapter(child: _buildProfileCard(c, initials)),
+                  SliverToBoxAdapter(child: _buildNotificationsSection(c)),
+                  SliverToBoxAdapter(child: _buildAppearanceSection(c)),
+                  SliverToBoxAdapter(child: _buildSupportSection(c)),
+                  SliverToBoxAdapter(child: _buildPrivacySection(c)),
+                  SliverToBoxAdapter(child: _buildLogoutButton(c)),
+                  SliverToBoxAdapter(child: _buildFooter(c)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                ],
               ),
-              const SizedBox(width: 10),
+      ),
+    );
+  }
+
+  // ─── Top Bar ─────────────────────────────────────────────────────────
+
+  Widget _buildTopBar(AppColors c) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 12, 20, 0),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: c.surface,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: c.primary.withValues(alpha: 0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(Icons.arrow_back_ios_new_rounded, color: c.textPrimary, size: 20),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'الإعدادات',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: c.textPrimary),
+            ),
+          ),
+          
+        ],
+      ),
+    );
+  }
+
+  // ─── Profile Card ────────────────────────────────────────────────────
+
+  Widget _buildProfileCard(AppColors c, String initials) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 16, 20, 0),
+      child: GestureDetector(
+        onTap: () => context.push('/student/profile'),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: c.surface,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 4))],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [c.primary, c.primaryContainer],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Center(
+                  child: Text(initials, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
+                ),
+              ),
+              const SizedBox(width: 14),
               Expanded(
-                child: Text(
-                  message,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(_userName.isNotEmpty ? _userName : 'طالب', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: c.textPrimary)),
+                        const SizedBox(width: 4),
+                        Icon(Icons.verified_rounded, color: c.primary, size: 18),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(_userEmail, style: TextStyle(fontSize: 12, color: c.textSecondary)),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: c.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.cloud_done_rounded, color: c.primary, size: 14),
+                    const SizedBox(width: 4),
+                    Text('متزامن', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: c.primary)),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-      );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
-        appBar: _buildAppBar(),
-        body: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.primary,
-                ),
-              )
-            : FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                    child: Column(
-                      children: [
-                        _buildProfileCard(),
-                        const SizedBox(height: 20),
-                        _buildPreferencesSection(),
-                        const SizedBox(height: 20),
-                        _buildAppearanceSection(),
-                        const SizedBox(height: 20),
-                        _buildPrivacySection(),
-                        const SizedBox(height: 20),
-                        _buildSupportSection(),
-                        const SizedBox(height: 20),
-                        _buildAboutSection(),
-                        const SizedBox(height: 20),
-                        _buildLogoutButton(),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
       ),
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      title: const Text(
-        'الإعدادات',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppTheme.primaryContainer,
-        ),
-      ),
-      centerTitle: true,
-      leading: const SizedBox.shrink(),
-    );
-  }
+  // ─── Notifications Section ───────────────────────────────────────────
 
-  Widget _buildProfileCard() {
-    return InkWell(
-      onTap: () => context.push('/profile'),
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.grey.shade200, width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppTheme.primary, AppTheme.primaryContainer],
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Center(
-                child:
-                    Icon(Icons.person_rounded, size: 28, color: Colors.white),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'أحمد الحايك',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.primaryContainer,
-                    ),
-                  ),
-                  const Text(
-                    'ahmed@nextstep.ai',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 18,
-              color: Colors.grey.shade400,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPreferencesSection() {
-    return _buildSection(
-      title: 'التفضيلات',
-      icon: Icons.tune_rounded,
-      color: const Color(0xFF3B82F6),
+  Widget _buildNotificationsSection(AppColors c) {
+    return _section(
+      c,
+      title: 'التنبيهات والإشعارات',
+      icon: Icons.notifications_active_rounded,
+      iconColor: c.primary,
       children: [
-        _buildSwitchTile(
-          icon: Icons.notifications_rounded,
-          title: 'الإشعارات',
-          subtitle: 'تلقي إشعارات التوصيات والتحديثات',
-          value: _notifications,
-          onChanged: (value) {
-            setState(() {
-              _notifications = value;
-            });
-            _showSnackBar(value ? 'تم تفعيل الإشعارات' : 'تم إيقاف الإشعارات');
-          },
-        ),
-        _buildSwitchTile(
-          icon: Icons.volume_up_rounded,
-          title: 'الأصوات',
-          subtitle: 'تشغيل الأصوات في التطبيق',
-          value: _soundEnabled,
-          onChanged: (value) {
-            setState(() {
-              _soundEnabled = value;
-            });
-          },
-        ),
-        _buildSwitchTile(
-          icon: Icons.save_rounded,
-          title: 'الحفظ التلقائي',
-          subtitle: 'حفظ البيانات تلقائياً عند التعديل',
-          value: _autoSave,
-          onChanged: (value) {
-            setState(() {
-              _autoSave = value;
-            });
-          },
-        ),
-        _buildSwitchTile(
-          icon: Icons.data_usage_rounded,
-          title: 'توفير البيانات',
-          subtitle: 'تقليل استخدام البيانات أثناء التصفح',
-          value: _dataSaver,
-          onChanged: (value) {
-            setState(() {
-              _dataSaver = value;
-            });
-          },
-        ),
+        _switchTile(c, Icons.auto_awesome_rounded, 'إشعارات التوصيات الأكاديمية', 'تنبيهات فورية بالمسارات والجامعات المتوافقة', _recommendations, (v) => setState(() => _recommendations = v)),
+        _switchTile(c, Icons.schedule_rounded, 'تذكير مواعيد التقييم والمحاور', 'إشعارات لإكمال اختبارات الميول وتحليل القدرات', _assessmentDeadlines, (v) => setState(() => _assessmentDeadlines = v)),
+        _switchTile(c, Icons.vibration_rounded, 'المؤثرات الصوتية والاهتزاز التفاعلي', 'استجابة لمسية ذكية عند تحقيق الإنجازات', _hapticSound, (v) => setState(() => _hapticSound = v)),
       ],
     );
   }
 
-  Widget _buildAppearanceSection() {
-    return _buildSection(
-      title: 'المظهر',
+  // ─── Appearance Section ──────────────────────────────────────────────
+
+  Widget _buildAppearanceSection(AppColors c) {
+    return _section(
+      c,
+      title: 'المظهر والعرض',
       icon: Icons.palette_rounded,
-      color: const Color(0xFF8B5CF6),
+      iconColor: c.primaryContainer,
       children: [
-        _buildSwitchTile(
-          icon: Icons.dark_mode_rounded,
-          title: 'الوضع الليلي',
-          subtitle: 'تفعيل الألوان الداكنة في التطبيق',
-          value: _isDarkMode,
-          onChanged: (value) {
-            setState(() {
-              _isDarkMode = value;
-            });
-            _showSnackBar(
-                value ? 'تم تفعيل الوضع الليلي' : 'تم إيقاف الوضع الليلي');
-          },
+        // Theme segmented control
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('نمط العرض / الوضع', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textPrimary)),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: c.surfaceAlt,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    _themeSegment(c, 0, Icons.light_mode_rounded, 'فاتح'),
+                    _themeSegment(c, 1, Icons.dark_mode_rounded, 'داكن'),
+                    _themeSegment(c, 2, Icons.settings_brightness_rounded, 'تلقائي'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-        _buildLanguageTile(),
-        _buildThemeTile(),
+        const SizedBox(height: 8),
+        // Language
+        _navTile(c, Icons.translate_rounded, 'لغة AppRoutingModule', 'واجهة التوجيه ونصوص الذكاء الاصطناعي', () => _showLanguagePicker(), trailing: _selectedLanguage),
       ],
     );
   }
 
-  Widget _buildPrivacySection() {
-    return _buildSection(
+  Widget _themeSegment(AppColors c, int index, IconData icon, String label) {
+    final isActive = _themeMode == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _themeMode = index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isActive ? c.surface : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: isActive ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)] : [],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: isActive ? c.primary : c.textSecondary, size: 18),
+              const SizedBox(width: 6),
+              Text(label, style: TextStyle(fontSize: 13, fontWeight: isActive ? FontWeight.w700 : FontWeight.w500, color: isActive ? c.primary : c.textSecondary)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Support Section ─────────────────────────────────────────────────
+
+  Widget _buildSupportSection(AppColors c) {
+    return _section(
+      c,
+      title: 'الدعم والمساعدة',
+      icon: Icons.help_center_rounded,
+      iconColor: const Color(0xFF00414D),
+      children: [
+        _navTile(c, Icons.quiz_rounded, 'مركز المساعدة والأسئلة الشائعة', 'إجابات استفسارات القبول والتقييم الذكي', () => context.push('/student/help-center')),
+        _navTile(c, Icons.support_agent_rounded, 'تواصل مع فريق التوجيه الأكاديمي', 'استشارات متقدمة مع مستشارين معتمدين', () => context.push('/student/contact-us')),
+        _navTile(c, Icons.star_rounded, 'قيّم تجربة NextStep AI', 'رأيك يساعدنا في تحسين دقة محرك التوصيات', () => context.push('/student/rate-app')),
+        _navTile(c, Icons.ios_share_rounded, 'مشاركة التطبيق مع زملائك الطلاب', 'ساهم في مساعدة أصدقائك باكتشاف شغفهم', () => context.push('/student/share-app')),
+      ],
+    );
+  }
+
+  // ─── Privacy Section ─────────────────────────────────────────────────
+
+  Widget _buildPrivacySection(AppColors c) {
+    return _section(
+      c,
       title: 'الخصوصية والأمان',
       icon: Icons.security_rounded,
-      color: const Color(0xFF22C55E),
+      iconColor: c.textSecondary,
       children: [
-        _buildSwitchTile(
-          icon: Icons.location_on_rounded,
-          title: 'خدمات الموقع',
-          subtitle: 'السماح للتطبيق بالوصول إلى موقعك',
-          value: _locationServices,
-          onChanged: (value) {
-            setState(() {
-              _locationServices = value;
-            });
-          },
-        ),
-        _buildNavigateTile(
-          icon: Icons.privacy_tip_rounded,
-          title: 'سياسة الخصوصية',
-          subtitle: 'كيف نتعامل مع بياناتك',
-          onTap: () => context.push('/privacy-policy'),
-        ),
-        _buildNavigateTile(
-          icon: Icons.description_rounded,
-          title: 'الشروط والأحكام',
-          subtitle: 'اتفاقية استخدام التطبيق',
-          onTap: () => context.push('/terms-conditions'),
-        ),
-        _buildNavigateTile(
-          icon: Icons.cookie_rounded,
-          title: 'سياسة ملفات تعريف الارتباط',
-          subtitle: 'كيف نستخدم ملفات الكوكيز',
-          onTap: () => context.push('/cookies-policy'),
-        ),
+        _navTile(c, Icons.shield_rounded, 'سياسة الخصوصية وحماية بيانات الطالب', 'بيانات تقييماتك مشفرة ولا تتم مشاركتها خارجياً', () => context.push('/student/privacy-policy')),
+        _navTile(c, Icons.description_rounded, 'شروط الاستخدام والخدمة', 'المعايير المعتمدة في الإرشاد الطلابي والذكاء الاصطناعي', () => context.push('/student/terms-conditions')),
       ],
     );
   }
 
-  Widget _buildSupportSection() {
-    return _buildSection(
-      title: 'الدعم والمساعدة',
-      icon: Icons.support_agent_rounded,
-      color: const Color(0xFFF97316),
-      children: [
-        _buildNavigateTile(
-          icon: Icons.help_center_rounded,
-          title: 'مركز المساعدة',
-          subtitle: 'الأسئلة الشائعة والإرشادات',
-          onTap: () => context.push('/help-center'),
-        ),
-        _buildNavigateTile(
-          icon: Icons.email_rounded,
-          title: 'تواصل معنا',
-          subtitle: 'nextstepai12@gmail.com',
-          onTap: () => context.push('/contact-us'),
-        ),
-        _buildNavigateTile(
-          icon: Icons.star_rounded,
-          title: 'تقييم التطبيق',
-          subtitle: 'قيم التطبيق في المتجر',
-          onTap: () => context.push('/rate-app'),
-        ),
-        _buildNavigateTile(
-          icon: Icons.share_rounded,
-          title: 'مشاركة التطبيق',
-          subtitle: 'شارك التطبيق مع أصدقائك',
-          onTap: () => context.push('/share-app'),
-        ),
-      ],
-    );
-  }
+  // ─── Logout Button ───────────────────────────────────────────────────
 
-  Widget _buildAboutSection() {
-    return _buildSection(
-      title: 'حول التطبيق',
-      icon: Icons.info_rounded,
-      color: const Color(0xFFA855F7),
-      children: [
-        _buildAboutItem(
-          icon: Icons.rocket_launch_rounded,
-          title: 'الإصدار',
-          value: '1.0.0',
-          subtitle: 'آخر تحديث: أغسطس 2026',
-        ),
-        _buildAboutItem(
-          icon: Icons.code_rounded,
-          title: 'المطور',
-          value: 'NextStep AI Team',
-          subtitle: '© 2026 جميع الحقوق محفوظة',
-        ),
-        _buildAboutItem(
-          icon: Icons.people_rounded,
-          title: 'الشركاء',
-          value: '5 جامعات',
-          subtitle: 'انضم إلى شبكتنا',
-        ),
-        _buildNavigateTile(
-          icon: Icons.stars_rounded,
-          title: 'الإصدار التجريبي',
-          subtitle: 'نسخة تجريبية - قيد التطوير',
-          onTap: () => _showSnackBar('نسخة تجريبية v1.0.0-beta'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLogoutButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: _showLogoutDialog,
-        icon: const Icon(Icons.logout_rounded, size: 20),
-        label: const Text('تسجيل الخروج'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red.shade50,
-          foregroundColor: Colors.red.shade700,
-          shape: RoundedRectangleBorder(
+  Widget _buildLogoutButton(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: GestureDetector(
+        onTap: _showLogoutDialog,
+        child: Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: c.danger.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(14),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          side: BorderSide(color: Colors.red.shade200),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.logout_rounded, color: c.danger, size: 22),
+              const SizedBox(width: 8),
+              Text('تسجيل الخروج', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: c.danger)),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSection({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required List<Widget> children,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+  // ─── Footer ──────────────────────────────────────────────────────────
+
+  Widget _buildFooter(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+      child: Column(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(color: c.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10)),
+            child: Icon(Icons.explore_rounded, color: c.primary, size: 22),
           ),
+          const SizedBox(height: 8),
+          Text('NextStep AI • الإصدار 1.0.0', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: c.textSecondary)),
+          const SizedBox(height: 2),
+          Text('بنية الذكاء الاصطناعي الأكاديمي والمهني الحديثة', style: TextStyle(fontSize: 11, color: c.textSecondary.withValues(alpha: 0.7))),
         ],
       ),
+    );
+  }
+
+  // ─── Shared Section Builder ──────────────────────────────────────────
+
+  Widget _section(AppColors c, {required String title, required IconData icon, required Color iconColor, required List<Widget> children}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 20),
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+                child: Icon(icon, color: iconColor, size: 18),
               ),
-              const SizedBox(width: 10),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.primaryContainer,
-                ),
-              ),
+              const SizedBox(width: 8),
+              Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: c.textPrimary)),
             ],
           ),
-          const SizedBox(height: 8),
-          ...children,
+          const SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: c.surface,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4))],
+            ),
+            child: Column(children: children),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildSwitchTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: SwitchListTile(
-        contentPadding: EdgeInsets.zero,
-        secondary: Icon(icon, color: AppTheme.primary, size: 22),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.primaryContainer,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade500,
-          ),
-        ),
-        value: value,
-        onChanged: onChanged,
-        activeColor: AppTheme.primary,
-        activeTrackColor: AppTheme.primary.withValues(alpha: 0.2),
-        inactiveThumbColor: Colors.grey.shade400,
-      ),
-    );
-  }
+  // ─── Shared Switch Tile ──────────────────────────────────────────────
 
-  Widget _buildNavigateTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: AppTheme.primary, size: 22),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.primaryContainer,
-        ),
+  Widget _switchTile(AppColors c, IconData icon, String title, String subtitle, bool value, ValueChanged<bool> onChanged) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: c.divider, width: 0.5)),
       ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey.shade500,
-        ),
-      ),
-      trailing: Icon(
-        Icons.arrow_forward_ios_rounded,
-        size: 16,
-        color: Colors.grey.shade400,
-      ),
-      onTap: onTap,
-    );
-  }
-
-  Widget _buildLanguageTile() {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading:
-          const Icon(Icons.language_rounded, color: AppTheme.primary, size: 22),
-      title: const Text(
-        'اللغة',
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.primaryContainer,
-        ),
-      ),
-      subtitle: Text(
-        _languages[_selectedLanguage] ?? 'العربية',
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey.shade500,
-        ),
-      ),
-      trailing: Icon(
-        Icons.arrow_forward_ios_rounded,
-        size: 16,
-        color: Colors.grey.shade400,
-      ),
-      onTap: _showLanguageDialog,
-    );
-  }
-
-  Widget _buildThemeTile() {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading:
-          const Icon(Icons.style_rounded, color: AppTheme.primary, size: 22),
-      title: const Text(
-        'المظهر',
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.primaryContainer,
-        ),
-      ),
-      subtitle: Text(
-        _isDarkMode ? 'داكن' : 'فاتح',
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey.shade500,
-        ),
-      ),
-      trailing: Icon(
-        Icons.arrow_forward_ios_rounded,
-        size: 16,
-        color: Colors.grey.shade400,
-      ),
-      onTap: () {
-        setState(() {
-          _isDarkMode = !_isDarkMode;
-        });
-        _showSnackBar(
-            _isDarkMode ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهاري');
-      },
-    );
-  }
-
-  Widget _buildAboutItem({
-    required IconData icon,
-    required String title,
-    required String value,
-    required String subtitle,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.primary, size: 20),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: c.primary, size: 20),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.primaryContainer,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
+                Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textPrimary)),
+                const SizedBox(height: 2),
+                Text(subtitle, style: TextStyle(fontSize: 11, color: c.textSecondary)),
               ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => onChanged(!value),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 48,
+              height: 28,
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: value ? c.primary : c.surfaceAlt,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 200),
+                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -761,17 +585,56 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  Future<void> _launchURL(String url) async {
-    try {
-      final Uri uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        _showSnackBar('لا يمكن فتح الرابط', isSuccess: false);
-      }
-    } catch (e) {
-      _showSnackBar('حدث خطأ أثناء فتح الرابط', isSuccess: false);
-    }
+  // ─── Shared Nav Tile ─────────────────────────────────────────────────
+
+  Widget _navTile(AppColors c, IconData icon, String title, String subtitle, VoidCallback onTap, {String? trailing}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.divider, width: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, color: c.primary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textPrimary)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: TextStyle(fontSize: 11, color: c.textSecondary)),
+                ],
+              ),
+            ),
+            if (trailing != null) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(color: c.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(trailing, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: c.primary)),
+                    const SizedBox(width: 4),
+                    Icon(Icons.arrow_forward_ios_rounded, color: c.primary, size: 12),
+                  ],
+                ),
+              ),
+            ] else ...[
+              const SizedBox(width: 8),
+              Icon(Icons.arrow_forward_ios_rounded, color: c.textSecondary, size: 14),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
-

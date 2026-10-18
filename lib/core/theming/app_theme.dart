@@ -178,7 +178,7 @@ class AppTheme {
         : ColorScheme.light(
             primary: c.primary,
             onPrimary: Colors.white,
-            primaryContainer: c.primarySoft,
+            primaryContainer: c.primaryContainer,
             onPrimaryContainer: c.primaryDark,
             secondary: c.primary,
             onSecondary: Colors.white,
@@ -253,6 +253,7 @@ class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
     required this.primary,
     required this.primaryDark,
+    required this.primaryContainer,
     required this.primarySoft,
     required this.gradientStart,
     required this.gradientEnd,
@@ -275,6 +276,7 @@ class AppColors extends ThemeExtension<AppColors> {
 
   final Color primary;
   final Color primaryDark;
+  final Color primaryContainer;
   final Color primarySoft;
   final Color gradientStart;
   final Color gradientEnd;
@@ -295,31 +297,33 @@ class AppColors extends ThemeExtension<AppColors> {
   final bool isDark;
 
   static const AppColors light = AppColors(
-    primary: Color(0xFF2563EB),
-    primaryDark: Color(0xFF1E40AF),
-    primarySoft: Color(0xFFEFF4FF),
-    gradientStart: Color(0xFF2563EB),
-    gradientEnd: Color(0xFF3B82F6),
+    primary: Color(0xFF2A14B4),
+    primaryDark: Color(0xFF4338CA),
+    primaryContainer: Color(0xFF4338CA),
+    primarySoft: Color(0xFFE3DFFF),
+    gradientStart: Color(0xFF2A14B4),
+    gradientEnd: Color(0xFF4338CA),
     success: Color(0xFF10B981),
     successSoft: Color(0xFFECFDF5),
     accent: Color(0xFFF59E0B),
     accentSoft: Color(0xFFFFFBEB),
-    danger: Color(0xFFEF4444),
+    danger: Color(0xFFBA1A1A),
     dangerSoft: Color(0xFFFEF2F2),
-    purple: Color(0xFF8B5CF6),
+    purple: Color(0xFF4953BC),
     purpleSoft: Color(0xFFF5F3FF),
-    background: Color(0xFFF8FAFC),
+    background: Color(0xFFFAF8FF),
     surface: Color(0xFFFFFFFF),
-    surfaceAlt: Color(0xFFF1F5F9),
-    textPrimary: Color(0xFF0F172A),
-    textSecondary: Color(0xFF64748B),
-    divider: Color(0xFFE2E8F0),
+    surfaceAlt: Color(0xFFF2F3FF),
+    textPrimary: Color(0xFF131B2E),
+    textSecondary: Color(0xFF464554),
+    divider: Color(0xFFC7C4D7),
     isDark: false,
   );
 
   static const AppColors dark = AppColors(
     primary: Color(0xFF2563EB),
     primaryDark: Color(0xFF1E40AF),
+    primaryContainer: Color(0xFF1E40AF),
     primarySoft: Color(0x292563EB),
     gradientStart: Color(0xFF2563EB),
     gradientEnd: Color(0xFF3B82F6),
@@ -344,6 +348,7 @@ class AppColors extends ThemeExtension<AppColors> {
   AppColors copyWith({
     Color? primary,
     Color? primaryDark,
+    Color? primaryContainer,
     Color? primarySoft,
     Color? gradientStart,
     Color? gradientEnd,
@@ -366,6 +371,7 @@ class AppColors extends ThemeExtension<AppColors> {
     return AppColors(
       primary: primary ?? this.primary,
       primaryDark: primaryDark ?? this.primaryDark,
+      primaryContainer: primaryContainer ?? this.primaryContainer,
       primarySoft: primarySoft ?? this.primarySoft,
       gradientStart: gradientStart ?? this.gradientStart,
       gradientEnd: gradientEnd ?? this.gradientEnd,
@@ -393,6 +399,7 @@ class AppColors extends ThemeExtension<AppColors> {
     return AppColors(
       primary: Color.lerp(primary, other.primary, t)!,
       primaryDark: Color.lerp(primaryDark, other.primaryDark, t)!,
+      primaryContainer: Color.lerp(primaryContainer, other.primaryContainer, t)!,
       primarySoft: Color.lerp(primarySoft, other.primarySoft, t)!,
       gradientStart: Color.lerp(gradientStart, other.gradientStart, t)!,
       gradientEnd: Color.lerp(gradientEnd, other.gradientEnd, t)!,
