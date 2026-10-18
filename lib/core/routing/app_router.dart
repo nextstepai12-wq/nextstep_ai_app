@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:nextstep_ai_app/core/di/service_locator.dart';
+import 'package:nextstep_ai_app/features/training_center/logic/training_application_bloc/training_application_bloc.dart';
+
 import 'package:nextstep_ai_app/features/auth/ui/screens/splash_screen.dart';
 import 'package:nextstep_ai_app/features/auth/ui/screens/login_screen.dart';
 import 'package:nextstep_ai_app/features/auth/ui/screens/register_screen.dart';
@@ -55,9 +57,12 @@ import 'package:nextstep_ai_app/features/training_center/ui/screens/dashboard_sc
 import 'package:nextstep_ai_app/features/training_center/ui/screens/training_programs_screen.dart';
 import 'package:nextstep_ai_app/features/training_center/ui/screens/students_screen.dart';
 import 'package:nextstep_ai_app/features/training_center/ui/screens/instructors_screen.dart';
+import 'package:nextstep_ai_app/features/training_center/ui/screens/add_instructor_screen.dart';
+import 'package:nextstep_ai_app/features/training_center/data/models/instructor_model.dart';
 import 'package:nextstep_ai_app/features/training_center/ui/screens/center_profile_screen.dart';
 import 'package:nextstep_ai_app/features/training_center/ui/screens/verification_screen.dart';
 import 'package:nextstep_ai_app/features/training_center/ui/screens/training_application_screen.dart';
+import 'package:nextstep_ai_app/features/training_center/ui/screens/registration_requests_screen.dart';
 import 'package:nextstep_ai_app/features/training_center/ui/screens/training_program_details_screen.dart';
 import 'package:nextstep_ai_app/features/training_center/ui/screens/notifications_screen.dart'
     as training;
@@ -65,8 +70,6 @@ import 'package:nextstep_ai_app/features/training_center/ui/screens/settings_scr
     as training;
 import 'package:nextstep_ai_app/features/training_center/ui/screens/help_screen.dart'
     as training;
-import 'package:nextstep_ai_app/features/training_center/logic/training_center_bloc/training_center_bloc.dart';
-import 'package:nextstep_ai_app/features/training_center/logic/training_programs_bloc/training_programs_bloc.dart';
 
 class TrainingCenterShell extends StatelessWidget {
   final Widget child;
@@ -75,19 +78,10 @@ class TrainingCenterShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<TrainingCenterBloc>(
-          create: (context) => TrainingCenterBloc(repository: sl())
-            ..add(const LoadTrainingCenters()),
-        ),
-        BlocProvider<TrainingProgramsBloc>(
-          create: (context) => TrainingProgramsBloc(repository: sl())
-            ..add(const LoadTrainingPrograms()),
-        ),
-      ],
-      child: child,
-    );
+    // The training-center blocs are provided above the router in `MyApp`
+    // so that they are also accessible from drawers, dialogs and overlays,
+    // not only from the routes nested inside this shell.
+    return child;
   }
 }
 
@@ -104,9 +98,9 @@ class AppRouter {
         path: '/forget-password',
         builder: (c, s) => const ForgetPasswordScreen(),
       ),
-
       GoRoute(path: '/student', builder: (c, s) => const StudentMainScreen()),
-      GoRoute(path: '/student/profile', builder: (c, s) => const ProfileScreen()),
+      GoRoute(
+          path: '/student/profile', builder: (c, s) => const ProfileScreen()),
       GoRoute(
         path: '/student/help-center',
         builder: (c, s) => const HelpCenterScreen(),
@@ -115,8 +109,11 @@ class AppRouter {
         path: '/student/contact-us',
         builder: (c, s) => const ContactUsScreen(),
       ),
-      GoRoute(path: '/student/rate-app', builder: (c, s) => const RateAppScreen()),
-      GoRoute(path: '/student/share-app', builder: (c, s) => const ShareAppScreen()),
+      GoRoute(
+          path: '/student/rate-app', builder: (c, s) => const RateAppScreen()),
+      GoRoute(
+          path: '/student/share-app',
+          builder: (c, s) => const ShareAppScreen()),
       GoRoute(
         path: '/student/privacy-policy',
         builder: (c, s) => const PrivacyPolicyScreen(),
@@ -150,7 +147,6 @@ class AppRouter {
       GoRoute(path: '/chat', builder: (c, s) => const ChatScreen()),
       GoRoute(path: '/profile', builder: (c, s) => const ProfileScreen()),
       GoRoute(path: '/settings', builder: (c, s) => const SettingsScreen()),
-
       GoRoute(
         path: '/university',
         builder: (c, s) => const UniversityHomeScreen(),
@@ -205,10 +201,10 @@ class AppRouter {
           facultyData: const {},
         ),
       ),
-
       GoRoute(path: '/admin', builder: (c, s) => const AdminDashboardScreen()),
       GoRoute(path: '/admin/home', builder: (c, s) => const AdminHomeScreen()),
-      GoRoute(path: '/admin/users', builder: (c, s) => const AdminUsersScreen()),
+      GoRoute(
+          path: '/admin/users', builder: (c, s) => const AdminUsersScreen()),
       GoRoute(
         path: '/admin/users/add',
         builder: (c, s) => const AdminAddUserScreen(),
@@ -266,11 +262,11 @@ class AppRouter {
         path: '/admin/notifications',
         builder: (c, s) => const AdminNotificationsScreen(),
       ),
-      GoRoute(path: '/admin/profile', builder: (c, s) => const AdminProfileScreen()),
-
+      GoRoute(
+          path: '/admin/profile',
+          builder: (c, s) => const AdminProfileScreen()),
       ShellRoute(
-        builder: (context, state, child) =>
-            TrainingCenterShell(child: child),
+        builder: (context, state, child) => TrainingCenterShell(child: child),
         routes: [
           GoRoute(
             path: '/training-center',
@@ -287,10 +283,37 @@ class AppRouter {
           GoRoute(
             path: '/training-center/students',
             builder: (c, s) => const StudentsScreen(),
+            routes: [
+              GoRoute(
+                path: 'details',
+                builder: (c, s) => StudentRequestDetailsScreen(
+                  request: s.extra is StudentRequest
+                      ? s.extra! as StudentRequest
+                      : mockStudentRequests.first,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/training-center/registration-requests',
+            builder: (c, s) => const RegistrationRequestsScreen(),
+            routes: [
+              GoRoute(
+                path: 'details',
+                builder: (c, s) => const RegistrationRequestDetailsScreen(),
+              ),
+            ],
           ),
           GoRoute(
             path: '/training-center/instructors',
             builder: (c, s) => const InstructorsScreen(),
+          ),
+          GoRoute(
+            path: '/training-center/instructors/add',
+            builder: (c, s) => AddInstructorScreen(
+              isEditing: s.extra is InstructorModel,
+              instructor: s.extra as InstructorModel?,
+            ),
           ),
           GoRoute(
             path: '/training-center/notifications',
@@ -320,13 +343,15 @@ class AppRouter {
           ),
           GoRoute(
             path: '/training-center/apply',
-            builder: (c, s) => TrainingApplicationScreen(
-              programId: s.extra as String? ?? '',
+            builder: (c, s) => BlocProvider<TrainingApplicationBloc>(
+              create: (_) => TrainingApplicationBloc(repository: sl()),
+              child: TrainingApplicationScreen(
+                programId: s.extra as String? ?? '',
+              ),
             ),
           ),
         ],
       ),
-
       GoRoute(path: '/terms', builder: (c, s) => const TermsScreen()),
       GoRoute(
         path: '/help-center',

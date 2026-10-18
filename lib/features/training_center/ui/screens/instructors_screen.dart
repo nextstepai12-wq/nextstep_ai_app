@@ -1,11 +1,8 @@
-
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shimmer/shimmer.dart';
-
-import '../../logic/training_center_bloc/training_center_bloc.dart';
+import 'package:go_router/go_router.dart';
+import '../../data/models/instructor_model.dart';
+import '../theme/training_colors.dart';
 import '../widgets/training_center_drawer.dart';
 
 class InstructorsScreen extends StatefulWidget {
@@ -18,29 +15,83 @@ class InstructorsScreen extends StatefulWidget {
 class _InstructorsScreenState extends State<InstructorsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
+
   String _searchQuery = '';
-  String _selectedDepartment = 'الكل';
-  bool _isDataLoaded = false;
+  String _selectedStatusFilter = 'all'; // 'all', 'active', 'inactive'
 
-  final List<String> _departments = [
-    'الكل',
-    'الذكاء الاصطناعي',
-    'إدارة الأعمال',
-    'تقنية المعلومات',
-    'التسويق',
-    'التصميم',
+  // Initial list of trainers matching the provided HTML mock data
+  final List<InstructorModel> _instructors = [
+    const InstructorModel(
+      id: '1',
+      name: 'د. خالد العتيبي',
+      specialty: 'مدرب معتمد — إدارة المشاريع الاحترافية PMP',
+      avatarUrl:
+          'https://lh3.googleusercontent.com/aida/AEtjO1X5PiQCuXDe_R10li0XXnAS17LvCrIp1qBgoemYJDSIPLdfj1h1TLP84nxpXYi4KHpJXaf09VsTcp-5pmQiQYnR8V30WBo2F_QSNnQ7tSLwXt2ey24ub-PC7X7ohcxu0teBYL3XPtptEZdiTHNQDYseOAN6RIct6yusbtd8r5wsJO9Ccmt-2LMSIYnnaTXJFCfbL4sKhNma1zi2eJiJvUTdSbwyZyMxCnnz28sQ2ePQMrb_y2qfPuLo8Dk',
+      rating: 4.8,
+      studentCount: 320,
+      coursesCount: 5,
+      isVerified: true,
+      isActive: true,
+      email: 'khaled@training.sa',
+      phone: '501234567',
+    ),
+    const InstructorModel(
+      id: '2',
+      name: 'م. عبد العزيز الشمري',
+      specialty: 'خبير ومستشار الأمن السيبراني واختبار الاختراق',
+      avatarUrl:
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuCmRZleopdYd8I3_Wb7wXL7BRWJjZrpXPZdkpcQpR2HT5du4xcqxIO-pm-qP8uD1SWuncSZ7DxpbQYNQqPLGWu71z_5XG4YgFIWGMQWYfZp2IK6-38w1Kuz-nn0psalUqu0AegNbjsaPRAYVfdHt1JZ6vXyRmqPsNugPzin7iHrLlDU5gqKfjrU8EnMvLIrJC2Ng3KctKwnNusHKbHi-h7M4FsYOJ5qD4wsayRmIbw6kPmH8Cbjy4Lt',
+      rating: 4.9,
+      studentCount: 410,
+      coursesCount: 4,
+      isVerified: true,
+      isActive: true,
+      email: 'abdulaziz@training.sa',
+      phone: '502345678',
+    ),
+    const InstructorModel(
+      id: '3',
+      name: 'أ. نورة القحطاني',
+      specialty: 'أخصائية تصميم البرامج التدريبية وتحليل البيانات',
+      avatarUrl:
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuCS8jQqrM0oKfmTOUHlKv9OMCaaaVtbytzcIbM1U47K2_kBCyyy1TQwKyddv3dDAS8qsZRdcz22UgRUsOM2-XLs9GjZncS_pHEkDwnvmYEEJEtnL1vTGq3ZQIcxNaWzFo-7NrlGwtW9e_Y2vwH2XC3_StvZQLDyj79jrBAZ7HpbhzZJWYejHEdOH0ROKIK8_T2tEcSoFZQ8G0cXDoMHRyLWuarPfP0PKeoRzn3C22UnYslEPXCfZC5B',
+      rating: 4.9,
+      studentCount: 215,
+      coursesCount: 3,
+      isVerified: true,
+      isActive: true,
+      email: 'noura@training.sa',
+      phone: '503456789',
+    ),
+    const InstructorModel(
+      id: '4',
+      name: 'م. فيصل الدوسري',
+      specialty: 'مدرب معتمد — الصيانة الصناعية وخطوط الإنتاج',
+      avatarUrl:
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuBdnjixUsZFbt61RbTooivxnMvdtXyIkB-K1p_4Y2JNvJDVMJl5HBDAmfLelpqS5OvsbnVZqOm7eivx-dlaLQ3Q7QoIGGUTMVNz0mrmUAQLYd5-fK7vP_0fyA5alF2WTRvu0hJcASQjaXi7hx7ySG4q3uY1GnjrHbV7SxFr5bj54QQkbKwpAo9tr3tFIQiH6CDkLZ0seL8etHUZu2O9Sty5PH5ki4wjS7CTqV6NKEAOHbOIFosHLTIM',
+      rating: 4.7,
+      studentCount: 145,
+      coursesCount: 2,
+      isVerified: false,
+      isActive: false,
+      email: 'faisal@training.sa',
+      phone: '504567890',
+    ),
+    const InstructorModel(
+      id: '5',
+      name: 'د. سلطان القحطاني',
+      specialty: 'استشاري إدارة وضبط جودة المشاريع الإنشائية',
+      avatarUrl:
+          'https://lh3.googleusercontent.com/aida/AEtjO1X5PiQCuXDe_R10li0XXnAS17LvCrIp1qBgoemYJDSIPLdfj1h1TLP84nxpXYi4KHpJXaf09VsTcp-5pmQiQYnR8V30WBo2F_QSNnQ7tSLwXt2ey24ub-PC7X7ohcxu0teBYL3XPtptEZdiTHNQDYseOAN6RIct6yusbtd8r5wsJO9Ccmt-2LMSIYnnaTXJFCfbL4sKhNma1zi2eJiJvUTdSbwyZyMxCnnz28sQ2ePQMrb_y2qfPuLo8Dk',
+      rating: 4.7,
+      studentCount: 95,
+      coursesCount: 2,
+      isVerified: true,
+      isActive: true,
+      email: 'sultan@training.sa',
+      phone: '505678901',
+    ),
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_isDataLoaded) {
-        context.read<TrainingCenterBloc>().add(const LoadTrainingCenters());
-        _isDataLoaded = true;
-      }
-    });
-  }
 
   @override
   void dispose() {
@@ -48,228 +99,242 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: _buildAppBar(),
-      drawer: const TrainingCenterDrawer(),
-      body: _buildBody(),
-    );
+  int get _totalCount => _instructors.length;
+  int get _activeCount => _instructors.where((i) => i.isActive).length;
+  int get _inactiveCount => _instructors.where((i) => !i.isActive).length;
+
+  List<InstructorModel> get _filteredInstructors {
+    return _instructors.where((instructor) {
+      final matchesQuery = _searchQuery.isEmpty ||
+          instructor.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          (instructor.specialty ?? '').toLowerCase().contains(_searchQuery.toLowerCase());
+
+      if (_selectedStatusFilter == 'active') {
+        return matchesQuery && instructor.isActive;
+      } else if (_selectedStatusFilter == 'inactive') {
+        return matchesQuery && !instructor.isActive;
+      }
+      return matchesQuery;
+    }).toList();
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.menu_rounded),
-        onPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-      ),
-      title: Row(
-        children: [
-          Icon(
-            Icons.psychology_rounded,
-            color: Colors.blue.shade700,
-            size: 22.sp,
-          ),
-          SizedBox(width: 6.w),
-          Flexible(
-            child: Text(
-              'إدارة المدربين',
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue.shade900,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        Container(
-          height: 32.h,
-          padding: EdgeInsets.symmetric(horizontal: 10.w),
+  void _navigateToAddTrainer([InstructorModel? instructorToEdit]) async {
+    final result = await context.push<InstructorModel>(
+      '/training-center/instructors/add',
+      extra: instructorToEdit,
+    );
+
+    if (result != null) {
+      setState(() {
+        final existingIndex = _instructors.indexWhere((i) => i.id == result.id);
+        if (existingIndex >= 0) {
+          _instructors[existingIndex] = result;
+        } else {
+          _instructors.insert(0, result);
+        }
+      });
+    }
+  }
+
+  void _openTrainerOptionsModal(InstructorModel instructor) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
           decoration: BoxDecoration(
-            color: Colors.blue.shade700,
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.add_rounded,
-                size: 16.sp,
-                color: Colors.white,
-              ),
-              SizedBox(width: 4.w),
-              Text(
-                'إضافة مدرب',
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 20,
+                offset: Offset(0, -4),
               ),
             ],
           ),
-        ),
-        SizedBox(width: 4.w),
-        IconButton(
-          icon: Icon(
-            Icons.notifications_outlined,
-            size: 22.sp,
+          padding: EdgeInsets.all(20.r),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                width: 48.w,
+                height: 5.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Row(
+                children: [
+                  Container(
+                    width: 44.w,
+                    height: 44.h,
+                    decoration: BoxDecoration(
+                      color: TrainingColors.surfaceAlt,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.manage_accounts_rounded,
+                      color: TrainingColors.primary,
+                      size: 24.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          instructor.name,
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: TrainingColors.primary,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                        Text(
+                          'تحديث الصلاحيات، الجدول، أو حالة العمل',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: TrainingColors.textSecondary,
+                            fontFamily: 'Tajawal',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20.h),
+
+              // Option 1: Edit profile
+              _buildModalOption(
+                icon: Icons.edit_rounded,
+                iconColor: TrainingColors.primary,
+                title: 'تعديل الملف المهني والبيانات',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _navigateToAddTrainer(instructor);
+                },
+              ),
+              SizedBox(height: 8.h),
+
+              // Option 2: Toggle Active Status / Vacation
+              _buildModalOption(
+                icon: Icons.pause_circle_rounded,
+                iconColor: TrainingColors.accent,
+                title: instructor.isActive ? 'تعطيل مؤقت / تعيين كإجازة' : 'إعادة التفعيل والعمل',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  setState(() {
+                    final index = _instructors.indexWhere((i) => i.id == instructor.id);
+                    if (index >= 0) {
+                      _instructors[index] = instructor.copyWith(isActive: !instructor.isActive);
+                    }
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        instructor.isActive
+                            ? 'تم تعيين المدرب كإجازة / غير نشط'
+                            : 'تم إعادة تفعيل المدرب بنجاح',
+                      ),
+                      backgroundColor: TrainingColors.primary,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+              SizedBox(height: 8.h),
+
+              // Option 3: Schedule
+              _buildModalOption(
+                icon: Icons.calendar_month_rounded,
+                iconColor: Colors.blue.shade700,
+                title: 'جدول المحاضرات والارتباطات',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showScheduleDialog(instructor);
+                },
+              ),
+              SizedBox(height: 8.h),
+
+              // Option 4: Delete Trainer
+              _buildModalOption(
+                icon: Icons.delete_rounded,
+                iconColor: Colors.red,
+                title: 'حذف المدرب من المنظومة',
+                textColor: Colors.red,
+                backgroundColor: Colors.red.shade50,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _confirmDeleteTrainer(instructor);
+                },
+              ),
+              SizedBox(height: 16.h),
+
+              // Cancel button
+              SizedBox(
+                width: double.infinity,
+                height: 46.h,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    side: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  child: Text(
+                    'إلغاء',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: TrainingColors.textSecondary,
+                      fontFamily: 'Tajawal',
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.h),
+            ],
           ),
-          onPressed: () {
-            context.push('/training-center/notifications');
-          },
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-        ),
-        SizedBox(width: 4.w),
-        CircleAvatar(
-          radius: 16.r,
-          backgroundColor: Colors.grey.shade300,
-          child: Icon(
-            Icons.person,
-            size: 18.sp,
-            color: Colors.grey.shade700,
-          ),
-        ),
-        SizedBox(width: 4.w),
-      ],
-      centerTitle: false,
-      elevation: 0,
-      backgroundColor: Colors.white.withValues(alpha: 0.92),
-    );
-  }
-
-  Widget _buildBody() {
-    return Column(
-      children: [
-        _buildStatsCards(),
-        SizedBox(height: 8.h),
-
-        _buildSearchAndFilter(),
-        SizedBox(height: 8.h),
-
-        Expanded(
-          child: _buildInstructorsList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatsCards() {
-    return BlocBuilder<TrainingCenterBloc, TrainingCenterState>(
-      builder: (context, state) {
-        if (state is TrainingCenterLoading) {
-          return _buildStatsShimmer();
-        }
-
-        if (state is TrainingCenterLoaded) {
-          final totalInstructors = 124;
-          final activeInstructors = 98;
-          final avgRating = 4.8;
-
-          return Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-            child: Row(
-              children: [
-                _buildStatCard(
-                  title: 'إجمالي المدربين',
-                  value: totalInstructors.toString(),
-                  icon: Icons.group_rounded,
-                  color: Colors.blue.shade50,
-                  iconColor: Colors.blue.shade700,
-                ),
-                SizedBox(width: 10.w),
-                _buildStatCard(
-                  title: 'المدربين النشطين',
-                  value: activeInstructors.toString(),
-                  icon: Icons.how_to_reg_rounded,
-                  color: Colors.green.shade50,
-                  iconColor: Colors.green.shade700,
-                ),
-                SizedBox(width: 10.w),
-                _buildStatCard(
-                  title: 'متوسط التقييم',
-                  value: avgRating.toString(),
-                  icon: Icons.star_rounded,
-                  color: Colors.amber.shade50,
-                  iconColor: Colors.amber.shade700,
-                ),
-              ],
-            ),
-          );
-        }
-
-        if (state is TrainingCenterError) {
-          return Padding(
-            padding: EdgeInsets.all(16.r),
-            child: Text(
-              'حدث خطأ: ${state.message}',
-              style: TextStyle(color: Colors.red.shade700),
-            ),
-          );
-        }
-
-        return const SizedBox.shrink();
+        );
       },
     );
   }
 
-  Widget _buildStatCard({
-    required String title,
-    required String value,
+  Widget _buildModalOption({
     required IconData icon,
-    required Color color,
     required Color iconColor,
+    required String title,
+    required VoidCallback onTap,
+    Color? textColor,
+    Color? backgroundColor,
   }) {
-    return Expanded(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.r),
       child: Container(
-        padding: EdgeInsets.all(10.r),
+        height: 48.h,
+        padding: EdgeInsets.symmetric(horizontal: 14.w),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: Colors.grey.shade200),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade100,
-              blurRadius: 6.r,
-              offset: Offset(0, 2.h),
-            ),
-          ],
+          color: backgroundColor ?? TrainingColors.surfaceAlt,
+          borderRadius: BorderRadius.circular(12.r),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Container(
-              padding: EdgeInsets.all(4.r),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(6.r),
-              ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 14.sp,
-              ),
-            ),
-            SizedBox(height: 6.h),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
-              ),
-            ),
+            Icon(icon, color: iconColor, size: 22.sp),
+            SizedBox(width: 12.w),
             Text(
               title,
               style: TextStyle(
-                fontSize: 10.sp,
-                color: Colors.grey.shade600,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: textColor ?? TrainingColors.textPrimary,
+                fontFamily: 'Tajawal',
               ),
             ),
           ],
@@ -278,452 +343,672 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 
-  Widget _buildStatsShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-        child: Row(
-          children: List.generate(
-            3,
-            (index) => Expanded(
-              child: Container(
-                margin: EdgeInsets.only(right: 10.w),
-                height: 70.h,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14.r),
+  void _confirmDeleteTrainer(InstructorModel instructor) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text(
+          'تأكيد حذف المدرب',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.bold,
+            color: Colors.red,
+            fontFamily: 'Cairo',
+          ),
+        ),
+        content: Text(
+          'هل أنت تأكد من رغبتك في حذف المدرب (${instructor.name}) نهائياً من المنظومة؟',
+          style: TextStyle(fontSize: 13.sp, fontFamily: 'Tajawal'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('إلغاء'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _instructors.removeWhere((i) => i.id == instructor.id);
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('تم حذف المدرب (${instructor.name}) بنجاح'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+            ),
+            child: const Text('حذف'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showScheduleDialog(InstructorModel instructor) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Row(
+          children: [
+            Icon(Icons.calendar_month_rounded, color: TrainingColors.primary, size: 22.sp),
+            SizedBox(width: 8.w),
+            Text(
+              'جدول المحاضرات — ${instructor.name}',
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.bold,
+                color: TrainingColors.primary,
+                fontFamily: 'Cairo',
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildScheduleRow('الأحد والثلاثاء', '05:00 م - 08:00 م', 'دورة PMP المتقدمة'),
+            SizedBox(height: 8.h),
+            _buildScheduleRow('الاثنين والأربعاء', '06:30 م - 09:30 م', 'ورشة عمل تحليل البيانات'),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TrainingColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('إغلاق'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScheduleRow(String days, String time, String course) {
+    return Container(
+      padding: EdgeInsets.all(10.r),
+      decoration: BoxDecoration(
+        color: TrainingColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(course, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold, color: TrainingColors.primary)),
+          SizedBox(height: 2.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(days, style: TextStyle(fontSize: 11.sp, color: TrainingColors.textSecondary)),
+              Text(time, style: TextStyle(fontSize: 11.sp, color: TrainingColors.accent, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.all(20.r),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'تصفية نتائج المدربين',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+                color: TrainingColors.primary,
+                fontFamily: 'Cairo',
+              ),
+            ),
+            SizedBox(height: 14.h),
+            ListTile(
+              leading: const Icon(Icons.star_rounded, color: TrainingColors.rating),
+              title: const Text('الأعلى تقييماً (4.8+)'),
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() {
+                  _searchQuery = '';
+                  _selectedStatusFilter = 'all';
+                });
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.verified_rounded, color: Colors.blue),
+              title: const Text('المدربين المعتمدين والموثقين فقط'),
+              onTap: () {
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredList = _filteredInstructors;
+
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: TrainingColors.background,
+      drawer: const TrainingCenterDrawer(),
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              SizedBox(height: MediaQuery.of(context).padding.top),
+              _buildSubHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 8.h),
+                      _buildSearchAndFilterBar(),
+                      SizedBox(height: 12.h),
+                      _buildSummaryStripCard(),
+                      SizedBox(height: 14.h),
+                      if (filteredList.isEmpty)
+                        _buildEmptyResultsState()
+                      else
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: filteredList.length,
+                          separatorBuilder: (context, index) => SizedBox(height: 12.h),
+                          itemBuilder: (context, index) {
+                            final trainer = filteredList[index];
+                            return _buildTrainerCard(trainer);
+                          },
+                        ),
+                      SizedBox(height: 80.h), // Space for floating bottom button
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // Pinned Floating Bottom Action Button matching HTML layout
+          Positioned(
+            left: 16.w,
+            right: 16.w,
+            bottom: 12.h,
+            child: SafeArea(
+              child: GestureDetector(
+                onTap: () => _navigateToAddTrainer(),
+                child: Container(
+                  height: 50.h,
+                  decoration: BoxDecoration(
+                    gradient: TrainingColors.accentGradient,
+                    borderRadius: BorderRadius.circular(14.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: TrainingColors.accent.withValues(alpha: 0.35),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.person_add_rounded, color: Colors.white, size: 22.sp),
+                      SizedBox(width: 8.w),
+                      Text(
+                        '+ إضافة مدرب جديد',
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontFamily: 'Cairo',
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubHeader() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 4.h),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              width: 40.w,
+              height: 40.h,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: TrainingColors.softShadow,
+              ),
+              child: const Icon(Icons.chevron_right_rounded, color: TrainingColors.primary, size: 24),
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'إدارة المدربين',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: TrainingColors.primary,
+                    fontFamily: 'Cairo',
+                  ),
+                ),
+                Text(
+                  'الكادر الأكاديمي والتدريبي المعتمد',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: TrainingColors.textSecondary,
+                    fontFamily: 'Tajawal',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 8.w),
+          InkWell(
+            onTap: () => _navigateToAddTrainer(),
+            borderRadius: BorderRadius.circular(20.r),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: TrainingColors.accentSoft,
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.person_add_rounded, color: TrainingColors.accent, size: 16.sp),
+                  SizedBox(width: 4.w),
+                  Text(
+                    '+ إضافة مدرب',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.bold,
+                      color: TrainingColors.accent,
+                      fontFamily: 'Tajawal',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(width: 8.w),
+          GestureDetector(
+            onTap: () => _scaffoldKey.currentState?.openDrawer(),
+            child: Container(
+              width: 40.w,
+              height: 40.h,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: TrainingColors.softShadow,
+              ),
+              child: const Icon(Icons.menu_rounded, color: TrainingColors.primary, size: 22),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _avatarFallback(String name) {
+    return Container(
+      color: TrainingColors.surfaceAlt,
+      alignment: Alignment.center,
+      child: Text(
+        name.trim().isNotEmpty ? name.trim().substring(0, 1) : 'ع',
+        style: TextStyle(
+          fontSize: 18.sp,
+          fontWeight: FontWeight.bold,
+          color: TrainingColors.primary,
+          fontFamily: 'Cairo',
         ),
       ),
     );
   }
 
-  Widget _buildSearchAndFilter() {
-    return Container(
-      padding: EdgeInsets.all(12.r),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(16.r)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade100,
-            blurRadius: 8.r,
-            offset: Offset(0, 2.h),
+  Widget _buildSearchAndFilterBar() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 46.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14.r),
+              boxShadow: TrainingColors.softShadow,
+            ),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (val) {
+                setState(() => _searchQuery = val);
+              },
+              style: TextStyle(fontSize: 13.sp, fontFamily: 'Tajawal'),
+              decoration: InputDecoration(
+                hintText: 'ابحث عن مدرب بالاسم أو التخصص...',
+                hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey.shade400),
+                prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400, size: 20.sp),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              ),
+            ),
           ),
-        ],
+        ),
+        SizedBox(width: 10.w),
+        GestureDetector(
+          onTap: _openFilterBottomSheet,
+          child: Container(
+            width: 46.w,
+            height: 46.h,
+            decoration: BoxDecoration(
+              color: TrainingColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: Icon(Icons.tune_rounded, color: TrainingColors.primary, size: 22.sp),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryStripCard() {
+    return Container(
+      padding: EdgeInsets.all(14.r),
+      decoration: BoxDecoration(
+        color: TrainingColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Container(
-                  height: 44.h,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'البحث عن مدرب أو تخصص...',
-                      hintStyle: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.grey.shade400,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.search_rounded,
-                        color: Colors.grey.shade400,
-                        size: 18.sp,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14.w),
+              Row(
+                children: [
+                  Container(
+                    width: 10.w,
+                    height: 10.h,
+                    decoration: const BoxDecoration(
+                      color: TrainingColors.success,
+                      shape: BoxShape.circle,
                     ),
-                    textDirection: TextDirection.rtl,
                   ),
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Container(
-                height: 44.h,
-                padding: EdgeInsets.symmetric(horizontal: 12.w),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: DropdownButton<String>(
-                  value: _selectedDepartment,
-                  items: _departments.map((department) {
-                    return DropdownMenuItem(
-                      value: department,
-                      child: Text(
-                        department,
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.grey.shade700,
-                        ),
+                  SizedBox(width: 6.w),
+                  RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: TrainingColors.textPrimary,
+                        fontFamily: 'Tajawal',
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _selectedDepartment = value;
-                      });
-                    }
-                  },
-                  underline: const SizedBox(),
-                  icon: Icon(
-                    Icons.arrow_drop_down_rounded,
-                    color: Colors.grey.shade600,
-                    size: 20.sp,
+                      children: [
+                        const TextSpan(text: 'لديك '),
+                        TextSpan(
+                          text: '$_totalCount مدرب',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: TrainingColors.primary,
+                          ),
+                        ),
+                        const TextSpan(text: ' مسجلين'),
+                      ],
+                    ),
                   ),
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
+                ],
               ),
-              SizedBox(width: 10.w),
-              Container(
-                height: 44.h,
-                width: 44.w,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.filter_list_rounded,
-                    color: Colors.grey.shade600,
-                    size: 20.sp,
-                  ),
-                  onPressed: () {},
-                  padding: EdgeInsets.zero,
-                ),
+              Row(
+                children: [
+                  _buildStatusDotCount(TrainingColors.success, '$_activeCount نشط'),
+                  SizedBox(width: 8.w),
+                  _buildStatusDotCount(Colors.grey.shade400, '$_inactiveCount غير نشط'),
+                ],
               ),
             ],
+          ),
+          SizedBox(height: 12.h),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                _buildFilterTab('all', 'الكل ($_totalCount)'),
+                SizedBox(width: 8.w),
+                _buildFilterTab('active', 'نشط ($_activeCount)'),
+                SizedBox(width: 8.w),
+                _buildFilterTab('inactive', 'غير نشط ($_inactiveCount)'),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInstructorsList() {
-    final instructors = [
-      {
-        'name': 'د. أحمد محمود',
-        'specialty': 'خبير ذكاء اصطناعي',
-        'rating': 4.9,
-        'reviews': 120,
-        'courses': 3,
-        'status': 'نشط',
-        'image': '',
-      },
-      {
-        'name': 'سارة الكعبي',
-        'specialty': 'إدارة أعمال',
-        'rating': 4.7,
-        'reviews': 85,
-        'courses': 5,
-        'status': 'نشط',
-        'image': '',
-      },
-      {
-        'name': 'د. خالد المنصور',
-        'specialty': 'تقنية المعلومات',
-        'rating': 4.8,
-        'reviews': 95,
-        'courses': 4,
-        'status': 'نشط',
-        'image': '',
-      },
-      {
-        'name': 'نورة القحطاني',
-        'specialty': 'التسويق الرقمي',
-        'rating': 4.6,
-        'reviews': 70,
-        'courses': 3,
-        'status': 'غير نشط',
-        'image': '',
-      },
-      {
-        'name': 'د. فيصل الحربي',
-        'specialty': 'الذكاء الاصطناعي',
-        'rating': 4.9,
-        'reviews': 150,
-        'courses': 6,
-        'status': 'نشط',
-        'image': '',
-      },
-      {
-        'name': 'منى الشمري',
-        'specialty': 'تصميم واجهات',
-        'rating': 4.5,
-        'reviews': 60,
-        'courses': 2,
-        'status': 'نشط',
-        'image': '',
-      },
-    ];
-
-    final filteredInstructors = instructors.where((instructor) {
-      final matchesSearch = instructor['name']
-              .toString()
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase()) ||
-          instructor['specialty']
-              .toString()
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase());
-      final matchesDepartment = _selectedDepartment == 'الكل' ||
-          instructor['specialty'] == _selectedDepartment;
-      return matchesSearch && matchesDepartment;
-    }).toList();
-
-    if (filteredInstructors.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-      itemCount: filteredInstructors.length,
-      itemBuilder: (context, index) {
-        final instructor = filteredInstructors[index];
-        return _buildInstructorCard(instructor);
-      },
+  Widget _buildStatusDotCount(Color color, String label) {
+    return Row(
+      children: [
+        Container(
+          width: 8.w,
+          height: 8.h,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        SizedBox(width: 4.w),
+        Text(
+          label,
+          style: TextStyle(fontSize: 11.sp, color: TrainingColors.textSecondary),
+        ),
+      ],
     );
   }
 
-  Widget _buildInstructorCard(Map<String, dynamic> instructor) {
-    final isActive = instructor['status'] == 'نشط';
+  Widget _buildFilterTab(String key, String label) {
+    final isSelected = _selectedStatusFilter == key;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedStatusFilter = key),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: isSelected ? TrainingColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: isSelected ? TrainingColors.softShadow : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected ? Colors.white : TrainingColors.textSecondary,
+            fontFamily: 'Tajawal',
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrainerCard(InstructorModel instructor) {
+    final isActive = instructor.isActive;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 10.h),
       padding: EdgeInsets.all(14.r),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isActive ? Colors.white : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade100,
-            blurRadius: 8.r,
-            offset: Offset(0, 2.h),
-          ),
-        ],
+        boxShadow: isActive ? TrainingColors.cardShadow : TrainingColors.softShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 56.w,
-                height: 56.h,
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade100,
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-                child: Center(
-                  child: Text(
-                    instructor['name']!.substring(0, 1),
-                    style: TextStyle(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade700,
+              // Avatar with status dot
+              Stack(
+                children: [
+                  Container(
+                    width: 56.w,
+                    height: 56.w,
+                    clipBehavior: Clip.antiAlias,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: TrainingColors.surfaceAlt,
+                      shape: BoxShape.circle,
+                    ),
+                    child: instructor.avatarUrl != null &&
+                            instructor.avatarUrl!.isNotEmpty
+                        ? Image.network(
+                            instructor.avatarUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _avatarFallback(
+                              instructor.name,
+                            ),
+                          )
+                        : _avatarFallback(instructor.name),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: Container(
+                      width: 14.w,
+                      height: 14.h,
+                      decoration: BoxDecoration(
+                        color: isActive ? TrainingColors.success : Colors.grey.shade400,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2.w),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
               SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      instructor['name']!,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            instructor.name,
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.bold,
+                              color: isActive ? TrainingColors.primary : Colors.grey.shade700,
+                              fontFamily: 'Cairo',
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (instructor.isVerified) ...[
+                          SizedBox(width: 4.w),
+                          Icon(
+                            Icons.verified_rounded,
+                            color: Colors.blue.shade600,
+                            size: 18.sp,
+                          ),
+                        ],
+                      ],
                     ),
                     SizedBox(height: 2.h),
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(6.r),
+                    Text(
+                      instructor.specialty ?? 'مدرب معتمد',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: isActive ? TrainingColors.textSecondary : Colors.grey.shade500,
+                        fontFamily: 'Tajawal',
                       ),
-                      child: Text(
-                        instructor['specialty']!,
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
               IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.more_vert_rounded,
-                  color: Colors.grey.shade400,
-                  size: 20.sp,
-                ),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.more_vert_rounded, color: TrainingColors.textMuted),
+                onPressed: () => _openTrainerOptionsModal(instructor),
               ),
             ],
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 12.h),
 
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.star_rounded,
-                      color: Colors.amber.shade600,
-                      size: 16.sp,
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      instructor['rating'].toString(),
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      '(${instructor['reviews']})',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.menu_book_rounded,
-                      color: Colors.blue.shade600,
-                      size: 16.sp,
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      '${instructor['courses']} دورات',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 10.h),
-
+          // Metrics strip
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Row(
+                children: [
+                  _buildMetricItem(Icons.menu_book_rounded, '${instructor.coursesCount ?? 3} دورات'),
+                  SizedBox(width: 12.w),
+                  _buildMetricItem(Icons.group_rounded, '${instructor.studentCount ?? 150} طالب'),
+                  SizedBox(width: 12.w),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, color: TrainingColors.rating, size: 16),
+                      SizedBox(width: 2.w),
+                      Text(
+                        '${instructor.rating ?? 4.8}',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.bold,
+                          color: TrainingColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.green.shade50 : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color:
-                        isActive ? Colors.green.shade300 : Colors.grey.shade300,
+                  color: isActive ? TrainingColors.successSoft : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Text(
+                  isActive ? 'نشط حالياً' : 'غير نشط / إجازة',
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.bold,
+                    color: isActive ? TrainingColors.success : Colors.grey.shade600,
+                    fontFamily: 'Tajawal',
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6.w,
-                      height: 6.h,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? Colors.green.shade700
-                            : Colors.grey.shade500,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      instructor['status']!,
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        color: isActive
-                            ? Colors.green.shade700
-                            : Colors.grey.shade600,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      _showInstructorDetails(context, instructor);
-                    },
-                    icon: Icon(
-                      Icons.visibility_rounded,
-                      color: Colors.grey.shade500,
-                      size: 18.sp,
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                  SizedBox(width: 8.w),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.edit_rounded,
-                      color: Colors.grey.shade500,
-                      size: 18.sp,
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
               ),
             ],
           ),
@@ -732,174 +1017,76 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
+  Widget _buildMetricItem(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, color: TrainingColors.primaryContainer, size: 15.sp),
+        SizedBox(width: 4.w),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: TrainingColors.textSecondary,
+            fontFamily: 'Tajawal',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyResultsState() {
+    return Container(
+      padding: EdgeInsets.all(32.r),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.person_off_rounded,
-            size: 80.sp,
-            color: Colors.grey.shade300,
+          Container(
+            width: 64.w,
+            height: 64.h,
+            decoration: BoxDecoration(
+              color: TrainingColors.surfaceAlt,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.person_search_rounded,
+              color: TrainingColors.textMuted,
+              size: 32.sp,
+            ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 12.h),
           Text(
-            'لا يوجد مدربين مطابقين للبحث',
+            'لا توجد نتائج مطابقة',
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 16.sp,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+              color: TrainingColors.primary,
+              fontFamily: 'Cairo',
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 4.h),
           Text(
-            'يرجى تعديل خيارات التصفية أو محاولة البحث باستخدام كلمات مفتاحية مختلفة.',
+            'جرّب البحث بكلمة مفتاحية أخرى أو التخصص',
             style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey.shade500,
+              fontSize: 12.sp,
+              color: TrainingColors.textSecondary,
+              fontFamily: 'Tajawal',
             ),
-            textAlign: TextAlign.center,
           ),
           SizedBox(height: 16.h),
-          ElevatedButton(
+          OutlinedButton(
             onPressed: () {
               setState(() {
                 _searchController.clear();
                 _searchQuery = '';
-                _selectedDepartment = 'الكل';
+                _selectedStatusFilter = 'all';
               });
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey.shade200,
-              foregroundColor: Colors.grey.shade700,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
             ),
-            child: const Text('مسح الفلاتر'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showInstructorDetails(
-      BuildContext context, Map<String, dynamic> instructor) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              CircleAvatar(
-                radius: 24.r,
-                backgroundColor: Colors.blue.shade100,
-                child: Text(
-                  instructor['name']!.substring(0, 1),
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade700,
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    instructor['name']!,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    instructor['specialty']!,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDetailRow('التخصص', instructor['specialty']),
-              _buildDetailRow('التقييم',
-                  '${instructor['rating']} ★ (${instructor['reviews']} تقييم)'),
-              _buildDetailRow('عدد الدورات', instructor['courses'].toString()),
-              _buildDetailRow('الحالة', instructor['status']),
-              _buildDetailRow('البريد الإلكتروني',
-                  '${instructor['name']!.replaceAll(' ', '.').toLowerCase()}@example.com'),
-              _buildDetailRow('رقم الهاتف', '+966 50 000 0000'),
-            ],
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'إغلاق',
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        'تم إرسال رسالة إلى المدرب ${instructor['name']} 📩'),
-                    backgroundColor: Colors.blue.shade700,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue.shade700,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-              ),
-              child: const Text('مراسلة'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade800,
-            ),
+            child: const Text('إعادة ضبط الفلاتر'),
           ),
         ],
       ),
     );
   }
 }
-

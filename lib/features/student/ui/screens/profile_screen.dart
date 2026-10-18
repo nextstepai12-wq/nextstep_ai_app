@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
 
@@ -9,435 +10,335 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen>
-    with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   bool _isEditing = false;
   bool _isSaving = false;
-  String? _errorMessage;
 
   String _userName = '';
   String _userEmail = '';
-  String _userRole = '';
+  String _userRole = 'student';
   String _userId = '';
   String _phone = '';
-  String _city = '';
-  String _studentType = '';
-  String _highSchoolScore = '';
-  String _gpa = '';
-  String _university = '';
-  String _major = '';
-  String _academicYear = '';
+  String _age = '18';
 
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _cityController = TextEditingController();
-
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.05),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
-    );
     _loadProfileData();
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadProfileData() async {
-  if (!mounted) return;
-
-  setState(() {
-    _isLoading = true;
-    _errorMessage = null;
-  });
-
-  try {
-    final cachedData = await TokenManager.getUserData();
-    if (cachedData['name'] != null && cachedData['name']!.isNotEmpty) {
-      _userName = cachedData['name']!;
-      _nameController.text = _userName;
-      _userEmail = cachedData['email'] ?? '';
-      _userRole = cachedData['role'] ?? 'student';
-      _userId = cachedData['userId'] ?? '';
-    }
-
-    if (_phone.isEmpty) _phone = '0599 123 456';
-    if (_city.isEmpty) _city = 'غزة';
-    _studentType = 'tawjihi';
-    _highSchoolScore = '92';
-    _gpa = '3.7';
-    _phoneController.text = _phone;
-    _cityController.text = _city;
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        _animationController.forward();
-      });
-    }
-  } catch (e) {
-    if (mounted) {
-      setState(() {
-        _errorMessage = 'تعذّر تحميل البيانات';
-        _isLoading = false;
-      });
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    try {
+      final data = await TokenManager.getUserData();
+      if (mounted) {
+        setState(() {
+          _userName = data['name'] ?? '';
+          _userEmail = data['email'] ?? '';
+          _userRole = data['role'] ?? 'student';
+          _userId = data['userId'] ?? '';
+          _phone = '+970 59 123 4567';
+          _age = '18';
+          _nameController.text = _userName;
+          _emailController.text = _userEmail;
+          _phoneController.text = _phone;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
-}
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isSaving = true;
-    });
-
+    setState(() => _isSaving = true);
     try {
       await TokenManager.saveUserData(
         userId: _userId,
         role: _userRole,
         name: _nameController.text,
-        email: _userEmail,
+        email: _emailController.text,
       );
-
       setState(() {
         _userName = _nameController.text;
+        _userEmail = _emailController.text;
         _phone = _phoneController.text;
-        _city = _cityController.text;
         _isEditing = false;
         _isSaving = false;
       });
-
-      _showSnackBar('تم حفظ البيانات بنجاح! ✅');
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+              backgroundColor: AppColors.light.success,
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle_outline_rounded,
+                      color: Colors.white, size: 20),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                      child: Text('تم حفظ التغييرات بنجاح',
+                          style: TextStyle(color: Colors.white, fontSize: 13))),
+                ],
+              ),
+            ),
+          );
+      }
     } catch (e) {
-      setState(() {
-        _isSaving = false;
-      });
-      _showSnackBar('حدث خطأ أثناء الحفظ', isSuccess: false);
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+              backgroundColor: AppColors.light.danger,
+              content: const Row(
+                children: [
+                  Icon(Icons.error_outline_rounded,
+                      color: Colors.white, size: 20),
+                  SizedBox(width: 10),
+                  Expanded(
+                      child: Text('حدث خطأ أثناء الحفظ',
+                          style: TextStyle(color: Colors.white, fontSize: 13))),
+                ],
+              ),
+            ),
+          );
+      }
     }
   }
 
-  void _showSnackBar(String message, {bool isSuccess = true}) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          backgroundColor:
-              isSuccess ? const Color(0xFF22C55E) : const Color(0xFFDC2626),
-          content: Row(
-            children: [
-              Icon(
-                isSuccess
-                    ? Icons.check_circle_outline_rounded
-                    : Icons.error_outline_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  message,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-  }
-
-  final _formKey = GlobalKey<FormState>();
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _cityController.dispose();
-    _animationController.dispose();
-    super.dispose();
+  void _cancelEdit() {
+    setState(() {
+      _isEditing = false;
+      _nameController.text = _userName;
+      _emailController.text = _userEmail;
+      _phoneController.text = _phone;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final c = Theme.of(context).extension<AppColors>() ?? AppColors.light;
+    final initials = _userName.isNotEmpty ? _userName[0].toUpperCase() : 'ط';
+    final roleLabel = _userRole == 'university'
+        ? 'جامعة'
+        : _userRole == 'admin'
+            ? 'إدارة'
+            : 'طالب ثانوي متقدم';
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
-        appBar: _buildAppBar(),
+        backgroundColor: c.background,
         body: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.primary,
-                ),
-              )
-            : _errorMessage != null
-                ? _buildErrorState()
-                : FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              _buildProfileHeader(),
-                              const SizedBox(height: 24),
-                              _buildStatsSection(),
-                              const SizedBox(height: 24),
-                              _buildInfoCards(),
-                              const SizedBox(height: 24),
-                              if (_isEditing) _buildEditActions(),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+            ? _buildLoading(c)
+            : Stack(
+                children: [
+                  CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                          child: _buildHero(c, initials, roleLabel)),
+                      SliverToBoxAdapter(child: _buildStats(c)),
+                      SliverToBoxAdapter(child: _buildPersonalInfo(c)),
+                      SliverToBoxAdapter(child: _buildAcademicInfo(c)),
+                      SliverToBoxAdapter(child: _buildCampusCard(c)),
+                      const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                    ],
                   ),
-      ),
-    );
-  }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      title: const Text(
-        'الملف الشخصي',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppTheme.primaryContainer,
-        ),
-      ),
-      centerTitle: true,
-      leading: const SizedBox.shrink(),
-      actions: [
-        if (!_isEditing)
-          IconButton(
-            icon: const Icon(
-              Icons.edit_rounded,
-              color: AppTheme.primaryContainer,
-            ),
-            onPressed: () {
-              setState(() {
-                _isEditing = true;
-              });
-            },
-          ),
-      ],
-    );
-  }
-
-  Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline_rounded,
-                size: 56, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _loadProfileData,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('إعادة المحاولة'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                  if (_isEditing)
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: _buildFloatingActionBar(c),
+                    ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildLoading(AppColors c) {
+    return Center(child: CircularProgressIndicator(color: c.primary));
+  }
+
+  // ─── Hero Header ─────────────────────────────────────────────────────
+
+  Widget _buildHero(AppColors c, String initials, String roleLabel) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(
+          20, MediaQuery.of(context).padding.top + 12, 20, 32),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppTheme.primary, AppTheme.primaryContainer],
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [c.primary, c.primaryContainer, c.background],
         ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.25),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
       child: Column(
         children: [
+          Row(
+            children: [
+              _isEditing
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.edit_rounded,
+                              color: Colors.white, size: 14),
+                          const SizedBox(width: 4),
+                          Text('وضع التعديل',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => context.push('/settings'),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child:
+                      Icon(Icons.tune_rounded, color: Colors.white, size: 20),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Avatar with glow ring
           Stack(
             children: [
               Container(
-                width: 90,
-                height: 90,
+                width: 96,
+                height: 96,
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 3,
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [
+                      c.primaryContainer,
+                      Colors.white.withValues(alpha: 0.15),
+                      c.primary
+                    ],
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                        color: c.primaryContainer.withValues(alpha: 0.4),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8)),
+                  ],
                 ),
-                child: Center(
-                  child: Text(
-                    _userName.isNotEmpty ? _userName[0].toUpperCase() : 'ط',
-                    style: const TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: c.surfaceAlt,
+                  ),
+                  child: Center(
+                    child: Text(initials,
+                        style: TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w800,
+                            color: c.primary)),
                   ),
                 ),
               ),
               Positioned(
                 bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF22C55E),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    size: 14,
-                    color: Colors.white,
+                left: 0,
+                child: GestureDetector(
+                  onTap: () => setState(() => _isEditing = true),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: c.surfaceAlt,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 8)
+                      ],
+                    ),
+                    child: Icon(Icons.photo_camera_rounded,
+                        color: c.primary, size: 18),
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 14),
-
-          if (_isEditing)
-            TextFormField(
-              controller: _nameController,
-              textDirection: TextDirection.rtl,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-              decoration: InputDecoration(
-                hintText: 'الاسم الكامل',
-                hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.3),
-                  ),
-                ),
-                focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
-                ),
-                errorStyle: TextStyle(
-                  color: Colors.red.shade200,
-                  fontSize: 12,
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'الاسم مطلوب';
-                }
-                if (value.length < 3) {
-                  return 'الاسم قصير جداً';
-                }
-                return null;
-              },
-            )
-          else
-            Text(
-              _userName.isNotEmpty ? _userName : 'طالب',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-          const SizedBox(height: 4),
-
           Text(
-            _userEmail.isNotEmpty ? _userEmail : 'student@nextstep.ai',
+            _userName.isNotEmpty ? _userName : 'طالب',
+            style: const TextStyle(
+                fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _userEmail.isNotEmpty ? _userEmail : '',
             style: TextStyle(
-              fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
+                fontSize: 13, color: Colors.white.withValues(alpha: 0.7)),
           ),
           const SizedBox(height: 10),
-
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  _userRole == 'university'
-                      ? Icons.business_rounded
-                      : _userRole == 'admin'
-                          ? Icons.admin_panel_settings_rounded
-                          : Icons.school_rounded,
-                  size: 14,
-                  color: Colors.white.withValues(alpha: 0.8),
-                ),
+                const Text('🎓', style: TextStyle(fontSize: 13)),
                 const SizedBox(width: 6),
-                Text(
-                  _userRole == 'university'
-                      ? 'جامعة'
-                      : _userRole == 'admin'
-                          ? 'إدارة'
-                          : 'طالب',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                ),
+                Text(roleLabel,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
               ],
             ),
           ),
@@ -446,67 +347,47 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  Widget _buildStatsSection() {
-    final isTawjihi = _studentType == 'tawjihi';
+  // ─── Stats Card ──────────────────────────────────────────────────────
 
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            title: 'نوع الطالب',
-            value: isTawjihi ? 'توجيهي' : 'جامعي',
-            icon: Icons.assignment_ind_rounded,
-            color: const Color(0xFF3B82F6),
-          ),
+  Widget _buildStats(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+                color: c.primary.withValues(alpha: 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 8)),
+          ],
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _buildStatCard(
-            title: isTawjihi ? 'معدل الثانوية' : 'المعدل التراكمي',
-            value: isTawjihi
-                ? (_highSchoolScore.isNotEmpty ? '$_highSchoolScore%' : '--')
-                : (_gpa.isNotEmpty ? '$_gpa / 4.0' : '--'),
-            icon: isTawjihi ? Icons.grade_rounded : Icons.analytics_rounded,
-            color: isTawjihi ? const Color(0xFF22C55E) : const Color(0xFFF97316),
-          ),
+        child: Row(
+          children: [
+            _statItem(c, Icons.analytics_rounded, '96.4%', 'المعدل التراكمي',
+                c.primary),
+            Container(width: 1, height: 40, color: c.divider),
+            _statItem(c, Icons.psychology_rounded, '78%', 'التقييم الذكي',
+                c.primaryContainer),
+            Container(width: 1, height: 40, color: c.divider),
+            _statItem(c, Icons.bookmark_rounded, '12', 'تخصص محفوظ',
+                const Color(0xFF00414D)),
+          ],
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _buildStatCard(
-            title: 'التوصيات',
-            value: '0',
-            icon: Icons.recommend_rounded,
-            color: const Color(0xFFA855F7),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+  Widget _statItem(
+      AppColors c, IconData icon, String value, String label, Color color) {
+    return Expanded(
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
@@ -514,382 +395,575 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.primaryContainer,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Text(value,
+              style: TextStyle(
+                  fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+          const SizedBox(height: 2),
+          Text(label,
+              style: TextStyle(fontSize: 10, color: c.textSecondary),
+              textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+
+  // ─── Personal Info Section ───────────────────────────────────────────
+
+  Widget _buildPersonalInfo(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(
+            height: 20,
           ),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey.shade500,
+          Row(
+            children: [
+              Container(
+                  width: 4,
+                  height: 20,
+                  decoration: BoxDecoration(
+                      color: c.primary,
+                      borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 8),
+              Text('البيانات الشخصية',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: c.textPrimary)),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => setState(() => _isEditing = true),
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                      color: c.surfaceAlt, shape: BoxShape.circle),
+                  child: Icon(Icons.edit_square, color: c.primary, size: 16),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Form(
+            key: _formKey,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: c.surface,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                      color: c.primary.withValues(alpha: 0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4))
+                ],
+              ),
+              child: Column(
+                children: [
+                  _infoRowEditable(c, Icons.badge_rounded, 'الاسم الكامل',
+                      _nameController, c.primary,
+                      isEditable: true),
+                  const SizedBox(height: 8),
+                  _infoRowEditable(c, Icons.mail_rounded, 'البريد الإلكتروني',
+                      _emailController, c.primaryContainer,
+                      isEditable: true, isLtr: true),
+                  const SizedBox(height: 8),
+                  _infoRowEditable(c, Icons.call_rounded, 'رقم الهاتف',
+                      _phoneController, const Color(0xFF10B981),
+                      isEditable: true, isLtr: true),
+                  const SizedBox(height: 8),
+                  _infoRowStatic(c, Icons.cake_rounded, 'العمر وتاريخ الميلاد',
+                      '$_age سنة (2006/04/15)', c.surfaceAlt),
+                ],
+              ),
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoCards() {
-    final isTawjihi = _studentType == 'tawjihi';
-
-    return Column(
-      children: [
-        _buildInfoCard(
-          title: 'معلومات شخصية',
-          icon: Icons.person_outline_rounded,
-          color: const Color(0xFF3B82F6),
-          children: [
-            _buildInfoRow(
-              label: 'رقم الهاتف',
-              value: _phone,
-              icon: Icons.phone_outlined,
-              isEditing: _isEditing,
-              controller: _phoneController,
-              hint: 'أدخل رقم الهاتف',
-              validator: (value) {
-                if (value == null || value.isEmpty) return null;
-                if (value.length < 9) return 'رقم غير صحيح';
-                return null;
-              },
-            ),
-            _buildInfoRow(
-              label: 'المدينة',
-              value: _city,
-              icon: Icons.location_city_rounded,
-              isEditing: _isEditing,
-              controller: _cityController,
-              hint: 'أدخل المدينة',
-            ),
-            _buildInfoRowStatic(
-              label: 'البريد الإلكتروني',
-              value: _userEmail,
-              icon: Icons.email_rounded,
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 16),
-
-        _buildInfoCard(
-          title: 'معلومات أكاديمية',
-          icon: Icons.school_rounded,
-          color: const Color(0xFF8B5CF6),
-          children: [
-            _buildInfoRowStatic(
-              label: 'نوع الطالب',
-              value: isTawjihi ? 'طالب توجيهي' : 'طالب جامعي',
-              icon: Icons.assignment_ind_rounded,
-            ),
-            if (isTawjihi)
-              _buildInfoRowStatic(
-                label: 'معدل الثانوية',
-                value: _highSchoolScore.isNotEmpty ? '$_highSchoolScore%' : 'غير محدد',
-                icon: Icons.grade_rounded,
-              )
-            else
-              _buildInfoRowStatic(
-                label: 'المعدل التراكمي',
-                value: _gpa.isNotEmpty ? '$_gpa / 4.0' : 'غير محدد',
-                icon: Icons.analytics_rounded,
-              ),
-            if (!isTawjihi && _university.isNotEmpty)
-              _buildInfoRowStatic(
-                label: 'الجامعة',
-                value: _university,
-                icon: Icons.business_rounded,
-              ),
-            if (!isTawjihi && _major.isNotEmpty)
-              _buildInfoRowStatic(
-                label: 'التخصص',
-                value: _major,
-                icon: Icons.book_rounded,
-              ),
-            if (!isTawjihi && _academicYear.isNotEmpty)
-              _buildInfoRowStatic(
-                label: 'السنة الدراسية',
-                value: _academicYear,
-                icon: Icons.calendar_today_rounded,
-              ),
-          ],
-        ),
-
-        const SizedBox(height: 16),
-
-        _buildInfoCard(
-          title: 'إحصائيات',
-          icon: Icons.bar_chart_rounded,
-          color: const Color(0xFFF97316),
-          children: [
-            _buildInfoRowStatic(
-              label: 'التخصصات المقترحة',
-              value: '0',
-              icon: Icons.recommend_rounded,
-            ),
-            _buildInfoRowStatic(
-              label: 'الاستبيانات المكتملة',
-              value: '0',
-              icon: Icons.assignment_turned_in_rounded,
-            ),
-            _buildInfoRowStatic(
-              label: 'المحادثات',
-              value: '0',
-              icon: Icons.chat_rounded,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required List<Widget> children,
-  }) {
+  Widget _infoRowEditable(AppColors c, IconData icon, String label,
+      TextEditingController controller, Color iconColor,
+      {bool isEditable = false, bool isLtr = false}) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+        color: c.surfaceAlt.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: TextStyle(fontSize: 11, color: c.textSecondary)),
+                const SizedBox(height: 2),
+                if (_isEditing)
+                  TextFormField(
+                    controller: controller,
+                    textDirection:
+                        isLtr ? TextDirection.ltr : TextDirection.rtl,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: c.textPrimary),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                      hintText: label,
+                      hintStyle:
+                          TextStyle(color: c.textSecondary, fontSize: 13),
+                    ),
+                    validator: isEditable
+                        ? (v) => v == null || v.trim().isEmpty ? 'مطلوب' : null
+                        : null,
+                  )
+                else
+                  Text(
+                    controller.text.isNotEmpty ? controller.text : 'غير محدد',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: controller.text.isNotEmpty
+                          ? c.textPrimary
+                          : c.textSecondary,
+                    ),
+                    textDirection:
+                        isLtr ? TextDirection.ltr : TextDirection.rtl,
+                  ),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _infoRowStatic(
+      AppColors c, IconData icon, String label, String value, Color iconColor) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: c.surfaceAlt.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: TextStyle(fontSize: 11, color: c.textSecondary)),
+                const SizedBox(height: 2),
+                Text(value,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: c.textPrimary)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Academic Info Section ───────────────────────────────────────────
+
+  Widget _buildAcademicInfo(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.primaryContainer,
-                ),
-              ),
-              const Spacer(),
-              if (title == 'معلومات أكاديمية')
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  width: 4,
+                  height: 20,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF22C55E).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    'مكتمل',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF22C55E),
-                    ),
-                  ),
-                ),
+                      color: c.primaryContainer,
+                      borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 8),
+              Text('المسار الأكاديمي',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: c.textPrimary)),
             ],
           ),
           const SizedBox(height: 12),
-          ...children,
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: c.surface,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                    color: c.primary.withValues(alpha: 0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4))
+              ],
+            ),
+            child: Column(
+              children: [
+                _academicRow(
+                    c,
+                    Icons.school_rounded,
+                    'المؤسسة التعليمية',
+                    'ثانوية المتفوقين الرسمية',
+                    'الفرع الأكاديمي - رام الله',
+                    c.primary),
+                const SizedBox(height: 8),
+                _academicRowWithChip(
+                    c,
+                    Icons.smart_toy_rounded,
+                    'التخصص المستهدف',
+                    'هندسة الذكاء الاصطناعي',
+                    '94%',
+                    c.primaryContainer),
+                const SizedBox(height: 8),
+                _academicRow(
+                    c,
+                    Icons.device_hub_rounded,
+                    'المسار التوجيهي الحالي',
+                    'العلمي / التكنولوجي المتقدم',
+                    null,
+                    const Color(0xFF00414D)),
+                const SizedBox(height: 8),
+                _academicRow(c, Icons.event_available_rounded,
+                    'سنة التخرج المتوقعة', '2024 / 2025', null, c.surfaceAlt),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow({
-    required String label,
-    required String value,
-    required IconData icon,
-    required bool isEditing,
-    required TextEditingController controller,
-    required String hint,
-    String? Function(String?)? validator,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+  Widget _academicRow(AppColors c, IconData icon, String label, String value,
+      String? sub, Color iconColor) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: c.surfaceAlt.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: Colors.grey.shade500),
-          const SizedBox(width: 10),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                  ),
+                Text(label,
+                    style: TextStyle(fontSize: 11, color: c.textSecondary)),
+                const SizedBox(height: 2),
+                Text(value,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: c.textPrimary)),
+                if (sub != null) ...[
+                  const SizedBox(height: 2),
+                  Text(sub,
+                      style: TextStyle(fontSize: 11, color: c.textSecondary)),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _academicRowWithChip(AppColors c, IconData icon, String label,
+      String value, String badge, Color iconColor) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: c.surfaceAlt.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: TextStyle(fontSize: 11, color: c.textSecondary)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: c.primary,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.auto_awesome_rounded,
+                              color: Colors.white, size: 14),
+                          const SizedBox(width: 4),
+                          Text(value,
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: c.success.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text('مطابقة $badge',
+                          style: TextStyle(
+                              color: c.success,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700)),
+                    ),
+                  ],
                 ),
-                isEditing
-                    ? TextFormField(
-                        controller: controller,
-                        textDirection: TextDirection.rtl,
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Campus Card ─────────────────────────────────────────────────────
+
+  Widget _buildCampusCard(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+                color: c.primary.withValues(alpha: 0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4))
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text('الجامعة الموصى بها لمسارك',
+                      style: TextStyle(
                           fontSize: 14,
-                          color: AppTheme.primaryContainer,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: hint,
-                          hintStyle: TextStyle(
-                            color: Colors.grey.shade400,
-                            fontSize: 13,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                          isDense: true,
-                          errorStyle: TextStyle(
-                            fontSize: 11,
-                            color: Colors.red.shade700,
-                          ),
-                        ),
-                        validator: validator,
-                      )
-                    : Text(
-                        value.isNotEmpty ? value : 'غير محدد',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: value.isNotEmpty ? FontWeight.w500 : FontWeight.w400,
-                          color: value.isNotEmpty
-                              ? AppTheme.primaryContainer
-                              : Colors.grey.shade400,
+                          fontWeight: FontWeight.w600,
+                          color: c.textPrimary)),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                      color: c.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6)),
+                  child: Text('الخيار رقم 1',
+                      style: TextStyle(
+                          color: c.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              height: 140,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [c.primaryContainer, c.primary],
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.7)
+                          ],
                         ),
                       ),
-              ],
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 12,
+                    left: 12,
+                    right: 12,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('جامعة بوليتكنك المستقبل',
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white)),
+                        const SizedBox(height: 2),
+                        Text('كلية هندسة الحاسوب والذكاء الاصطناعي',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.white.withValues(alpha: 0.8))),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildInfoRowStatic({
-    required String label,
-    required String value,
-    required IconData icon,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: Colors.grey.shade500),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-                Text(
-                  value.isNotEmpty ? value : 'غير محدد',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: value.isNotEmpty ? FontWeight.w500 : FontWeight.w400,
-                    color: value.isNotEmpty
-                        ? AppTheme.primaryContainer
-                        : Colors.grey.shade400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // ─── Floating Action Bar ─────────────────────────────────────────────
 
-  Widget _buildEditActions() {
+  Widget _buildFloatingActionBar(AppColors c) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(
+          20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        color: c.surface.withValues(alpha: 0.95),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
+              color: c.primary.withValues(alpha: 0.1),
+              blurRadius: 24,
+              offset: const Offset(0, -8))
         ],
       ),
       child: Row(
         children: [
           Expanded(
-            child: OutlinedButton(
-              onPressed: _isSaving
-                  ? null
-                  : () {
-                      setState(() {
-                        _isEditing = false;
-                        _nameController.text = _userName;
-                        _phoneController.text = _phone;
-                        _cityController.text = _city;
-                      });
-                    },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppTheme.primaryContainer,
-                side: BorderSide(color: Colors.grey.shade300),
-                shape: RoundedRectangleBorder(
+            child: GestureDetector(
+              onTap: _cancelEdit,
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: c.surfaceAlt,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Center(
+                  child: Text('إلغاء',
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: c.textPrimary)),
+                ),
               ),
-              child: const Text('إلغاء'),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: ElevatedButton(
-              onPressed: _isSaving ? null : _saveProfile,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
+            flex: 2,
+            child: GestureDetector(
+              onTap: _isSaving ? null : _saveProfile,
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient:
+                      LinearGradient(colors: [c.primary, c.primaryContainer]),
                   borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                        color: c.primary.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4))
+                  ],
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_isSaving)
+                      const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                    else
+                      const Icon(Icons.check_circle_rounded,
+                          color: Colors.white, size: 18),
+                    const SizedBox(width: 6),
+                    const Text('حفظ التغييرات',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700)),
+                  ],
+                ),
               ),
-              child: _isSaving
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Text('حفظ التغييرات'),
             ),
           ),
         ],
