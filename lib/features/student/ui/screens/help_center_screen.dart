@@ -10,651 +10,711 @@ class HelpCenterScreen extends StatefulWidget {
   State<HelpCenterScreen> createState() => _HelpCenterScreenState();
 }
 
-class _HelpCenterScreenState extends State<HelpCenterScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+class _HelpCenterScreenState extends State<HelpCenterScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  String _selectedCategory = 'all';
+  int _expandedIndex = 0;
+  bool _showEmptyState = false;
 
-  final List<Map<String, String>> _faqs = [
-    {
-      'question': 'ما هو NextStep AI؟',
-      'answer':
-          'NextStep AI هي منصة ذكية للإرشاد الأكاديمي والمهني تستخدم الذكاء الاصطناعي لمساعدة الطلاب في اختيار التخصصات والجامعات المناسبة بناءً على ميولهم وقدراتهم.',
-    },
-    {
-      'question': 'كيف يمكنني إنشاء حساب؟',
-      'answer':
-          'يمكنك إنشاء حساب جديد من خلال النقر على زر "إنشاء حساب جديد" في شاشة تسجيل الدخول، ثم ملء البيانات المطلوبة مثل الاسم والبريد الإلكتروني وكلمة المرور.',
-    },
-    {
-      'question': 'ما هو الاستبيان الذكي؟',
-      'answer':
-          'الاستبيان الذكي هو مجموعة من الأسئلة المصممة لتحليل شخصيتك وميولك الأكاديمية والمهنية، ويستخدم لتقديم توصيات دقيقة ومخصصة لك.',
-    },
-    {
-      'question': 'كيف أحصل على التوصيات؟',
-      'answer':
-          'بعد إكمال الاستبيان الذكي، ستظهر لك التوصيات تلقائياً في صفحة "التوصيات" حيث يمكنك رؤية التخصصات والجامعات المناسبة لك مع نسبة التوافق.',
-    },
-    {
-      'question': 'هل بياناتي آمنة؟',
-      'answer':
-          'نعم، بياناتك مشفرة ومخزنة بشكل آمن. نحن نلتزم بسياسات الخصوصية الصارمة ولا نشارك بياناتك مع أي طرف ثالث دون موافقتك.',
-    },
-    {
-      'question': 'كيف يمكنني تحديث بياناتي الشخصية؟',
-      'answer':
-          'يمكنك تحديث بياناتك الشخصية من خلال صفحة "الملف الشخصي" حيث يمكنك تعديل الاسم، رقم الهاتف، المدينة وغيرها من المعلومات.',
-    },
-    {
-      'question': 'ماذا لو نسيت كلمة المرور؟',
-      'answer':
-          'في حالة نسيان كلمة المرور، يمكنك النقر على "نسيت كلمة المرور" في شاشة تسجيل الدخول، وسنرسل لك رابطاً لإعادة تعيينها عبر البريد الإلكتروني.',
-    },
-    {
-      'question': 'كيف يمكنني التواصل مع الدعم الفني؟',
-      'answer':
-          'يمكنك التواصل مع فريق الدعم الفني عبر البريد الإلكتروني: nextstepai12@gmail.com، وسنرد عليك في أقرب وقت ممكن.',
-    },
-  ];
+  late final List<Map<String, dynamic>> _allFaqs;
 
-  final List<Map<String, dynamic>> _topics = [
-    {
-      'title': 'حسابي',
-      'icon': Icons.account_circle_rounded,
-      'color': const Color(0xFF3B82F6),
-      'items': ['تسجيل الدخول', 'إنشاء حساب', 'استعادة كلمة المرور', 'تحديث البيانات'],
-    },
-    {
-      'title': 'الاستبيان والتوصيات',
-      'icon': Icons.assessment_rounded,
-      'color': const Color(0xFF22C55E),
-      'items': ['الاستبيان الذكي', 'نتائج التوصيات', 'نسبة التوافق'],
-    },
-    {
-      'title': 'التطبيق',
-      'icon': Icons.app_settings_alt_rounded,
-      'color': const Color(0xFF8B5CF6),
-      'items': ['الإعدادات', 'الملف الشخصي', 'الإشعارات', 'اللغة'],
-    },
+  final List<Map<String, dynamic>> _categories = const [
+    {'key': 'all', 'label': 'الكل', 'icon': Icons.grid_view_rounded},
+    {'key': 'assessment', 'label': 'التقييم الأكاديمي', 'icon': Icons.assessment_rounded},
+    {'key': 'universities', 'label': 'الجامعات', 'icon': Icons.account_balance_rounded},
+    {'key': 'account', 'label': 'الحساب والأمان', 'icon': Icons.shield_rounded},
   ];
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.05),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
-    );
-    _animationController.forward();
+    _allFaqs = [
+      {
+        'question': 'كيف يُحسب تقييمي للتخصصات ومطابقة الميول؟',
+        'answer':
+            'يستخدم NextStep AI نموذجاً تحليلياً متكاملاً يقيس 6 أبعاد رئيسية لشخصيتك وميولك الأكاديمية عبر مقياس هولاند المطوّر. يُقارن النظام إجاباتك مع ملفات أكاديمية لأكثر من 420 مساراً دراسياً مختلفاً. يعتمد على معايير تشمل: القدرات الفكرية، التفضيلات المهنية، الميول العلمية، الأهداف الوظيفية، بيئة التعلم المفضلة، والمهارات الشخصية. النتيجة: توصيات دقيقة ونسبة توافق لكل تخصص.',
+        'category': 'assessment',
+        'hasCta': true,
+        'ctaText': 'اذهب للتقييم الذكي',
+      },
+      {
+        'question': 'ما الفرق في معايير القبول بين الجامعات الشريكة؟',
+        'answer':
+            'تختلف معايير القبول بشكل كبير من جامعة لأخرى ومن تخصص لآخر. يعرض لك التطبيق جدولاً تفصيلياً يشمل: المعدل المطلوب، المواد الأساسية المطلوبة، اختبارات القبول الإضافية إن وُجدت، والمواعيد النهائية للتقديم. كما يوفر نسب قبول محدثة من السنوات السابقة لمساعدتك في تقييم فرصك بشكل واقعي.',
+        'category': 'universities',
+        'hasCta': false,
+        'ctaText': '',
+      },
+      {
+        'question': 'هل معدل الثانوية هو المعيار الوحيد للقبول؟',
+        'answer':
+            'لا، معدل الثانوية عامل مهم لكنه ليس الوحيد. تأخذ بعض الجامعات والبرامج في الاعتبار عوامل أخرى مثل: اختبارات القبول الموحدة، المقابلات الشخصية، النشاطات اللاصفية، الرسائل التعريفية، وخبرات التطوع. يوضح لك التطبيق لكل تخصص ما هي العوامل المهمة التي تؤثر على قبولك.',
+        'category': 'universities',
+        'hasCta': false,
+        'ctaText': '',
+      },
+      {
+        'question': 'كيف أستفيد بالشكل الأمثل من المساعد الأكاديمي؟',
+        'answer':
+            'المساعد الأكاديمي المدعوم بالذكاء الاصطناعي يمكنه مساعدتك في عدة محاور: طرح أسئلة توضيحية حول تخصصات معينة، شرح محتوى المواد الدراسية لكل مسار، تقديم نصائح للتميز الأكاديمي، المساعدة في فهم نتائج التقييم الذكي، والإجابة على أسئلتك حول الجامعات والتقديم. كلما كانت أسئلتك محددة وواضحة، كانت الإجابات أكثر فائدة.',
+        'category': 'assessment',
+        'hasCta': false,
+        'ctaText': '',
+      },
+      {
+        'question': 'كيف يمكنني تعديل بياناتي الأكاديمية والشخصية؟',
+        'answer':
+            'يمكنك تعديل بياناتك في أي وقت من خلال: الذهاب إلى الملف الشخصي، ثم الضغط على تعديل البيانات. يمكنك تحديث: المعدل التراكمي، المواد المجتازة، المدينة، رقم الهاتف، والبيانات الشخصية الأخرى. بعد التعديل، قد تتأثر نتائج التقييم والتوصيات بناءً على البيانات الجديدة.',
+        'category': 'account',
+        'hasCta': false,
+        'ctaText': '',
+      },
+      {
+        'question': 'كيف أتحكم في تكرار ونوع إشعارات الفرص والمنح؟',
+        'answer':
+            'من خلال صفحة الإعدادات ثم تفضيلات الإشعارات، يمكنك التحكم في: نوع الإشعارات (فرص دراسية، منح دراسية، مواعيد نهائية)، تكرار الإشعارات (فوري، يومي، أسبوعي)، وإشعارات حسب تخصصاتك المفضلة. يمكنك أيضاً تفعيل أو تعطيل الإشعارات بالكامل.',
+        'category': 'account',
+        'hasCta': false,
+        'ctaText': '',
+      },
+    ];
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  List<Map<String, dynamic>> get _filteredFaqs {
+    List<Map<String, dynamic>> filtered = List.of(_allFaqs);
+    if (_selectedCategory != 'all') {
+      filtered = filtered.where((f) => f['category'] == _selectedCategory).toList();
+    }
+    final query = _searchController.text.trim();
+    if (query.isNotEmpty) {
+      filtered = filtered
+          .where((f) => (f['question'] as String).contains(query) || (f['answer'] as String).contains(query))
+          .toList();
+    }
+    return filtered;
+  }
+
+  Color _categoryIconColor(String category, AppColors c) {
+    switch (category) {
+      case 'assessment':
+        return c.primary;
+      case 'universities':
+        return c.success;
+      case 'account':
+        return c.accent;
+      default:
+        return c.textSecondary;
+    }
+  }
+
+  Color _categoryIconBg(String category, AppColors c) {
+    switch (category) {
+      case 'assessment':
+        return c.primarySoft;
+      case 'universities':
+        return c.successSoft;
+      case 'account':
+        return c.accentSoft;
+      default:
+        return c.surfaceAlt;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
+    final filtered = _filteredFaqs;
+    _showEmptyState = filtered.isEmpty;
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
-        appBar: _buildAppBar(),
-        body: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 24),
-                  _buildTopicsSection(),
-                  const SizedBox(height: 24),
-                  _buildFAQsSection(),
-                  const SizedBox(height: 24),
-                  _buildContactSection(),
-                  const SizedBox(height: 20),
-                ],
+        backgroundColor: c.background,
+        body: Column(
+          children: [
+            _buildHeader(c),
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildWelcomeBanner(c),
+                    const SizedBox(height: 20),
+                    _buildSearchBar(c),
+                    const SizedBox(height: 16),
+                    _buildCategoryChips(c),
+                    const SizedBox(height: 24),
+                    if (_showEmptyState)
+                      _buildEmptyState(c)
+                    else
+                      _buildFaqSection(c, filtered),
+                    const SizedBox(height: 24),
+                    _buildCtaCard(c),
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      leading: Container(
-        margin: const EdgeInsets.all(8),
+  Widget _buildHeader(AppColors c) {
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          shape: BoxShape.circle,
+          color: c.surface,
+          border: Border(bottom: BorderSide(color: c.divider.withValues(alpha: 0.4), width: 0.5)),
         ),
-        child: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            color: AppTheme.primaryContainer,
-          ),
-          onPressed: () => Navigator.pop(context),
-          splashRadius: 24,
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: c.surfaceAlt,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: Icon(Icons.arrow_forward_ios_rounded, size: 18, color: c.textPrimary),
+                onPressed: () => Navigator.pop(context),
+                padding: EdgeInsets.zero,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'مركز المساعدة والدعم',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: c.textPrimary),
+            ),
+          ],
         ),
       ),
-      title: const Text(
-        'مركز المساعدة',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppTheme.primaryContainer,
-        ),
-      ),
-      centerTitle: true,
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppTheme.primary, AppTheme.primaryContainer],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.25),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
+  Widget _buildWelcomeBanner(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [c.gradientStart, c.gradientEnd],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: c.primary.withValues(alpha: 0.25),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              left: -20,
+              bottom: -20,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+              ),
+            ),
+            Row(
               children: [
-                const Text(
-                  'كيف يمكننا مساعدتك؟ 👋',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.auto_awesome, size: 14, color: Colors.white),
+                            SizedBox(width: 6),
+                            Text(
+                              ' مركز التوجيه والمساعدة',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'كيف نساعدك اليوم؟',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          height: 1.3,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'ابحث عن إجابات لأسئلتك أو تواصل مع فريق الدعم',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white.withValues(alpha: 0.85),
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'ابحث عن إجابات لأسئلتك أو تواصل مع فريق الدعم',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.white.withValues(alpha: 0.8),
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(16),
                   ),
+                  child: const Icon(Icons.support_agent_rounded, size: 30, color: Colors.white),
                 ),
               ],
             ),
-          ),
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.support_agent_rounded,
-                size: 30,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTopicsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'المواضيع الشائعة',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.primaryContainer,
-          ),
-        ),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 0.9,
-          ),
-          itemCount: _topics.length,
-          itemBuilder: (context, index) {
-            final topic = _topics[index];
-            return _buildTopicCard(
-              title: topic['title'],
-              icon: topic['icon'],
-              color: topic['color'],
-              onTap: () {
-                _showTopicDialog(topic);
-              },
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTopicCard({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+  Widget _buildSearchBar(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200, width: 1.2),
+          color: c.surface,
+          borderRadius: BorderRadius.circular(50),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 8,
+              color: c.primary.withValues(alpha: 0.06),
+              blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+            const SizedBox(width: 12),
+            Icon(Icons.search_rounded, size: 22, color: c.primaryContainer),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextField(
+                controller: _searchController,
+                textDirection: TextDirection.rtl,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  hintText: 'ابحث عن سؤال، معيار قبول، أو تخصص...',
+                  hintStyle: TextStyle(fontSize: 13, color: c.textSecondary.withValues(alpha: 0.6)),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  filled: false,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                style: TextStyle(fontSize: 14, color: c.textPrimary),
               ),
-              child: Icon(icon, color: color, size: 28),
             ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.primaryContainer,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showTopicDialog(Map<String, dynamic> topic) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: topic['color'].withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    topic['icon'],
-                    color: topic['color'],
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  topic['title'],
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.primaryContainer,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ...(topic['items'] as List<String>).map((item) {
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(
-                  Icons.circle_rounded,
-                  size: 8,
-                  color: AppTheme.primary,
-                ),
-                title: Text(
-                  item,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppTheme.onSurfaceVariant,
-                  ),
-                ),
+            if (_searchController.text.isNotEmpty)
+              GestureDetector(
                 onTap: () {
-                  Navigator.pop(context);
-                  _showSnackBar('جاري البحث عن: $item');
+                  _searchController.clear();
+                  setState(() {});
                 },
-              );
-            }),
-            const SizedBox(height: 16),
-            Center(
-              child: TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('إغلاق'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFAQsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'الأسئلة الشائعة',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.primaryContainer,
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.secondary,
-                textStyle: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: c.surfaceAlt,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.close_rounded, size: 16, color: c.textSecondary),
                 ),
               ),
-              child: const Text('عرض الكل'),
-            ),
+            const SizedBox(width: 8),
           ],
         ),
-        const SizedBox(height: 8),
-        ..._faqs.take(4).map((faq) => _buildFAQItem(faq)),
-        if (_faqs.length > 4)
-          Center(
-            child: TextButton(
-              onPressed: () {
-              },
-              child: const Text('عرض المزيد من الأسئلة'),
-            ),
-          ),
-      ],
+      ),
     );
   }
 
-  Widget _buildFAQItem(Map<String, String> faq) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          dividerColor: Colors.transparent,
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-        ),
-        child: ExpansionTile(
-          leading: const Icon(
-            Icons.help_outline_rounded,
-            color: AppTheme.primary,
-            size: 22,
-          ),
-          title: Text(
-            faq['question']!,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.primaryContainer,
-            ),
-          ),
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Text(
-                faq['answer']!,
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.7,
-                  color: AppTheme.onSurfaceVariant,
-                ),
+  Widget _buildCategoryChips(AppColors c) {
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: _categories.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final cat = _categories[index];
+          final isSelected = _selectedCategory == cat['key'];
+          return GestureDetector(
+            onTap: () {
+              setState(() => _selectedCategory = cat['key'] as String);
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: isSelected ? c.primaryContainer : c.surfaceAlt,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: isSelected
+                    ? [BoxShadow(color: c.primaryContainer.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 2))]
+                    : [],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(cat['icon'] as IconData, size: 16, color: isSelected ? Colors.white : c.textSecondary),
+                  const SizedBox(width: 6),
+                  Text(
+                    cat['label'] as String,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? Colors.white : c.textSecondary,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildContactSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+  Widget _buildFaqSection(AppColors c, List<Map<String, dynamic>> faqs) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF97316).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.contact_support_rounded,
-                  color: Color(0xFFF97316),
-                  size: 20,
-                ),
+              Icon(Icons.help_center_rounded, size: 20, color: c.primaryContainer),
+              const SizedBox(width: 8),
+              Text(
+                'الأسئلة الأكثر تكراراً',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: c.textPrimary),
               ),
-              const SizedBox(width: 10),
-              const Text(
-                'تواصل معنا',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.primaryContainer,
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: c.primarySoft,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${faqs.length} أسئلة',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: c.primaryContainer),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _buildContactMethod(
-            icon: Icons.email_rounded,
-            title: 'البريد الإلكتروني',
-            subtitle: 'nextstepai12@gmail.com',
-            color: const Color(0xFF3B82F6),
-            onTap: () => _launchURL('mailto:nextstepai12@gmail.com'),
-          ),
-          const SizedBox(height: 8),
-          _buildContactMethod(
-            icon: Icons.chat_rounded,
-            title: 'المساعد الأكاديمي',
-            subtitle: 'اسأل الذكاء الاصطناعي',
-            color: const Color(0xFF8B5CF6),
-            onTap: () {
-              Navigator.pop(context);
-              context.push('/chat');
-            },
-          ),
-          const SizedBox(height: 8),
-          _buildContactMethod(
-            icon: Icons.star_rounded,
-            title: 'تقييم التطبيق',
-            subtitle: 'ساعدنا في التطوير',
-            color: const Color(0xFFF97316),
-            onTap: () => _launchURL(
-                'https://play.google.com/store/apps/details?id=com.example.nextstep_ai_app'),
-          ),
+          const SizedBox(height: 16),
+          ...List.generate(faqs.length, (index) => _buildFaqItem(faqs, index, c)),
         ],
       ),
     );
   }
 
-  Widget _buildContactMethod({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+  Widget _buildFaqItem(List<Map<String, dynamic>> faqs, int index, AppColors c) {
+    final faq = faqs[index];
+    final isExpanded = _expandedIndex == index;
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(12),
+          color: c.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: c.primary.withValues(alpha: 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Row(
+        child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryContainer,
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _expandedIndex = _expandedIndex == index ? -1 : index;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: _categoryIconBg(faq['category'] as String, c),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.help_outline_rounded,
+                        size: 20,
+                        color: _categoryIconColor(faq['category'] as String, c),
+                      ),
                     ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        faq['question'] as String,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: c.textPrimary,
+                          height: 1.5,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 300),
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 22,
+                        color: c.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: Colors.grey,
-            ),
+            if (isExpanded) ...[
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                height: 1,
+                color: c.divider.withValues(alpha: 0.3),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      faq['answer'] as String,
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1.7,
+                        color: c.textSecondary,
+                      ),
+                    ),
+                    if (faq['hasCta'] == true) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: c.primarySoft,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.timer_outlined, size: 16, color: c.primaryContainer),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'اختبارك يستغرق 7 دقائق فقط',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: c.primaryContainer),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => context.push('/assessment'),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: c.primaryContainer,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  faq['ctaText'] as String,
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+  Widget _buildEmptyState(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          const SizedBox(height: 40),
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: c.surfaceAlt,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.search_off_rounded, size: 40, color: c.textSecondary.withValues(alpha: 0.5)),
           ),
-          backgroundColor: const Color(0xFF22C55E),
-          content: Row(
-            children: [
-              const Icon(
-                Icons.check_circle_outline_rounded,
-                color: Colors.white,
-                size: 20,
+          const SizedBox(height: 20),
+          Text(
+            'لم نعثر على أسئلة مطابقة',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: c.textPrimary),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'جرب كلمات بحث أخرى',
+            style: TextStyle(fontSize: 13, color: c.textSecondary),
+          ),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: () => _launchURL('mailto:nextstepai12@gmail.com'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: c.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  message,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+              child: const Text(
+                'تواصل معنا',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCtaCard(AppColors c) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [c.primary, c.primaryDark],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: c.primary.withValues(alpha: 0.3),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              right: -30,
+              top: -30,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.06),
                 ),
               ),
-            ],
-          ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.contact_support_rounded, size: 26, color: Colors.white),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'لم تجد إجابتك بعد؟',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'فريق الدعم جاهز لمساعدتك في أي وقت. تواصل معنا وسنرد عليك في أقرب وقت.',
+                  style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.85), height: 1.6),
+                ),
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () => _launchURL('mailto:nextstepai12@gmail.com'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.mail_outline_rounded, size: 18, color: c.primaryContainer),
+                        const SizedBox(width: 8),
+                        Text(
+                          'تواصل معنا عبر البريد والمحادثة',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: c.primaryContainer),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 
   Future<void> _launchURL(String url) async {
@@ -663,10 +723,52 @@ class _HelpCenterScreenState extends State<HelpCenterScreen>
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        _showSnackBar('لا يمكن فتح الرابط');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              backgroundColor: context.appColors.danger,
+              content: const Row(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.white, size: 20),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'لا يمكن فتح الرابط',
+                      style: TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
       }
     } catch (e) {
-      _showSnackBar('حدث خطأ أثناء فتح الرابط');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            backgroundColor: context.appColors.danger,
+            content: const Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white, size: 20),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'حدث خطأ أثناء فتح الرابط',
+                    style: TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
     }
   }
 }
