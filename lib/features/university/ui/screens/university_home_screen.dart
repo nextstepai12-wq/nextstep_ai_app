@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -195,22 +195,22 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen>
   }
 
   void _onNavChanged(int index) {
-    setState(() => _navIndex = index);
     switch (index) {
+      case 0:
+        setState(() => _navIndex = 0);
+        return;
       case 1:
-        context.push('/university/programs');
+        context.go('/university/programs');
         break;
       case 2:
-        context.push('/university/analytics');
+        context.go('/university/analytics');
         break;
       case 3:
-        context.push('/university/students');
+        context.go('/university/students');
         break;
       case 4:
-        context.push('/university/settings');
+        context.go('/university/settings');
         break;
-      default:
-        _navIndex = 0;
     }
   }
 
@@ -282,8 +282,8 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen>
                               ),
                               _StatData(
                                 icon: Icons.menu_book,
-                                value: '24',
-                                label: 'تخصص نشط',
+                                value: '8',
+                                label: 'تخصص مسجل',
                                 color: c.success,
                                 softColor: c.successSoft,
                               ),
@@ -479,6 +479,8 @@ class _HeaderCard extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 10),
+            const SampleDataBadge(),
           ],
         ),
       ),
@@ -761,7 +763,7 @@ class _TopProgramCard extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: _PressScale(
-            onTap: () => context.push('/university/edit-program'),
+            onTap: () => context.push('/university/programs'),
             radius: 20,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

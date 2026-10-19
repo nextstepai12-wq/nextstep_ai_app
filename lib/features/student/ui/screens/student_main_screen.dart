@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_bottom_nav.dart';
 import 'package:nextstep_ai_app/features/student/ui/screens/student_home_screen.dart';
 import 'package:nextstep_ai_app/features/student/ui/screens/assessment_screen.dart';
 import 'package:nextstep_ai_app/features/student/ui/screens/recommendations_screen.dart';
 import 'package:nextstep_ai_app/features/student/ui/screens/profile_screen.dart';
+import 'package:nextstep_ai_app/core/helpers/session_helper.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
 
 class StudentMainScreen extends StatefulWidget {
@@ -55,7 +57,9 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
 
   void _onTabChanged() {
     final newIndex = StudentMainScreen.tabNotifier.value;
-    if (newIndex != _currentIndex && newIndex >= 0 && newIndex < _screens.length) {
+    if (newIndex != _currentIndex &&
+        newIndex >= 0 &&
+        newIndex < _screens.length) {
       setState(() {
         _currentIndex = newIndex;
       });
@@ -149,7 +153,9 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              _userEmail.isNotEmpty ? _userEmail : 'طالب NextStep AI',
+                              _userEmail.isNotEmpty
+                                  ? _userEmail
+                                  : 'طالب NextStep AI',
                               style: TextStyle(
                                 fontSize: 11,
                                 color: Colors.white.withValues(alpha: 0.75),
@@ -164,7 +170,8 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   ),
                   const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
@@ -172,7 +179,8 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.verified_rounded, color: Colors.white, size: 13),
+                        Icon(Icons.verified_rounded,
+                            color: Colors.white, size: 13),
                         SizedBox(width: 5),
                         Text(
                           'الحساب موثّق',
@@ -257,10 +265,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                 color: c.danger,
                 isLogout: true,
                 onTap: () async {
-                  await TokenManager.clearAll();
-                  if (mounted) {
-                    context.pushReplacement('/login');
-                  }
+                  await logoutToLogin(context);
                 },
               ),
             ),
@@ -327,7 +332,9 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
             color: isActive ? c.primarySoft : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isActive ? c.primary.withValues(alpha: 0.3) : Colors.transparent,
+              color: isActive
+                  ? c.primary.withValues(alpha: 0.3)
+                  : Colors.transparent,
               width: 1.2,
             ),
           ),
@@ -352,7 +359,9 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   title,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: isActive || isLogout ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: isActive || isLogout
+                        ? FontWeight.w700
+                        : FontWeight.w500,
                     color: isActive || isLogout
                         ? activeColor
                         : (color ?? c.textPrimary),
@@ -384,76 +393,22 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   // ─── Floating Bottom Nav ──────────────────────────────────────────────────
 
   Widget _buildFloatingNav() {
-    final c = Theme.of(context).extension<AppColors>() ?? AppColors.light;
-
-    final items = [
-      _NavItem(icon: Icons.home_rounded, label: 'الرئيسية'),
-      _NavItem(icon: Icons.psychology_rounded, label: 'التقييم الذكي'),
-      _NavItem(icon: Icons.explore_rounded, label: 'التوصيات'),
-      _NavItem(icon: Icons.account_circle_rounded, label: 'حسابي'),
+    const List<AppNavItem> items = <AppNavItem>[
+      AppNavItem(icon: Icons.home_rounded, label: 'الرئيسية'),
+      AppNavItem(icon: Icons.psychology_rounded, label: 'التقييم الذكي'),
+      AppNavItem(icon: Icons.explore_rounded, label: 'التوصيات'),
+      AppNavItem(icon: Icons.account_circle_rounded, label: 'حسابي'),
     ];
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: Container(
-        height: 64,
-        decoration: BoxDecoration(
-          color: c.surface.withValues(alpha: 0.92),
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: c.primary.withValues(alpha: 0.12),
-              blurRadius: 32,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(items.length, (i) {
-            final isActive = _currentIndex == i;
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _currentIndex = i;
-                  StudentMainScreen.tabNotifier.value = i;
-                });
-              },
-              behavior: HitTestBehavior.opaque,
-              child: SizedBox(
-                width: 64,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      items[i].icon,
-                      size: 24,
-                      color: isActive ? c.primary : c.textSecondary,
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      items[i].label,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                        color: isActive ? c.primary : c.textSecondary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ),
-      ),
+    return AppBottomNav(
+      items: items,
+      currentIndex: _currentIndex,
+      onChanged: (int index) {
+        setState(() {
+          _currentIndex = index;
+          StudentMainScreen.tabNotifier.value = index;
+        });
+      },
     );
   }
-}
-
-class _NavItem {
-  final IconData icon;
-  final String label;
-  _NavItem({required this.icon, required this.label});
 }

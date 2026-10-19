@@ -76,37 +76,35 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-Image.asset(
-  'assets/images/logo.png',
-  width: 150,
-  height: 150,
-  fit: BoxFit.contain,
-  errorBuilder: (_, __, ___) {
-    return Container(
-      width: 120,
-      height: 120,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primary,
-            AppTheme.primaryContainer,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Icon(
-        Icons.school,
-        size: 50,
-        color: Colors.white,
-      ),
-    );
-  },
-),
-
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) {
+                      return Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppTheme.primary,
+                              AppTheme.primaryContainer,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(
+                          Icons.school,
+                          size: 50,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 16),
-
                   Text(
                     'استعادة كلمة المرور',
                     style: const TextStyle(
@@ -117,9 +115,7 @@ Image.asset(
                     ),
                     textAlign: TextAlign.center,
                   ),
-
                   const SizedBox(height: 8),
-
                   Text(
                     'أدخل البريد الإلكتروني المرتبط بحسابك، وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.',
                     style: TextStyle(
@@ -130,9 +126,7 @@ Image.asset(
                     ),
                     textAlign: TextAlign.center,
                   ),
-
                   const SizedBox(height: 24),
-
                   if (_isSuccess) ...[
                     Container(
                       width: 48,
@@ -261,9 +255,7 @@ Image.asset(
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 24),
-
                           SizedBox(
                             width: double.infinity,
                             height: 56,
@@ -288,7 +280,8 @@ Image.asset(
                                       ),
                                     )
                                   : const Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           'إرسال رابط الاستعادة',
@@ -312,9 +305,7 @@ Image.asset(
                       ),
                     ),
                   ],
-
                   const SizedBox(height: 16),
-
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);

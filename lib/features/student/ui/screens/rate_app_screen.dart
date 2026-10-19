@@ -52,17 +52,20 @@ class _RateAppScreenState extends State<RateAppScreen>
   @override
   void initState() {
     super.initState();
-    _pageCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+    _pageCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 700));
     _fadeAnim = CurvedAnimation(parent: _pageCtrl, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _pageCtrl, curve: Curves.easeOutCubic));
+        .animate(
+            CurvedAnimation(parent: _pageCtrl, curve: Curves.easeOutCubic));
     _pageCtrl.forward();
 
-    _checkCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
+    _checkCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 800));
     _checkScaleAnim = Tween<double>(begin: 0.0, end: 1.0)
         .animate(CurvedAnimation(parent: _checkCtrl, curve: Curves.elasticOut));
-    _checkFadeAnim = Tween<double>(begin: 0.0, end: 1.0)
-        .animate(CurvedAnimation(parent: _checkCtrl, curve: const Interval(0.0, 0.5)));
+    _checkFadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(parent: _checkCtrl, curve: const Interval(0.0, 0.5)));
 
     _feedbackCtrl.addListener(() {
       if (mounted) setState(() => _feedbackText = _feedbackCtrl.text);
@@ -87,7 +90,10 @@ class _RateAppScreenState extends State<RateAppScreen>
     setState(() => _submitting = true);
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
-    setState(() { _submitting = false; _submitted = true; });
+    setState(() {
+      _submitting = false;
+      _submitted = true;
+    });
     _checkCtrl.forward();
   }
 
@@ -98,26 +104,37 @@ class _RateAppScreenState extends State<RateAppScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          backgroundColor: ok ? const Color(0xFF22C55E) : const Color(0xFFDC2626),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          backgroundColor:
+              ok ? const Color(0xFF22C55E) : const Color(0xFFDC2626),
           content: Row(children: [
-            Icon(ok ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
-                color: Colors.white, size: 20),
+            Icon(
+                ok
+                    ? Icons.check_circle_outline_rounded
+                    : Icons.error_outline_rounded,
+                color: Colors.white,
+                size: 20),
             const SizedBox(width: 10),
-            Expanded(child: Text(msg, style: const TextStyle(color: Colors.white, fontSize: 13))),
+            Expanded(
+                child: Text(msg,
+                    style: const TextStyle(color: Colors.white, fontSize: 13))),
           ]),
         ),
       );
   }
 
   Future<void> _launchStore() async {
-    final uri = Uri.parse('https://play.google.com/store/apps/details?id=com.example.nextstep_ai_app');
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final uri = Uri.parse(
+        'https://play.google.com/store/apps/details?id=com.example.nextstep_ai_app');
+    if (await canLaunchUrl(uri))
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   Future<void> _launchSupport() async {
     final uri = Uri.parse('mailto:support@nextstepai.app');
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (await canLaunchUrl(uri))
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -161,10 +178,13 @@ class _RateAppScreenState extends State<RateAppScreen>
       child: Row(
         children: [
           Container(
-            width: 40, height: 40,
-            decoration: BoxDecoration(color: c.surfaceAlt, shape: BoxShape.circle),
+            width: 40,
+            height: 40,
+            decoration:
+                BoxDecoration(color: c.surfaceAlt, shape: BoxShape.circle),
             child: IconButton(
-              icon: Icon(Icons.arrow_forward_ios_rounded, color: c.primaryContainer, size: 18),
+              icon: Icon(Icons.arrow_forward_ios_rounded,
+                  color: c.primaryContainer, size: 18),
               onPressed: () => Navigator.pop(context),
               splashRadius: 24,
             ),
@@ -173,7 +193,10 @@ class _RateAppScreenState extends State<RateAppScreen>
           Icon(Icons.star_rounded, color: c.accent, size: 22),
           const SizedBox(width: 6),
           Text('تقييم التطبيق',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: c.textPrimary)),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: c.textPrimary)),
           const Spacer(),
           const SizedBox(width: 40),
         ],
@@ -187,7 +210,10 @@ class _RateAppScreenState extends State<RateAppScreen>
         _buildHero(c),
         const SizedBox(height: 24),
         _buildStarCard(c),
-        if (_rating > 0) ...[const SizedBox(height: 16), _buildSentimentBadge(c)],
+        if (_rating > 0) ...[
+          const SizedBox(height: 16),
+          _buildSentimentBadge(c)
+        ],
         const SizedBox(height: 20),
         _buildTags(c),
         const SizedBox(height: 20),
@@ -204,39 +230,51 @@ class _RateAppScreenState extends State<RateAppScreen>
     return Column(
       children: [
         SizedBox(
-          height: 120, width: 120,
+          height: 120,
+          width: 120,
           child: Stack(
             alignment: Alignment.center,
             children: [
               Container(
-                width: 110, height: 110,
+                width: 110,
+                height: 110,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(
-                    color: c.primaryContainer.withValues(alpha: 0.4),
-                    blurRadius: 40, spreadRadius: 10,
-                  )],
+                  boxShadow: [
+                    BoxShadow(
+                      color: c.primaryContainer.withValues(alpha: 0.4),
+                      blurRadius: 40,
+                      spreadRadius: 10,
+                    )
+                  ],
                 ),
               ),
               Container(
-                width: 80, height: 80,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: [c.gradientStart, c.gradientEnd],
                   ),
                 ),
                 child: const Center(
-                  child: Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 36),
+                  child: Icon(Icons.auto_awesome_rounded,
+                      color: Colors.white, size: 36),
                 ),
               ),
               Positioned(
-                bottom: 0, left: 0,
+                bottom: 0,
+                left: 0,
                 child: Container(
-                  width: 28, height: 28,
-                  decoration: BoxDecoration(color: c.primarySoft, shape: BoxShape.circle),
-                  child: Icon(Icons.grade_rounded, color: c.primaryContainer, size: 16),
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                      color: c.primarySoft, shape: BoxShape.circle),
+                  child: Icon(Icons.grade_rounded,
+                      color: c.primaryContainer, size: 16),
                 ),
               ),
             ],
@@ -246,7 +284,8 @@ class _RateAppScreenState extends State<RateAppScreen>
         Text(
           'كيف كانت تجربتك مع NextStep AI? \uD83C\uDF1F',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: c.textPrimary),
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.w700, color: c.textPrimary),
         ),
         const SizedBox(height: 6),
         Text(
@@ -264,10 +303,13 @@ class _RateAppScreenState extends State<RateAppScreen>
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
-          blurRadius: 16, offset: const Offset(0, 4),
-        )],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
         children: [
@@ -301,7 +343,8 @@ class _RateAppScreenState extends State<RateAppScreen>
           Text(
             _rating == 0 ? 'اضغط على النجمة لتقييم التطبيق' : '$_rating / 5',
             style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w700,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
               color: _rating > 0 ? c.primaryContainer : c.textSecondary,
             ),
           ),
@@ -319,21 +362,32 @@ class _RateAppScreenState extends State<RateAppScreen>
   }
 
   Widget _buildSentimentBadge(AppColors c) {
-    final color = _rating >= 4 ? c.success : _rating == 3 ? c.accent : c.danger;
-    final bg = _rating >= 4 ? c.successSoft : _rating == 3 ? c.accentSoft : c.dangerSoft;
+    final color = _rating >= 4
+        ? c.success
+        : _rating == 3
+            ? c.accent
+            : c.danger;
+    final bg = _rating >= 4
+        ? c.successSoft
+        : _rating == 3
+            ? c.accentSoft
+            : c.dangerSoft;
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
+        decoration:
+            BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(_sentimentIcons[_rating] ?? Icons.star_rounded, size: 20, color: color),
+            Icon(_sentimentIcons[_rating] ?? Icons.star_rounded,
+                size: 20, color: color),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
                 _sentiments[_rating] ?? '',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color),
+                style: TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w600, color: color),
               ),
             ),
           ],
@@ -348,27 +402,35 @@ class _RateAppScreenState extends State<RateAppScreen>
       children: [
         Row(
           children: [
-            Icon(Icons.local_offer_rounded, size: 18, color: c.primaryContainer),
+            Icon(Icons.local_offer_rounded,
+                size: 18, color: c.primaryContainer),
             const SizedBox(width: 8),
             Text('ما الذي أعجبك بشكل خاص؟',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: c.textPrimary)),
+                style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: c.textPrimary)),
           ],
         ),
         const SizedBox(height: 12),
         Wrap(
-          spacing: 8, runSpacing: 8,
+          spacing: 8,
+          runSpacing: 8,
           children: _tags.map((tag) {
             final key = tag['label']!;
             final sel = _selectedTags.contains(key);
             return GestureDetector(
-              onTap: () => setState(() => sel ? _selectedTags.remove(key) : _selectedTags.add(key)),
+              onTap: () => setState(() =>
+                  sel ? _selectedTags.remove(key) : _selectedTags.add(key)),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: sel ? c.primary : c.surfaceAlt,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: sel ? c.primary : c.divider, width: 1.2),
+                  border: Border.all(
+                      color: sel ? c.primary : c.divider, width: 1.2),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -377,7 +439,8 @@ class _RateAppScreenState extends State<RateAppScreen>
                     const SizedBox(width: 6),
                     Text(tag['label']!,
                         style: TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           color: sel ? Colors.white : c.textPrimary,
                         )),
                   ],
@@ -396,11 +459,15 @@ class _RateAppScreenState extends State<RateAppScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: c.surface, borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
-          blurRadius: 16, offset: const Offset(0, 4),
-        )],
+        color: c.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,36 +475,47 @@ class _RateAppScreenState extends State<RateAppScreen>
           Row(children: [
             Expanded(
               child: Text('شاركنا رأيك بالتفصيل (ما أكثر ميزة أعجبتك؟)',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: c.textPrimary)),
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: c.textPrimary)),
             ),
             const SizedBox(width: 8),
             Text('$len/$maxLen حرف',
                 style: TextStyle(
-                  fontSize: 11, fontWeight: FontWeight.w500,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
                   color: len > maxLen ? c.danger : c.textSecondary,
                 )),
           ]),
           const SizedBox(height: 12),
           TextField(
             controller: _feedbackCtrl,
-            maxLines: 4, maxLength: maxLen,
-            textDirection: TextDirection.rtl, textAlign: TextAlign.right,
+            maxLines: 4,
+            maxLength: maxLen,
+            textDirection: TextDirection.rtl,
+            textAlign: TextAlign.right,
             style: TextStyle(fontSize: 14, color: c.textPrimary, height: 1.6),
             decoration: InputDecoration(
               hintText: 'اكتب ملاحظاتك هنا...',
               hintStyle: TextStyle(color: c.divider, fontSize: 13),
-              filled: true, fillColor: c.surfaceAlt, counterText: '',
+              filled: true,
+              fillColor: c.surfaceAlt,
+              counterText: '',
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide(color: c.primary, width: 1.5),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
           ),
           const SizedBox(height: 10),
@@ -458,19 +536,25 @@ class _RateAppScreenState extends State<RateAppScreen>
     return Column(
       children: [
         SizedBox(
-          width: double.infinity, height: 54,
+          width: double.infinity,
+          height: 54,
           child: ElevatedButton(
             onPressed: _submitting ? null : _submit,
             style: ElevatedButton.styleFrom(
-              backgroundColor: c.primary, foregroundColor: Colors.white,
+              backgroundColor: c.primary,
+              foregroundColor: Colors.white,
               disabledBackgroundColor: c.primary.withValues(alpha: 0.5),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 4, shadowColor: c.primary.withValues(alpha: 0.3),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              elevation: 4,
+              shadowColor: c.primary.withValues(alpha: 0.3),
             ),
             child: _submitting
                 ? const SizedBox(
-                    height: 22, width: 22,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2.5),
                   )
                 : const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -478,7 +562,10 @@ class _RateAppScreenState extends State<RateAppScreen>
                       Text('\u2B50', style: TextStyle(fontSize: 18)),
                       SizedBox(width: 8),
                       Text('إرسال التقييم',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white)),
                     ],
                   ),
           ),
@@ -486,21 +573,27 @@ class _RateAppScreenState extends State<RateAppScreen>
         if (_isHighRating) ...[
           const SizedBox(height: 12),
           SizedBox(
-            width: double.infinity, height: 50,
+            width: double.infinity,
+            height: 50,
             child: OutlinedButton(
               onPressed: _launchStore,
               style: OutlinedButton.styleFrom(
                 foregroundColor: c.primaryContainer,
                 side: BorderSide(color: c.divider, width: 1.2),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.storefront_rounded, size: 20, color: c.primaryContainer),
+                  Icon(Icons.storefront_rounded,
+                      size: 20, color: c.primaryContainer),
                   const SizedBox(width: 8),
                   Text('نشر التقييم على Google Play / App Store',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.primaryContainer)),
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: c.primaryContainer)),
                 ],
               ),
             ),
@@ -513,12 +606,16 @@ class _RateAppScreenState extends State<RateAppScreen>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.support_agent_rounded, size: 16, color: c.textSecondary),
+                Icon(Icons.support_agent_rounded,
+                    size: 16, color: c.textSecondary),
                 const SizedBox(width: 6),
                 Text('هل واجهت مشكلة؟ أخبرنا بها مباشرة عبر الدعم',
                     style: TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w500, color: c.textSecondary,
-                      decoration: TextDecoration.underline, decorationColor: c.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: c.textSecondary,
+                      decoration: TextDecoration.underline,
+                      decorationColor: c.textSecondary,
                     )),
               ],
             ),
@@ -532,7 +629,8 @@ class _RateAppScreenState extends State<RateAppScreen>
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(20)),
+        decoration: BoxDecoration(
+            color: c.surfaceAlt, borderRadius: BorderRadius.circular(20)),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -563,24 +661,34 @@ class _RateAppScreenState extends State<RateAppScreen>
             );
           },
           child: Container(
-            width: 100, height: 100,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [c.success, const Color(0xFF059669)],
               ),
-              boxShadow: [BoxShadow(
-                color: c.success.withValues(alpha: 0.3),
-                blurRadius: 20, offset: const Offset(0, 8),
-              )],
+              boxShadow: [
+                BoxShadow(
+                  color: c.success.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                )
+              ],
             ),
-            child: const Center(child: Icon(Icons.check_rounded, size: 52, color: Colors.white)),
+            child: const Center(
+                child:
+                    Icon(Icons.check_rounded, size: 52, color: Colors.white)),
           ),
         ),
         const SizedBox(height: 24),
         Text('شكراً لملاحظاتك!',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: c.textPrimary)),
+            style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: c.textPrimary)),
         const SizedBox(height: 8),
         Text('تقييمك يساعدنا في بناء تجربة أفضل',
             style: TextStyle(fontSize: 14, color: c.textSecondary)),
@@ -594,27 +702,34 @@ class _RateAppScreenState extends State<RateAppScreen>
               final filled = n <= _rating;
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 3),
-                  child: Icon(
-                    filled ? Icons.star_rounded : Icons.star_outline_rounded,
-                    size: 28,
-                    color: filled ? const Color(0xFFFBBF24) : c.divider,
-                  ),
+                child: Icon(
+                  filled ? Icons.star_rounded : Icons.star_outline_rounded,
+                  size: 28,
+                  color: filled ? const Color(0xFFFBBF24) : c.divider,
+                ),
               );
             }),
           ),
         ),
         const SizedBox(height: 32),
         SizedBox(
-          width: double.infinity, height: 54,
+          width: double.infinity,
+          height: 54,
           child: ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: c.primary, foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 4, shadowColor: c.primary.withValues(alpha: 0.3),
+              backgroundColor: c.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              elevation: 4,
+              shadowColor: c.primary.withValues(alpha: 0.3),
             ),
             child: const Text('العودة',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white)),
           ),
         ),
         const SizedBox(height: 14),
@@ -623,12 +738,16 @@ class _RateAppScreenState extends State<RateAppScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.storefront_rounded, size: 16, color: c.primaryContainer),
+              Icon(Icons.storefront_rounded,
+                  size: 16, color: c.primaryContainer),
               const SizedBox(width: 6),
               Text('اكتب تقييماً في المتجر',
                   style: TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w600, color: c.primaryContainer,
-                    decoration: TextDecoration.underline, decorationColor: c.primaryContainer,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: c.primaryContainer,
+                    decoration: TextDecoration.underline,
+                    decorationColor: c.primaryContainer,
                   )),
             ],
           ),

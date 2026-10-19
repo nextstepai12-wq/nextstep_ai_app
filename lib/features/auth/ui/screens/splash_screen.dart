@@ -1,4 +1,4 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/scheduler.dart';
@@ -230,14 +230,12 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
             ),
-
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
                     const Spacer(flex: 3),
-
                     AnimatedBuilder(
                       animation: Listenable.merge([_entrance, _ambient]),
                       builder: (context, child) {
@@ -264,14 +262,14 @@ class _SplashScreenState extends State<SplashScreen>
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primary
-                                      .withOpacity(0.35 * _glowPulse.value),
+                                  color: AppTheme.primary.withValues(
+                                      alpha: 0.35 * _glowPulse.value),
                                   blurRadius: 60 * _glowPulse.value,
                                   spreadRadius: 6 * _glowPulse.value,
                                 ),
                                 BoxShadow(
-                                  color: const Color(0xFF3EDFAA)
-                                      .withOpacity(0.25 * _glowPulse.value),
+                                  color: AppTheme.tertiaryFixedDim.withValues(
+                                      alpha: 0.25 * _glowPulse.value),
                                   blurRadius: 90 * _glowPulse.value,
                                   spreadRadius: 2,
                                 ),
@@ -295,8 +293,8 @@ class _SplashScreenState extends State<SplashScreen>
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Color(0xFF3EDFAA),
-                                    Color(0xFF2B69FD),
+                                    AppTheme.tertiaryFixedDim,
+                                    AppTheme.primaryContainer,
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(36),
@@ -311,9 +309,7 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 36),
-
                     AnimatedBuilder(
                       animation: _entrance,
                       builder: (context, child) {
@@ -353,8 +349,8 @@ class _SplashScreenState extends State<SplashScreen>
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      Color(0xFF3EDFAA),
-                                      Color(0xFF2B69FD),
+                                      AppTheme.tertiaryFixedDim,
+                                      AppTheme.primaryContainer,
                                     ],
                                   ).createShader(
                                     const Rect.fromLTWH(0, 0, 180, 60),
@@ -365,9 +361,7 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 14),
-
                     FadeTransition(
                       opacity: _subtitleOpacity,
                       child: SlideTransition(
@@ -376,7 +370,7 @@ class _SplashScreenState extends State<SplashScreen>
                           shaderCallback: (bounds) => const LinearGradient(
                             colors: [
                               AppTheme.primary,
-                              Color(0xFF2B69FD),
+                              AppTheme.primaryContainer,
                             ],
                           ).createShader(bounds),
                           child: const Text(
@@ -392,9 +386,7 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
                     FadeTransition(
                       opacity: _descOpacity,
                       child: SlideTransition(
@@ -416,16 +408,12 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                     ),
-
                     const Spacer(flex: 4),
-
                     FadeTransition(
                       opacity: _progressOpacity,
                       child: const _DotsLoader(),
                     ),
-
                     const SizedBox(height: 20),
-
                     FadeTransition(
                       opacity: _buttonOpacity,
                       child: SlideTransition(
@@ -435,8 +423,7 @@ class _SplashScreenState extends State<SplashScreen>
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 28),
                             child: GestureDetector(
-                              onTapDown: (_) =>
-                                  setState(() => _pressed = true),
+                              onTapDown: (_) => setState(() => _pressed = true),
                               onTapCancel: () =>
                                   setState(() => _pressed = false),
                               onTapUp: (_) {
@@ -455,23 +442,22 @@ class _SplashScreenState extends State<SplashScreen>
                                       begin: Alignment.centerLeft,
                                       end: Alignment.centerRight,
                                       colors: [
-                                        Color(0xFF2B69FD),
-                                        Color(0xFF3EDFAA),
+                                        AppTheme.primaryContainer,
+                                        AppTheme.tertiaryFixedDim,
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(18),
                                     boxShadow: [
                                       BoxShadow(
-                                        color:
-                                            AppTheme.primary.withOpacity(0.4),
+                                        color: AppTheme.primary
+                                            .withValues(alpha: 0.4),
                                         blurRadius: 24,
                                         offset: const Offset(0, 10),
                                       ),
                                     ],
                                   ),
                                   child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: const [
                                       Text(
                                         'ابدأ الآن',
@@ -554,7 +540,7 @@ class _DotsLoaderState extends State<_DotsLoader>
                   height: 9,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.primary.withOpacity(opacity),
+                    color: AppTheme.primary.withValues(alpha: opacity),
                   ),
                 ),
               ),
@@ -593,7 +579,7 @@ class _ParticlesPainter extends CustomPainter {
       final radius = 1.4 + (i % 3) * 0.9;
       final opacity = 0.06 + 0.05 * math.sin(phase * math.pi);
 
-      paint.color = color.withOpacity(opacity.clamp(0.0, 0.14));
+      paint.color = color.withValues(alpha: opacity.clamp(0.0, 0.14));
       canvas.drawCircle(
         Offset(dx * size.width, dy * size.height),
         radius,

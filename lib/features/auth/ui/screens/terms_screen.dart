@@ -32,41 +32,41 @@ class TermsScreen extends StatelessWidget {
     );
   }
 
-PreferredSizeWidget _buildAppBar(BuildContext context) {
-  return AppBar(
-    backgroundColor: Colors.white,
-    elevation: 0,
-    leading: const SizedBox.shrink(),
-    actions: [
-      Container(
-        margin: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: AppTheme.primary.withValues(alpha: 0.08),
-          shape: BoxShape.circle,
-        ),
-        child: IconButton(
-          icon: const Icon(
-            Icons.arrow_forward_rounded,
-            color: AppTheme.primaryContainer,
-            size: 24,
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: const SizedBox.shrink(),
+      actions: [
+        Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
           ),
-          onPressed: () => Navigator.pop(context),
-          splashRadius: 24,
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_forward_rounded,
+              color: AppTheme.primaryContainer,
+              size: 24,
+            ),
+            onPressed: () => Navigator.pop(context),
+            splashRadius: 24,
+          ),
+        ),
+      ],
+      title: const Text(
+        'الشروط والأحكام',
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: AppTheme.primaryContainer,
+          letterSpacing: -0.5,
         ),
       ),
-    ],
-    title: const Text(
-      'الشروط والأحكام',
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        color: AppTheme.primaryContainer,
-        letterSpacing: -0.5,
-      ),
-    ),
-    centerTitle: true,
-  );
-}
+      centerTitle: true,
+    );
+  }
 
   Widget _buildHeader() {
     return Container(

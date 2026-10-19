@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 
 import '../theme/training_colors.dart';
 import '../widgets/training_center_drawer.dart';
@@ -98,7 +99,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: Column(
         children: [
           _buildHeader(context, unreadCount),
-          SizedBox(height: 16.h),
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 0),
+            child: const Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: SampleDataBadge(),
+            ),
+          ),
+          SizedBox(height: 10.h),
           _buildFilterTabs(),
           SizedBox(height: 6.h),
           Expanded(child: _buildNotificationsList()),
@@ -321,9 +329,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               decoration: BoxDecoration(
                 color: active ? TrainingColors.accent : TrainingColors.surface,
                 borderRadius: BorderRadius.circular(999.r),
-                border: active
-                    ? null
-                    : Border.all(color: TrainingColors.divider),
+                border:
+                    active ? null : Border.all(color: TrainingColors.divider),
                 boxShadow: active
                     ? [
                         BoxShadow(
@@ -498,9 +505,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ? Border.all(color: TrainingColors.divider)
                 : Border.all(
                     color: TrainingColors.primary.withValues(alpha: 0.2)),
-            boxShadow: isRead
-                ? TrainingColors.softShadow
-                : TrainingColors.cardShadow,
+            boxShadow:
+                isRead ? TrainingColors.softShadow : TrainingColors.cardShadow,
           ),
           child: Stack(
             children: [
@@ -512,8 +518,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   child: SizedBox(
                     width: 4,
                     child: DecoratedBox(
-                      decoration:
-                          BoxDecoration(color: TrainingColors.accent),
+                      decoration: BoxDecoration(color: TrainingColors.accent),
                     ),
                   ),
                 ),

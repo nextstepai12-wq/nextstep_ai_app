@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:nextstep_ai_app/core/helpers/session_helper.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
@@ -37,8 +38,8 @@ class UniversityProfile {
 const UniversityProfile _university = UniversityProfile(
   name: 'جامعة العلوم والتكنولوجيا',
   city: 'صنعاء، اليمن',
-  facultiesCount: 8,
-  programsCount: 24,
+  facultiesCount: 5,
+  programsCount: 8,
   studentsCount: 1250,
   rating: 4.8,
   completion: 0.65,
@@ -90,12 +91,12 @@ class UniversityProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 _ProfileHeader(
-                  onEdit: () => _showMessage(context, 'تعديل الملف الشخصي'),
+                  onEdit: () => _showComingSoon(context, 'تعديل الملف الشخصي'),
                 ),
                 _HeroCard(
                   university: _university,
                   onCameraTap: () =>
-                      _showMessage(context, 'تغيير شعار الجامعة'),
+                      _showComingSoon(context, 'تغيير شعار الجامعة'),
                 ),
                 const _QuickStats(university: _university),
                 _SettingsSection(
@@ -107,7 +108,7 @@ class UniversityProfileScreen extends StatelessWidget {
                       iconBackground: c.primarySoft,
                       label: 'إدارة الكليات',
                       value: '${_university.facultiesCount} كليات',
-                      onTap: () => _showMessage(context, 'إدارة الكليات'),
+                      onTap: () => context.push('/university/faculties'),
                     ),
                     _SettingTile(
                       icon: Icons.account_circle,
@@ -115,15 +116,16 @@ class UniversityProfileScreen extends StatelessWidget {
                       iconBackground: c.purpleSoft,
                       label: 'معلومات الجامعة',
                       value: 'تعديل',
-                      onTap: () => _showMessage(context, 'معلومات الجامعة'),
+                      onTap: () =>
+                          _showComingSoon(context, 'تعديل معلومات الجامعة'),
                     ),
                     _SettingTile(
                       icon: Icons.notifications,
                       iconColor: c.accent,
                       iconBackground: c.accentSoft,
-                      label: 'الإشعارات',
-                      value: 'مفعّلة',
-                      onTap: () => _showMessage(context, 'إعدادات الإشعارات'),
+                      label: 'مركز الإشعارات',
+                      value: 'عرض',
+                      onTap: () => context.push('/university/notifications'),
                     ),
                     _SettingTile(
                       icon: Icons.language,
@@ -131,7 +133,8 @@ class UniversityProfileScreen extends StatelessWidget {
                       iconBackground: c.successSoft,
                       label: 'اللغة',
                       value: 'العربية',
-                      onTap: () => _showMessage(context, 'تغيير اللغة'),
+                      onTap: () =>
+                          _showComingSoon(context, 'تغيير لغة الواجهة'),
                     ),
                     _SettingTile(
                       icon: Icons.dark_mode,
@@ -154,28 +157,29 @@ class UniversityProfileScreen extends StatelessWidget {
                       iconColor: c.primary,
                       iconBackground: c.primarySoft,
                       label: 'مركز المساعدة',
-                      onTap: () => _showMessage(context, 'مركز المساعدة'),
+                      onTap: () =>
+                          _showComingSoon(context, 'مركز مساعدة الجامعات'),
                     ),
                     _SettingTile(
                       icon: Icons.chat_bubble_outline,
                       iconColor: c.purple,
                       iconBackground: c.purpleSoft,
                       label: 'تواصل معنا',
-                      onTap: () => _showMessage(context, 'تواصل معنا'),
+                      onTap: () => context.push('/contact-us'),
                     ),
                     _SettingTile(
                       icon: Icons.description,
                       iconColor: c.success,
                       iconBackground: c.successSoft,
                       label: 'الشروط والأحكام',
-                      onTap: () => _showMessage(context, 'الشروط والأحكام'),
+                      onTap: () => context.push('/terms-conditions'),
                     ),
                     _SettingTile(
                       icon: Icons.lock_outline,
                       iconColor: c.accent,
                       iconBackground: c.accentSoft,
                       label: 'سياسة الخصوصية',
-                      onTap: () => _showMessage(context, 'سياسة الخصوصية'),
+                      onTap: () => context.push('/privacy-policy'),
                     ),
                   ],
                 ),
@@ -874,7 +878,7 @@ class _SubscriptionCard extends StatelessWidget {
               foreground: c.accent,
               horizontalPadding: 12,
               verticalPadding: 6,
-              onTap: () => _showMessage(context, 'إدارة الاشتراك'),
+              onTap: () => _showComingSoon(context, 'إدارة الاشتراك'),
             ),
           ],
         ),
@@ -1154,6 +1158,10 @@ String _formatThousands(int value) {
   return buffer.toString();
 }
 
+void _showComingSoon(BuildContext context, String feature) {
+  _showMessage(context, '$feature غير متاح في النسخة الحالية');
+}
+
 void _showMessage(BuildContext context, String message) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -1179,6 +1187,6 @@ Future<void> _confirmLogout(BuildContext context) async {
     builder: (BuildContext context) => const _LogoutDialog(),
   );
   if (confirmed == true && context.mounted) {
-    _showMessage(context, 'تم تسجيل الخروج بنجاح');
+    await logoutToLogin(context);
   }
 }

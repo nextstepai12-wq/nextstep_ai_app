@@ -122,7 +122,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              'تم إرسال رسالتك بنجاح!',
+              'لم يتم إرسال الرسالة',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 17,
@@ -132,11 +132,13 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'سنرد عليك خلال 24-48 ساعة',
+              'هذه نسخة تجريبية، ولم يتم ربط نموذج التواصل بخدمة إرسال. '
+              'يمكنك مراسلتنا مباشرة عبر البريد أو واتساب من القنوات أعلاه.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
                 color: c.textSecondary,
+                height: 1.6,
               ),
             ),
             const SizedBox(height: 24),
@@ -558,11 +560,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     color: c.primarySoft,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(Icons.edit_note_rounded, color: c.primary, size: 20),
+                  child:
+                      Icon(Icons.edit_note_rounded, color: c.primary, size: 20),
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'أرسل استفسارك مباشرة',
+                  'نموذج الاستفسار',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -570,6 +573,36 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: c.accentSoft,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: c.accent.withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline_rounded, size: 18, color: c.accent),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'وضع تجريبي: لن يتم إرسال الرسالة إلى فريق الدعم. '
+                      'استخدم قنوات التواصل المباشرة أعلاه.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        height: 1.5,
+                        color: c.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
             _buildNameField(c),
@@ -612,8 +645,8 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               color: c.textSecondary.withValues(alpha: 0.6),
               fontSize: 13,
             ),
-            prefixIcon:
-                Icon(Icons.person_outline_rounded, color: c.textSecondary, size: 20),
+            prefixIcon: Icon(Icons.person_outline_rounded,
+                color: c.textSecondary, size: 20),
             filled: true,
             fillColor: c.surfaceAlt,
             border: OutlineInputBorder(
@@ -680,8 +713,8 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               color: c.textSecondary.withValues(alpha: 0.6),
               fontSize: 13,
             ),
-            prefixIcon:
-                Icon(Icons.alternate_email_rounded, color: c.textSecondary, size: 20),
+            prefixIcon: Icon(Icons.alternate_email_rounded,
+                color: c.textSecondary, size: 20),
             filled: true,
             fillColor: c.surfaceAlt,
             border: OutlineInputBorder(

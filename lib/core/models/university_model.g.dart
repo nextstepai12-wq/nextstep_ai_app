@@ -1,4 +1,3 @@
-
 part of 'university_model.dart';
 
 UniversityModel _$UniversityModelFromJson(Map<String, dynamic> json) =>
@@ -34,4 +33,3 @@ Map<String, dynamic> _$UniversityModelToJson(UniversityModel instance) =>
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };
-

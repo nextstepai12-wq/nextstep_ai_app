@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 
 import '../theme/training_colors.dart';
 import '../widgets/training_center_drawer.dart';
@@ -18,6 +19,7 @@ class TrainingCenterHomeScreen extends StatefulWidget {
 class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
     with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _searchController = TextEditingController();
 
   late final AnimationController _waveController;
   late final Animation<double> _waveAnimation;
@@ -27,6 +29,31 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
       const Duration(days: 2, hours: 14, minutes: 30).inSeconds;
 
   String _selectedCategory = 'الكل';
+  String _searchQuery = '';
+
+  List<_ProgramMock> get _filteredPrograms {
+    final query = _searchQuery.trim().toLowerCase();
+    return _programs.where((program) {
+      final matchesCategory =
+          _selectedCategory == 'الكل' || program.category == _selectedCategory;
+      final matchesSearch = query.isEmpty ||
+          program.title.toLowerCase().contains(query) ||
+          program.category.toLowerCase().contains(query);
+      return matchesCategory && matchesSearch;
+    }).toList();
+  }
+
+  List<_InstructorMock> get _filteredInstructors {
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return _instructors;
+    return _instructors
+        .where(
+          (instructor) =>
+              instructor.name.toLowerCase().contains(query) ||
+              instructor.specialty.toLowerCase().contains(query),
+        )
+        .toList();
+  }
 
   static const String _companyName = 'معهد القادة المعتمد للتدريب';
   static const String _location = 'الرياض، المملكة العربية السعودية';
@@ -171,6 +198,7 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _searchController.dispose();
     _waveController.dispose();
     super.dispose();
   }
@@ -187,7 +215,14 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context),
-            SizedBox(height: 30.h),
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 34.h, 16.w, 0),
+              child: const Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: SampleDataBadge(),
+              ),
+            ),
+            SizedBox(height: 8.h),
             _buildCategories(),
             SizedBox(height: 6.h),
             _buildActiveProgramCard(context),
@@ -380,6 +415,8 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
           SizedBox(width: 8.w),
           Expanded(
             child: TextField(
+              controller: _searchController,
+              onChanged: (value) => setState(() => _searchQuery = value),
               textAlign: TextAlign.right,
               style: TextStyle(
                 fontFamily: 'Cairo',
@@ -389,7 +426,7 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
               decoration: InputDecoration(
                 isDense: true,
                 border: InputBorder.none,
-                hintText: 'ابحث عن برنامج، طالب، أو مدرب...',
+                hintText: 'ابحث عن برنامج أو مدرب...',
                 hintStyle: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 13.sp,
@@ -398,23 +435,49 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
               ),
             ),
           ),
-          SizedBox(width: 8.w),
-          GestureDetector(
-            onTap: () => _comingSoon(context, 'تصفية البحث'),
-            child: Container(
-              width: 34.w,
-              height: 34.w,
-              decoration: const BoxDecoration(
-                color: TrainingColors.surfaceAlt,
-                shape: BoxShape.circle,
+          if (_searchQuery.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                _searchController.clear();
+                setState(() => _searchQuery = '');
+              },
+              child: Container(
+                width: 30.w,
+                height: 30.w,
+                decoration: const BoxDecoration(
+                  color: TrainingColors.surfaceAlt,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.close_rounded,
+                  size: 17.sp,
+                  color: TrainingColors.textSecondary,
+                ),
               ),
-              child: Icon(
-                Icons.tune_rounded,
-                size: 18.sp,
-                color: TrainingColors.textSecondary,
+            )
+          else
+            GestureDetector(
+              onTap: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = '';
+                  _selectedCategory = 'الكل';
+                });
+              },
+              child: Container(
+                width: 34.w,
+                height: 34.w,
+                decoration: const BoxDecoration(
+                  color: TrainingColors.surfaceAlt,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.tune_rounded,
+                  size: 18.sp,
+                  color: TrainingColors.textSecondary,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -443,9 +506,8 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
               decoration: BoxDecoration(
                 color: active ? TrainingColors.accent : TrainingColors.surface,
                 borderRadius: BorderRadius.circular(999.r),
-                border: active
-                    ? null
-                    : Border.all(color: TrainingColors.divider),
+                border:
+                    active ? null : Border.all(color: TrainingColors.divider),
                 boxShadow: active ? TrainingColors.softShadow : null,
               ),
               child: Row(
@@ -701,6 +763,8 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
   // ───────────────────────────────────────────────────────────────────────────
 
   Widget _buildProgramsSection(BuildContext context) {
+    final programs = _filteredPrograms;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -711,18 +775,66 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
           onTap: () => context.push('/training-center/programs'),
         ),
         SizedBox(height: 12.h),
-        SizedBox(
-          height: 262.h,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            itemCount: _programs.length,
-            separatorBuilder: (_, __) => SizedBox(width: 14.w),
-            itemBuilder: (context, index) =>
-                _buildProgramCard(context, _programs[index]),
+        if (programs.isEmpty)
+          _buildFilteredEmptyState(
+            icon: Icons.search_off_rounded,
+            message: 'لا توجد برامج مطابقة',
+            hint: 'جرّب تصنيفاً آخر أو غيّر كلمة البحث',
+          )
+        else
+          SizedBox(
+            height: 262.h,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              itemCount: programs.length,
+              separatorBuilder: (_, __) => SizedBox(width: 14.w),
+              itemBuilder: (context, index) =>
+                  _buildProgramCard(context, programs[index]),
+            ),
           ),
-        ),
       ],
+    );
+  }
+
+  Widget _buildFilteredEmptyState({
+    required IconData icon,
+    required String message,
+    required String hint,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+      decoration: BoxDecoration(
+        color: TrainingColors.surface,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: TrainingColors.divider),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 34.sp, color: TrainingColors.textMuted),
+          SizedBox(height: 10.h),
+          Text(
+            message,
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w700,
+              color: TrainingColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: 3.h),
+          Text(
+            hint,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 11.sp,
+              color: TrainingColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -923,6 +1035,8 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
   // ───────────────────────────────────────────────────────────────────────────
 
   Widget _buildInstructorsSection(BuildContext context) {
+    final instructors = _filteredInstructors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -933,17 +1047,24 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
           onTap: () => context.push('/training-center/instructors'),
         ),
         SizedBox(height: 12.h),
-        SizedBox(
-          height: 116.h,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            itemCount: _instructors.length,
-            separatorBuilder: (_, __) => SizedBox(width: 14.w),
-            itemBuilder: (context, index) =>
-                _buildInstructorItem(context, _instructors[index]),
+        if (instructors.isEmpty)
+          _buildFilteredEmptyState(
+            icon: Icons.person_search_rounded,
+            message: 'لا يوجد مدربون مطابقون',
+            hint: 'جرّب البحث باسم أو تخصص مختلف',
+          )
+        else
+          SizedBox(
+            height: 116.h,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              itemCount: instructors.length,
+              separatorBuilder: (_, __) => SizedBox(width: 14.w),
+              itemBuilder: (context, index) =>
+                  _buildInstructorItem(context, instructors[index]),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -1135,7 +1256,8 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _countdownPill(_twoDigits(_remainingSeconds ~/ 86400), 'يوم'),
+                    _countdownPill(
+                        _twoDigits(_remainingSeconds ~/ 86400), 'يوم'),
                     _countdownColon(),
                     _countdownPill(
                       _twoDigits((_remainingSeconds % 86400) ~/ 3600),
@@ -1428,7 +1550,8 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
     );
   }
 
-  Widget _remoteImage(String seed, {required double width, required double height}) {
+  Widget _remoteImage(String seed,
+      {required double width, required double height}) {
     return Image.network(
       'https://picsum.photos/seed/$seed/${width.toInt()}/${height.toInt()}',
       width: width,

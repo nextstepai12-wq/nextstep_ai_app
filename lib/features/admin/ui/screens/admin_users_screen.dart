@@ -1,7 +1,8 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/features/admin/ui/screens/admin_add_user_screen.dart';
 import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
@@ -188,9 +189,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
   }
 
   bool get _hasActiveFilters =>
-      _searchQuery.isNotEmpty ||
-      _roleFilter != 'all' ||
-      _statusFilter != 'all';
+      _searchQuery.isNotEmpty || _roleFilter != 'all' || _statusFilter != 'all';
 
   void _resetFilters() {
     _debounce?.cancel();
@@ -241,7 +240,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               setState(() {
                 _users = List<Map<String, dynamic>>.from(cached);
                 _isLoading = false;
-                _errorMessage = 'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
+                _errorMessage =
+                    'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
               });
             }
             return;
@@ -264,7 +264,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
             setState(() {
               _users = List<Map<String, dynamic>>.from(cached);
               _isLoading = false;
-              _errorMessage = 'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
+              _errorMessage =
+                  'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
             });
           }
           return;
@@ -328,14 +329,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
       if (cached != null) {
         final List<Map<String, dynamic>> updatedUsers =
             List<Map<String, dynamic>>.from(cached);
-        updatedUsers.removeWhere(
-            (u) => u['id'].toString() == user['id'].toString());
+        updatedUsers
+            .removeWhere((u) => u['id'].toString() == user['id'].toString());
         await HiveStorage.saveData('users_cache', 'users', updatedUsers);
       }
 
       setState(() {
-        _users.removeWhere(
-            (u) => u['id'].toString() == user['id'].toString());
+        _users.removeWhere((u) => u['id'].toString() == user['id'].toString());
         _selectedIds.remove(user['id'].toString());
       });
 
@@ -527,7 +527,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: _isLoading
             ? _buildSkeletonLoading()
             : FadeTransition(
@@ -555,8 +555,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                                     child: _buildEmptyState(),
                                   )
                                 : SliverPadding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(16, 4, 16, 140),
+                                    padding: const EdgeInsets.fromLTRB(
+                                        16, 4, 16, 140),
                                     sliver: _isTableView
                                         ? _buildTableBody()
                                         : _buildCardsBody(),
@@ -639,45 +639,36 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     final unverified = total - verified;
     final admins = _users.where((u) => u['role'] == 'admin').length;
 
-    return Container(
-      height: 90,
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildStatCard(
-              label: 'الإجمالي',
-              value: total.toString(),
-              icon: Icons.groups_rounded,
-              color: const Color(0xFF3B82F6),
-            ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: AppAdaptiveGrid(
+        minItemWidth: 124,
+        maxColumns: 4,
+        spacing: 8,
+        children: <Widget>[
+          _buildStatCard(
+            label: 'الإجمالي',
+            value: total.toString(),
+            icon: Icons.groups_rounded,
+            color: const Color(0xFF175CD3),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildStatCard(
-              label: 'موثق',
-              value: verified.toString(),
-              icon: Icons.verified_rounded,
-              color: const Color(0xFF22C55E),
-            ),
+          _buildStatCard(
+            label: 'موثق',
+            value: verified.toString(),
+            icon: Icons.verified_rounded,
+            color: const Color(0xFF067647),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildStatCard(
-              label: 'غير موثق',
-              value: unverified.toString(),
-              icon: Icons.warning_rounded,
-              color: const Color(0xFFDC2626),
-            ),
+          _buildStatCard(
+            label: 'غير موثق',
+            value: unverified.toString(),
+            icon: Icons.warning_rounded,
+            color: const Color(0xFFB42318),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildStatCard(
-              label: 'الإدارة',
-              value: admins.toString(),
-              icon: Icons.shield_rounded,
-              color: const Color(0xFF8B5CF6),
-            ),
+          _buildStatCard(
+            label: 'الإدارة',
+            value: admins.toString(),
+            icon: Icons.shield_rounded,
+            color: const Color(0xFF5B4BB7),
           ),
         ],
       ),
@@ -1004,8 +995,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
 
   List<Map<String, dynamic>> get _pagedUsers {
     final filtered = _filteredUsers;
-    final totalPages =
-        (filtered.length / _rowsPerPage).ceil().clamp(1, double.maxFinite.toInt());
+    final totalPages = (filtered.length / _rowsPerPage)
+        .ceil()
+        .clamp(1, double.maxFinite.toInt());
     if (_currentPage >= totalPages) _currentPage = totalPages - 1;
     final start = _currentPage * _rowsPerPage;
     return filtered.skip(start).take(_rowsPerPage).toList();
@@ -1091,8 +1083,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               onChanged: (value) {
                 setState(() {
                   if (value == true) {
-                    _selectedIds
-                        .addAll(paged.map((u) => u['id'].toString()));
+                    _selectedIds.addAll(paged.map((u) => u['id'].toString()));
                   } else {
                     _selectedIds
                         .removeAll(paged.map((u) => u['id'].toString()));
@@ -1156,8 +1147,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                   v == true ? _selectedIds.add(id) : _selectedIds.remove(id);
                 }),
                 activeColor: AppTheme.primary,
-                shape:
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
@@ -1181,8 +1172,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                   const SizedBox(height: 2),
                   Text(
                     user['email'] ?? '',
-                    style:
-                        TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1313,7 +1303,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isSelected ? AppTheme.primary.withValues(alpha: 0.4) : Colors.grey.shade200,
+          color: isSelected
+              ? AppTheme.primary.withValues(alpha: 0.4)
+              : Colors.grey.shade200,
           width: 1.2,
         ),
         boxShadow: [
@@ -1351,8 +1343,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                         activeColor: AppTheme.primary,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5)),
-                        materialTapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -1398,8 +1389,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                     const SizedBox(width: 4),
                     Text(
                       _formatDate(user['created_at']),
-                      style: TextStyle(
-                          fontSize: 10, color: Colors.grey.shade500),
+                      style:
+                          TextStyle(fontSize: 10, color: Colors.grey.shade500),
                     ),
                   ],
                 ),
@@ -1483,8 +1474,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                 Text.rich(
                   TextSpan(
                     text: 'عرض ',
-                    style: TextStyle(
-                        fontSize: 12, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     children: [
                       TextSpan(
                         text: '$start–$end ',
@@ -1513,8 +1503,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                 const SizedBox(height: 2),
                 Text(
                   'عدد الصفوف',
-                  style: TextStyle(
-                      fontSize: 10, color: Colors.grey.shade500),
+                  style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
                 ),
               ],
             ),
@@ -1628,8 +1617,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
         tween: Tween(begin: 0, end: 1),
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutBack,
-        builder: (context, t, child) =>
-            Transform.translate(
+        builder: (context, t, child) => Transform.translate(
           offset: Offset(0, 40 * (1 - t)),
           child: Opacity(opacity: t.clamp(0.0, 1.0), child: child),
         ),
@@ -1781,9 +1769,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
         child: Row(
           children: [
             Icon(
-              isOffline
-                  ? Icons.wifi_off_rounded
-                  : Icons.error_outline_rounded,
+              isOffline ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
               color: isOffline ? Colors.orange.shade700 : Colors.red.shade700,
             ),
             const SizedBox(width: 8),
@@ -1791,7 +1777,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               child: Text(
                 message,
                 style: TextStyle(
-                  color: isOffline ? Colors.orange.shade700 : Colors.red.shade700,
+                  color:
+                      isOffline ? Colors.orange.shade700 : Colors.red.shade700,
                   fontSize: 13,
                 ),
               ),
@@ -1810,7 +1797,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.person_search_rounded, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.person_search_rounded,
+                size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               hasFilters ? 'لا توجد نتائج مطابقة' : 'لا يوجد مستخدمين',
@@ -1949,8 +1937,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color:
-                            verified ? Colors.green : Colors.orange,
+                        color: verified ? Colors.green : Colors.orange,
                       ),
                     ),
                   ),
@@ -2021,7 +2008,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
           Expanded(
             child: Text(
               value.isNotEmpty ? value : '-',
-              style: const TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant),
+              style: const TextStyle(
+                  fontSize: 14, color: AppTheme.onSurfaceVariant),
             ),
           ),
         ],
@@ -2037,8 +2025,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
   }) {
     return ListTile(
       leading: Icon(icon, color: color),
-      title:
-          Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+      title: Text(title,
+          style: TextStyle(color: color, fontWeight: FontWeight.w600)),
       onTap: onTap,
     );
   }
@@ -2051,7 +2039,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: color ?? const Color(0xFF22C55E),
           content: Row(
             children: [

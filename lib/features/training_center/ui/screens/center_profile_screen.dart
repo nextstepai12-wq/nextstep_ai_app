@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:nextstep_ai_app/core/helpers/session_helper.dart';
+
 import '../theme/training_colors.dart';
 
 class CenterProfileScreen extends StatelessWidget {
@@ -123,7 +125,7 @@ class CenterProfileScreen extends StatelessWidget {
                         ),
                         SizedBox(width: 5.w),
                         Text(
-                          'حساب منشأة معتمد',
+                          'حساب تجريبي',
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             fontSize: 11.sp,
@@ -194,15 +196,17 @@ class CenterProfileScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 4.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6.w,
+                runSpacing: 2.h,
                 children: [
                   Icon(
                     Icons.check_circle_rounded,
                     size: 14.sp,
                     color: const Color(0xFF7FE3B8),
                   ),
-                  SizedBox(width: 4.w),
                   Text(
                     'حساب شركة موثّق',
                     style: TextStyle(
@@ -211,7 +215,6 @@ class CenterProfileScreen extends StatelessWidget {
                       color: const Color(0xFF9EE9C9),
                     ),
                   ),
-                  SizedBox(width: 8.w),
                   Text(
                     '•',
                     style: TextStyle(
@@ -220,7 +223,6 @@ class CenterProfileScreen extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.4),
                     ),
                   ),
-                  SizedBox(width: 8.w),
                   Text(
                     'س.ت: $_registrationNumber',
                     style: TextStyle(
@@ -246,7 +248,7 @@ class CenterProfileScreen extends StatelessWidget {
                   _trustBadge(
                     icon: Icons.verified_user_rounded,
                     iconColor: const Color(0xFFACC7FF),
-                    text: 'عضو معتمد منذ $_memberSince',
+                    text: 'منذ $_memberSince (تجريبي)',
                   ),
                 ],
               ),
@@ -896,25 +898,28 @@ class CenterProfileScreen extends StatelessWidget {
             color: TrainingColors.dangerSoft,
             borderRadius: BorderRadius.circular(12.r),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.logout_rounded,
-                size: 19.sp,
-                color: TrainingColors.danger,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'تسجيل الخروج من حساب المنشأة',
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w800,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.logout_rounded,
+                  size: 19.sp,
                   color: TrainingColors.danger,
                 ),
-              ),
-            ],
+                SizedBox(width: 8.w),
+                Text(
+                  'تسجيل الخروج من حساب المنشأة',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w800,
+                    color: TrainingColors.danger,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -979,9 +984,9 @@ class CenterProfileScreen extends StatelessWidget {
                 child: const Text('إلغاء'),
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(dialogContext);
-                  context.go('/login');
+                  await logoutToLogin(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: TrainingColors.danger,

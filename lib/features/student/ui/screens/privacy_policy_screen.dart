@@ -718,7 +718,8 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           ],
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: c.primaryContainer.withValues(alpha: 0.2), width: 1),
+        border: Border.all(
+            color: c.primaryContainer.withValues(alpha: 0.2), width: 1),
       ),
       child: Column(
         children: [

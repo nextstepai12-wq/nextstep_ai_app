@@ -73,7 +73,8 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.04),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
+    ).animate(
+        CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
     _animController.forward();
   }
 
@@ -97,7 +98,8 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
     if (!mounted) return;
     setState(() => _isSubmitting = false);
 
-    _showResultSnackBar(widget.isEditing ? 'تم حفظ التعديلات بنجاح' : 'تم إنشاء الحساب بنجاح');
+    _showResultSnackBar(
+        widget.isEditing ? 'تم حفظ التعديلات بنجاح' : 'تم إنشاء الحساب بنجاح');
     Navigator.pop(context, true);
   }
 
@@ -108,14 +110,17 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: const Color(0xFF22C55E),
           content: Row(
             children: [
-              const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
+              const Icon(Icons.check_circle_outline_rounded,
+                  color: Colors.white, size: 20),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(message, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                child: Text(message,
+                    style: const TextStyle(color: Colors.white, fontSize: 13)),
               ),
             ],
           ),
@@ -128,7 +133,7 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
@@ -205,7 +210,9 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
-                  widget.isEditing ? Icons.edit_rounded : Icons.person_add_alt_1_rounded,
+                  widget.isEditing
+                      ? Icons.edit_rounded
+                      : Icons.person_add_alt_1_rounded,
                   color: Colors.white,
                   size: 22,
                 ),
@@ -244,7 +251,9 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
                 curve: Curves.easeOut,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
-                  color: isSelected ? role.color.withValues(alpha: 0.1) : Colors.white,
+                  color: isSelected
+                      ? role.color.withValues(alpha: 0.1)
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isSelected ? role.color : Colors.grey.shade200,
@@ -272,7 +281,8 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
                       role.label,
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
                         color: isSelected ? role.color : Colors.grey.shade500,
                       ),
                     ),
@@ -310,7 +320,8 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
             controller: _nameController,
             hint: 'مثال: أحمد محمد',
             icon: Icons.person_outline_rounded,
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'الرجاء إدخال الاسم' : null,
+            validator: (v) =>
+                (v == null || v.trim().isEmpty) ? 'الرجاء إدخال الاسم' : null,
           ),
           const SizedBox(height: 18),
           _fieldLabel('البريد الإلكتروني'),
@@ -322,27 +333,35 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
             keyboardType: TextInputType.emailAddress,
             ltr: true,
             validator: (v) {
-              if (v == null || v.isEmpty) return 'الرجاء إدخال البريد الإلكتروني';
-              if (!v.contains('@') || !v.contains('.')) return 'بريد إلكتروني غير صحيح';
+              if (v == null || v.isEmpty)
+                return 'الرجاء إدخال البريد الإلكتروني';
+              if (!v.contains('@') || !v.contains('.'))
+                return 'بريد إلكتروني غير صحيح';
               return null;
             },
           ),
           const SizedBox(height: 18),
-          _fieldLabel(widget.isEditing ? 'كلمة مرور جديدة (اختياري)' : 'كلمة المرور'),
+          _fieldLabel(
+              widget.isEditing ? 'كلمة مرور جديدة (اختياري)' : 'كلمة المرور'),
           const SizedBox(height: 8),
           _buildTextField(
             controller: _passwordController,
-            hint: widget.isEditing ? 'اتركها فارغة للإبقاء على القديمة' : '••••••••',
+            hint: widget.isEditing
+                ? 'اتركها فارغة للإبقاء على القديمة'
+                : '••••••••',
             icon: Icons.lock_outline_rounded,
             obscure: _obscurePassword,
             ltr: true,
             suffix: IconButton(
               icon: Icon(
-                _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                _obscurePassword
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
                 color: Colors.grey.shade500,
                 size: 20,
               ),
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
             ),
             validator: (v) {
               if (widget.isEditing && (v == null || v.isEmpty)) return null;
@@ -362,15 +381,20 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
             ltr: true,
             suffix: IconButton(
               icon: Icon(
-                _obscureConfirm ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                _obscureConfirm
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
                 color: Colors.grey.shade500,
                 size: 20,
               ),
-              onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+              onPressed: () =>
+                  setState(() => _obscureConfirm = !_obscureConfirm),
             ),
             validator: (v) {
-              if (widget.isEditing && _passwordController.text.isEmpty) return null;
-              if (v != _passwordController.text) return 'كلمتا المرور غير متطابقتين';
+              if (widget.isEditing && _passwordController.text.isEmpty)
+                return null;
+              if (v != _passwordController.text)
+                return 'كلمتا المرور غير متطابقتين';
               return null;
             },
           ),
@@ -412,7 +436,7 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
         filled: true,
-        fillColor: const Color(0xFFF7F8FB),
+        fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
         prefixIcon: Icon(icon, color: AppTheme.onSurfaceVariant, size: 20),
         suffixIcon: suffix,
         border: OutlineInputBorder(
@@ -431,7 +455,8 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.6),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
     );
   }
@@ -447,7 +472,8 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
           foregroundColor: Colors.white,
           disabledBackgroundColor: AppTheme.primary.withValues(alpha: 0.6),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ).copyWith(
           shadowColor: WidgetStateProperty.all(Colors.transparent),
         ),
@@ -458,7 +484,8 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
                   key: ValueKey('loading'),
                   height: 22,
                   width: 22,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.4),
+                  child: CircularProgressIndicator(
+                      color: Colors.white, strokeWidth: 2.4),
                 )
               : Row(
                   key: const ValueKey('label'),
@@ -468,7 +495,8 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
                     const SizedBox(width: 8),
                     Text(
                       widget.isEditing ? 'حفظ التعديلات' : 'إنشاء الحساب',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),

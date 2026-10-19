@@ -1,8 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'package:nextstep_ai_app/core/helpers/session_helper.dart';
 
 import '../../logic/training_center_bloc/training_center_bloc.dart';
 import '../theme/training_colors.dart';
@@ -29,7 +30,6 @@ class TrainingCenterDrawer extends StatelessWidget {
         child: Column(
           children: [
             _buildDrawerHeader(context),
-
             Expanded(
               child: ListView(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
@@ -104,7 +104,6 @@ class TrainingCenterDrawer extends StatelessWidget {
                 ],
               ),
             ),
-
             Padding(
               padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 8.h),
               child: _drawerItem(
@@ -218,7 +217,8 @@ class TrainingCenterDrawer extends StatelessWidget {
                             vertical: 3.h,
                           ),
                           decoration: BoxDecoration(
-                            color: TrainingColors.success.withValues(alpha: 0.2),
+                            color:
+                                TrainingColors.success.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(999.r),
                           ),
                           child: Row(
@@ -234,7 +234,7 @@ class TrainingCenterDrawer extends StatelessWidget {
                               ),
                               SizedBox(width: 5.w),
                               Text(
-                                'مركز معتمد ونشط',
+                                'بيانات تجريبية',
                                 style: TextStyle(
                                   fontFamily: 'Cairo',
                                   fontSize: 10.sp,
@@ -343,7 +343,8 @@ class TrainingCenterDrawer extends StatelessWidget {
             (route != '/training-center' &&
                 currentLocation.startsWith('$route/')));
 
-    final activeColor = isLogout ? TrainingColors.danger : TrainingColors.primary;
+    final activeColor =
+        isLogout ? TrainingColors.danger : TrainingColors.primary;
     final iconBg = isLogout
         ? TrainingColors.dangerSoft
         : isActive
@@ -401,8 +402,9 @@ class TrainingCenterDrawer extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 13.5.sp,
-                      fontWeight:
-                          isActive || isLogout ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isActive || isLogout
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                       color: isActive || isLogout
                           ? activeColor
                           : TrainingColors.textPrimary,
@@ -518,12 +520,13 @@ class TrainingCenterDrawer extends StatelessWidget {
                     SizedBox(width: 12.w),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
+                        onTap: () async {
+                          final VoidCallback? externalLogout = onLogout;
                           Navigator.pop(dialogContext);
-                          if (onLogout != null) {
-                            onLogout!();
+                          if (externalLogout != null) {
+                            externalLogout();
                           } else {
-                            context.pushReplacement('/login');
+                            await logoutToLogin(context);
                           }
                         },
                         child: Container(

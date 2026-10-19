@@ -96,7 +96,8 @@ class HiveStorage {
     await box.put('pending', []);
   }
 
-  static Future<void> saveUniversities(List<Map<String, dynamic>> universities) async {
+  static Future<void> saveUniversities(
+      List<Map<String, dynamic>> universities) async {
     final box = await _getBox('universities_cache');
     await box.put('universities', universities);
   }
@@ -120,7 +121,8 @@ class HiveStorage {
     return Map<String, dynamic>.from(data);
   }
 
-  static Future<void> saveNotifications(List<Map<String, dynamic>> notifications) async {
+  static Future<void> saveNotifications(
+      List<Map<String, dynamic>> notifications) async {
     final box = await _getBox('notifications_cache');
     await box.put('notifications', notifications);
   }

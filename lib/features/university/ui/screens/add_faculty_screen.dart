@@ -116,22 +116,48 @@ class _AddFacultyScreenState extends State<AddFacultyScreen>
 
     setState(() => _isLoading = true);
 
-    try {
-      await Future.delayed(const Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(milliseconds: 400));
 
-      if (mounted) {
-        _showSnackBar(
-          widget.isEditing
-              ? 'تم تعديل الكلية بنجاح ✅'
-              : 'تم إضافة الكلية بنجاح ✅',
-        );
-        Navigator.pop(context, true);
-      }
-    } catch (e) {
-      _showSnackBar('حدث خطأ أثناء الحفظ', isSuccess: false);
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    _showSnackBar(
+      'نسخة تجريبية: لم يتم حفظ التغييرات في الخادم',
+      isSuccess: false,
+    );
+    Navigator.pop(context, false);
+  }
+
+  Widget _buildPrototypeNotice() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            size: 18,
+            color: Color(0xFFB45309),
+          ),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'وضع تجريبي: النموذج لا يحفظ البيانات في الخادم بعد.',
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.5,
+                color: Color(0xFF92400E),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showSnackBar(String message, {bool isSuccess = true}) {
@@ -173,7 +199,7 @@ class _AddFacultyScreenState extends State<AddFacultyScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
         body: FadeTransition(
           opacity: _fadeAnimation,
@@ -187,7 +213,9 @@ class _AddFacultyScreenState extends State<AddFacultyScreen>
                 child: Column(
                   children: [
                     _buildHeader(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+                    _buildPrototypeNotice(),
+                    const SizedBox(height: 16),
                     _buildBasicInfo(),
                     const SizedBox(height: 16),
                     _buildContactInfo(),
@@ -296,79 +324,79 @@ class _AddFacultyScreenState extends State<AddFacultyScreen>
     );
   }
 
-Widget _buildBasicInfo() {
-  return _buildCard(
-    title: 'المعلومات الأساسية',
-    icon: Icons.info_rounded,
-    color: const Color(0xFF3B82F6),
-    children: [
-      _buildTextField(
-        controller: _nameController,
-        label: 'اسم الكلية',
-        hint: 'أدخل اسم الكلية',
-        icon: Icons.business_rounded,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'الرجاء إدخال اسم الكلية';
-          }
-          return null;
-        },
-      ),
-      const SizedBox(height: 12),
-      _buildDropdownField(
-        label: 'نوع الكلية',
-        value: _selectedType,
-        items: _facultyTypes,
-        icon: Icons.category_rounded,
-        onChanged: (value) {
-          setState(() {
-            _selectedType = value;
-          });
-        },
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'الرجاء اختيار نوع الكلية';
-          }
-          return null;
-        },
-      ),
-      const SizedBox(height: 12),
-      Row(
-        children: [
-          Flexible(
-            flex: 1,
-            child: _buildDropdownField(
-              label: 'المبنى',
-              value: _selectedBuilding,
-              items: _buildings,
-              icon: Icons.location_city_rounded,
-              onChanged: (value) {
-                setState(() {
-                  _selectedBuilding = value;
-                });
-              },
+  Widget _buildBasicInfo() {
+    return _buildCard(
+      title: 'المعلومات الأساسية',
+      icon: Icons.info_rounded,
+      color: const Color(0xFF3B82F6),
+      children: [
+        _buildTextField(
+          controller: _nameController,
+          label: 'اسم الكلية',
+          hint: 'أدخل اسم الكلية',
+          icon: Icons.business_rounded,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'الرجاء إدخال اسم الكلية';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 12),
+        _buildDropdownField(
+          label: 'نوع الكلية',
+          value: _selectedType,
+          items: _facultyTypes,
+          icon: Icons.category_rounded,
+          onChanged: (value) {
+            setState(() {
+              _selectedType = value;
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'الرجاء اختيار نوع الكلية';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Flexible(
+              flex: 1,
+              child: _buildDropdownField(
+                label: 'المبنى',
+                value: _selectedBuilding,
+                items: _buildings,
+                icon: Icons.location_city_rounded,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedBuilding = value;
+                  });
+                },
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Flexible(
-            flex: 1,
-            child: _buildDropdownField(
-              label: 'الطابق',
-              value: _selectedFloor,
-              items: _floors,
-              icon: Icons.height_rounded,
-              onChanged: (value) {
-                setState(() {
-                  _selectedFloor = value;
-                });
-              },
+            const SizedBox(width: 12),
+            Flexible(
+              flex: 1,
+              child: _buildDropdownField(
+                label: 'الطابق',
+                value: _selectedFloor,
+                items: _floors,
+                icon: Icons.height_rounded,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedFloor = value;
+                  });
+                },
+              ),
             ),
-          ),
-        ],
-      ),
-    ],
-  );
-}
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _buildContactInfo() {
     return _buildCard(
@@ -692,9 +720,7 @@ Widget _buildBasicInfo() {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    widget.isEditing
-                        ? Icons.save_rounded
-                        : Icons.add_rounded,
+                    widget.isEditing ? Icons.save_rounded : Icons.add_rounded,
                     size: 20,
                   ),
                   const SizedBox(width: 10),

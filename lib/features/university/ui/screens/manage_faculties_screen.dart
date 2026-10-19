@@ -120,7 +120,7 @@ class _ManageFacultiesScreenState extends State<ManageFacultiesScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
         body: _isLoading
             ? const Center(
@@ -318,9 +318,8 @@ class _ManageFacultiesScreenState extends State<ManageFacultiesScreen>
 
   Widget _buildFacultyCard(Map<String, dynamic> faculty) {
     final isDeanship = faculty['type'] == 'عمادة';
-    final Color accentColor = isDeanship
-        ? const Color(0xFFA855F7)
-        : const Color(0xFF3B82F6);
+    final Color accentColor =
+        isDeanship ? const Color(0xFFA855F7) : const Color(0xFF3B82F6);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -350,7 +349,9 @@ class _ManageFacultiesScreenState extends State<ManageFacultiesScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  isDeanship ? Icons.emoji_objects_rounded : Icons.business_rounded,
+                  isDeanship
+                      ? Icons.emoji_objects_rounded
+                      : Icons.business_rounded,
                   color: accentColor,
                   size: 22,
                 ),
@@ -411,7 +412,6 @@ class _ManageFacultiesScreenState extends State<ManageFacultiesScreen>
             ],
           ),
           const SizedBox(height: 10),
-
           Wrap(
             spacing: 8,
             runSpacing: 4,
@@ -433,8 +433,8 @@ class _ManageFacultiesScreenState extends State<ManageFacultiesScreen>
               ),
             ],
           ),
-
-          if (faculty['description'] != null && faculty['description'].isNotEmpty)
+          if (faculty['description'] != null &&
+              faculty['description'].isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
@@ -498,9 +498,7 @@ class _ManageFacultiesScreenState extends State<ManageFacultiesScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              _searchQuery.isEmpty
-                  ? 'لا توجد كليات'
-                  : 'لا توجد نتائج مطابقة',
+              _searchQuery.isEmpty ? 'لا توجد كليات' : 'لا توجد نتائج مطابقة',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -523,16 +521,16 @@ class _ManageFacultiesScreenState extends State<ManageFacultiesScreen>
     );
   }
 
-Widget _buildFAB() {
-  return FloatingActionButton(
-    onPressed: () => context.push('/university/add-faculty'),
-    backgroundColor: AppTheme.primary,
-    child: const Icon(
-      Icons.add_rounded,
-      color: Colors.white,
-    ),
-  );
-}
+  Widget _buildFAB() {
+    return FloatingActionButton(
+      onPressed: _showAddFacultyDialog,
+      backgroundColor: AppTheme.primary,
+      child: const Icon(
+        Icons.add_rounded,
+        color: Colors.white,
+      ),
+    );
+  }
 
   void _showAddFacultyDialog() {
     final _formKey = GlobalKey<FormState>();
@@ -666,8 +664,26 @@ Widget _buildFAB() {
           ElevatedButton(
             onPressed: () {
               if (_formKey.currentState!.validate()) {
+                final nextId = _faculties.isEmpty
+                    ? 1
+                    : _faculties
+                            .map((f) => f['id'] as int)
+                            .reduce((a, b) => a > b ? a : b) +
+                        1;
+                setState(() {
+                  _faculties.add({
+                    'id': nextId,
+                    'name': _nameController.text.trim(),
+                    'type': _selectedType,
+                    'programs_count': 0,
+                    'students_count': 0,
+                    'dean': _deanController.text.trim(),
+                    'email': _emailController.text.trim(),
+                    'description': _descriptionController.text.trim(),
+                  });
+                });
                 Navigator.pop(context);
-                _showSnackBar('تم إضافة الكلية بنجاح');
+                _showSnackBar('تمت إضافة الكلية محلياً');
               }
             },
             style: ElevatedButton.styleFrom(
@@ -691,7 +707,7 @@ Widget _buildFAB() {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
+      builder: (sheetContext) => Container(
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -701,7 +717,7 @@ Widget _buildFAB() {
               title: 'تعديل',
               color: AppTheme.primary,
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(sheetContext);
                 _showEditFacultyDialog(faculty);
               },
             ),
@@ -710,8 +726,8 @@ Widget _buildFAB() {
               title: 'عرض التخصصات',
               color: const Color(0xFF3B82F6),
               onTap: () {
-                Navigator.pop(context);
-                _showSnackBar('تم عرض التخصصات');
+                Navigator.pop(sheetContext);
+                context.push('/university/programs');
               },
             ),
             _buildOptionTile(
@@ -719,8 +735,8 @@ Widget _buildFAB() {
               title: 'عرض الطلاب',
               color: const Color(0xFF22C55E),
               onTap: () {
-                Navigator.pop(context);
-                _showSnackBar('تم عرض الطلاب');
+                Navigator.pop(sheetContext);
+                context.push('/university/students');
               },
             ),
             _buildOptionTile(
@@ -728,7 +744,7 @@ Widget _buildFAB() {
               title: 'حذف',
               color: Colors.red,
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(sheetContext);
                 _showDeleteDialog(faculty);
               },
             ),
@@ -850,8 +866,23 @@ Widget _buildFAB() {
           ElevatedButton(
             onPressed: () {
               if (_formKey.currentState!.validate()) {
+                setState(() {
+                  final index = _faculties.indexWhere(
+                    (item) => item['id'] == faculty['id'],
+                  );
+                  if (index != -1) {
+                    _faculties[index] = {
+                      ..._faculties[index],
+                      'name': _nameController.text.trim(),
+                      'type': _selectedType,
+                      'dean': _deanController.text.trim(),
+                      'email': _emailController.text.trim(),
+                      'description': _descriptionController.text.trim(),
+                    };
+                  }
+                });
                 Navigator.pop(context);
-                _showSnackBar('تم تعديل الكلية بنجاح');
+                _showSnackBar('تم تعديل الكلية محلياً');
               }
             },
             style: ElevatedButton.styleFrom(
@@ -885,8 +916,13 @@ Widget _buildFAB() {
           ),
           ElevatedButton(
             onPressed: () {
+              setState(() {
+                _faculties.removeWhere(
+                  (item) => item['id'] == faculty['id'],
+                );
+              });
               Navigator.pop(context);
-              _showSnackBar('تم حذف الكلية بنجاح');
+              _showSnackBar('تم حذف الكلية محلياً');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -21,6 +22,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _userId = '';
   String _phone = '';
   String _age = '18';
+  int _assessmentPercent = 0;
+  int _favoriteCount = 0;
 
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -46,14 +49,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isLoading = true);
     try {
       final data = await TokenManager.getUserData();
+      final savedAnswers =
+          await HiveStorage.getData('assessment_cache', 'answers');
+      final favorites = await HiveStorage.getAllData('favorites_cache');
+      final answered = savedAnswers is Map ? savedAnswers.length : 0;
       if (mounted) {
         setState(() {
           _userName = data['name'] ?? '';
           _userEmail = data['email'] ?? '';
           _userRole = data['role'] ?? 'student';
           _userId = data['userId'] ?? '';
-          _phone = '+970 59 123 4567';
-          _age = '18';
+          _phone = data['phone'] ?? '';
+          _assessmentPercent = ((answered.clamp(0, 6) / 6) * 100).round();
+          _favoriteCount = favorites.length;
           _nameController.text = _userName;
           _emailController.text = _userEmail;
           _phoneController.text = _phone;
@@ -74,6 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         role: _userRole,
         name: _nameController.text,
         email: _emailController.text,
+        phone: _phoneController.text.trim(),
       );
       setState(() {
         _userName = _nameController.text;
@@ -98,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Colors.white, size: 20),
                   const SizedBox(width: 10),
                   const Expanded(
-                      child: Text('تم حفظ التغييرات بنجاح',
+                      child: Text('تم حفظ التغييرات على هذا الجهاز',
                           style: TextStyle(color: Colors.white, fontSize: 13))),
                 ],
               ),
@@ -140,6 +149,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _emailController.text = _userEmail;
       _phoneController.text = _phone;
     });
+  }
+
+  void _showUnavailable(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   @override
@@ -290,7 +310,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 bottom: 0,
                 left: 0,
                 child: GestureDetector(
-                  onTap: () => setState(() => _isEditing = true),
+                  onTap: () => _showUnavailable(
+                    'تغيير الصورة الشخصية غير متاح في هذه النسخة',
+                  ),
                   child: Container(
                     width: 32,
                     height: 32,
@@ -366,14 +388,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Row(
           children: [
-            _statItem(c, Icons.analytics_rounded, '96.4%', 'المعدل التراكمي',
-                c.primary),
+            _statItem(
+                c, Icons.analytics_rounded, '--', 'المعدل التراكمي', c.primary),
             Container(width: 1, height: 40, color: c.divider),
-            _statItem(c, Icons.psychology_rounded, '78%', 'التقييم الذكي',
-                c.primaryContainer),
+            _statItem(c, Icons.psychology_rounded, '$_assessmentPercent%',
+                'التقييم الذكي', c.primaryContainer),
             Container(width: 1, height: 40, color: c.divider),
-            _statItem(c, Icons.bookmark_rounded, '12', 'تخصص محفوظ',
-                const Color(0xFF00414D)),
+            _statItem(c, Icons.bookmark_rounded, '$_favoriteCount',
+                'تخصص محفوظ', c.accent),
           ],
         ),
       ),

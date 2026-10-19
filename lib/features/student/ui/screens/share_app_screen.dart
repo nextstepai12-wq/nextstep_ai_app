@@ -28,11 +28,13 @@ class _ShareAppScreenState extends State<ShareAppScreen>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _fadeAnimation = CurvedAnimation(parent: _animationController, curve: Curves.easeOut);
+    _fadeAnimation =
+        CurvedAnimation(parent: _animationController, curve: Curves.easeOut);
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.05),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+    ).animate(CurvedAnimation(
+        parent: _animationController, curve: Curves.easeOutCubic));
     _animationController.forward();
   }
 
@@ -50,18 +52,22 @@ class _ShareAppScreenState extends State<ShareAppScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: isSuccess ? c.success : c.danger,
           content: Row(
             children: [
               Icon(
-                isSuccess ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
+                isSuccess
+                    ? Icons.check_circle_outline_rounded
+                    : Icons.error_outline_rounded,
                 color: Colors.white,
                 size: 20,
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(message, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                child: Text(message,
+                    style: const TextStyle(color: Colors.white, fontSize: 13)),
               ),
             ],
           ),
@@ -72,7 +78,8 @@ class _ShareAppScreenState extends State<ShareAppScreen>
   Future<void> _shareApp() async {
     try {
       await SharePlus.instance.share(
-        ShareParams(text: _shareText, subject: 'NextStep AI - منصة التوجيه الذكي'),
+        ShareParams(
+            text: _shareText, subject: 'NextStep AI - منصة التوجيه الذكي'),
       );
     } catch (e) {
       _showSnackBar('حدث خطأ أثناء المشاركة', isSuccess: false);
@@ -98,7 +105,8 @@ class _ShareAppScreenState extends State<ShareAppScreen>
   }
 
   Future<void> _shareViaWhatsApp() async {
-    final url = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(_shareText)}');
+    final url =
+        Uri.parse('https://wa.me/?text=${Uri.encodeComponent(_shareText)}');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
@@ -118,7 +126,8 @@ class _ShareAppScreenState extends State<ShareAppScreen>
   }
 
   Future<void> _shareViaX() async {
-    final url = Uri.parse('https://twitter.com/intent/tweet?text=${Uri.encodeComponent(_shareText)}');
+    final url = Uri.parse(
+        'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(_shareText)}');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
@@ -187,9 +196,11 @@ class _ShareAppScreenState extends State<ShareAppScreen>
       actions: [
         Container(
           margin: const EdgeInsets.only(left: 12),
-          decoration: BoxDecoration(color: c.surfaceAlt, shape: BoxShape.circle),
+          decoration:
+              BoxDecoration(color: c.surfaceAlt, shape: BoxShape.circle),
           child: IconButton(
-            icon: Icon(Icons.arrow_forward_ios_rounded, color: c.primaryContainer, size: 18),
+            icon: Icon(Icons.arrow_forward_ios_rounded,
+                color: c.primaryContainer, size: 18),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -208,14 +219,16 @@ class _ShareAppScreenState extends State<ShareAppScreen>
           ),
           child: Text(
             '✨ انشر الفائدة وشارك الإلهام',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.primary),
+            style: TextStyle(
+                fontSize: 13, fontWeight: FontWeight.w600, color: c.primary),
           ),
         ),
         const SizedBox(height: 16),
         Text(
           'شارك مستقبلك مع أصدقائك ✨',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: c.textPrimary),
+          style: TextStyle(
+              fontSize: 22, fontWeight: FontWeight.w800, color: c.textPrimary),
         ),
         const SizedBox(height: 8),
         Text(
@@ -234,8 +247,14 @@ class _ShareAppScreenState extends State<ShareAppScreen>
         color: c.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: c.primary.withValues(alpha: 0.08), blurRadius: 24, offset: const Offset(0, 8)),
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(
+              color: c.primary.withValues(alpha: 0.08),
+              blurRadius: 24,
+              offset: const Offset(0, 8)),
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -258,7 +277,8 @@ class _ShareAppScreenState extends State<ShareAppScreen>
         Container(
           width: 48,
           height: 48,
-          decoration: BoxDecoration(color: c.primaryContainer, shape: BoxShape.circle),
+          decoration:
+              BoxDecoration(color: c.primaryContainer, shape: BoxShape.circle),
           child: Icon(Icons.psychology_rounded, color: c.surface, size: 26),
         ),
         const SizedBox(width: 12),
@@ -268,7 +288,10 @@ class _ShareAppScreenState extends State<ShareAppScreen>
             children: [
               Text(
                 'NextStep AI',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: c.textPrimary),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: c.textPrimary),
               ),
               Text(
                 'المستقبل يبدأ بخطوة',
@@ -285,7 +308,8 @@ class _ShareAppScreenState extends State<ShareAppScreen>
           ),
           child: Text(
             'التوجيه الذكي 🎯',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: c.primary),
+            style: TextStyle(
+                fontSize: 11, fontWeight: FontWeight.w600, color: c.primary),
           ),
         ),
       ],
@@ -305,13 +329,15 @@ class _ShareAppScreenState extends State<ShareAppScreen>
           const Text(
             'اكتشف تخصصك الجامعي المناسب بالذكاء الاصطناعي 🎓',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
+            style: TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
           ),
           const SizedBox(height: 6),
           Text(
             'تحليل ميول، استشارات تفاعلية، وقرار واثق 100%',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.85)),
+            style: TextStyle(
+                fontSize: 12, color: Colors.white.withValues(alpha: 0.85)),
           ),
         ],
       ),
@@ -328,15 +354,18 @@ class _ShareAppScreenState extends State<ShareAppScreen>
           decoration: BoxDecoration(
             color: c.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: c.divider.withValues(alpha: 0.5), width: 1.5),
+            border:
+                Border.all(color: c.divider.withValues(alpha: 0.5), width: 1.5),
           ),
           child: CustomPaint(
-            painter: QRCodePlaceholderPainter(primaryColor: c.primary, secondaryColor: c.primaryContainer),
+            painter: QRCodePlaceholderPainter(
+                primaryColor: c.primary, secondaryColor: c.primaryContainer),
             child: const SizedBox.expand(),
           ),
         ),
         const SizedBox(height: 10),
-        Text('امسح الرمز بكاميرا الجوال', style: TextStyle(fontSize: 12, color: c.textSecondary)),
+        Text('امسح الرمز بكاميرا الجوال',
+            style: TextStyle(fontSize: 12, color: c.textSecondary)),
       ],
     );
   }
@@ -349,14 +378,18 @@ class _ShareAppScreenState extends State<ShareAppScreen>
             onTap: _shareApp,
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(
+                  color: c.surfaceAlt, borderRadius: BorderRadius.circular(14)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.image_rounded, color: c.textSecondary, size: 20),
                   const SizedBox(width: 8),
                   Text('حفظ كصورة 🖼️',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textSecondary)),
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: c.textSecondary)),
                 ],
               ),
             ),
@@ -368,14 +401,19 @@ class _ShareAppScreenState extends State<ShareAppScreen>
             onTap: _copyLink,
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(color: c.primarySoft, borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(
+                  color: c.primarySoft,
+                  borderRadius: BorderRadius.circular(14)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.link_rounded, color: c.primary, size: 20),
                   const SizedBox(width: 8),
                   Text('نسخ الرابط 🔗',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.primary)),
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: c.primary)),
                 ],
               ),
             ),
@@ -394,33 +432,53 @@ class _ShareAppScreenState extends State<ShareAppScreen>
             Icon(Icons.flash_on_rounded, color: c.accent, size: 20),
             const SizedBox(width: 8),
             Text('قنوات المشاركة السريعة',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: c.textPrimary)),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: c.textPrimary)),
           ],
         ),
         const SizedBox(height: 4),
         Padding(
           padding: const EdgeInsets.only(right: 28),
-          child: Text('مباشر إلى تطبيقاتك', style: TextStyle(fontSize: 13, color: c.textSecondary)),
+          child: Text('مباشر إلى تطبيقاتك',
+              style: TextStyle(fontSize: 13, color: c.textSecondary)),
         ),
         const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildQuickShareButton(
-              c: c, icon: Icons.chat_rounded, label: 'واتساب',
-              iconColor: const Color(0xFF25D366), bgColor: c.surfaceAlt, onTap: _shareViaWhatsApp,
+              c: c,
+              icon: Icons.chat_rounded,
+              label: 'واتساب',
+              iconColor: const Color(0xFF25D366),
+              bgColor: c.surfaceAlt,
+              onTap: _shareViaWhatsApp,
             ),
             _buildQuickShareButton(
-              c: c, icon: Icons.telegram_rounded, label: 'تيليجرام',
-              iconColor: c.purple, bgColor: c.purple.withValues(alpha: 0.1), onTap: _shareViaTelegram,
+              c: c,
+              icon: Icons.telegram_rounded,
+              label: 'تيليجرام',
+              iconColor: c.purple,
+              bgColor: c.purple.withValues(alpha: 0.1),
+              onTap: _shareViaTelegram,
             ),
             _buildQuickShareButton(
-              c: c, icon: Icons.close_rounded, label: 'منصة X',
-              iconColor: c.textPrimary, bgColor: c.surfaceAlt, onTap: _shareViaX,
+              c: c,
+              icon: Icons.close_rounded,
+              label: 'منصة X',
+              iconColor: c.textPrimary,
+              bgColor: c.surfaceAlt,
+              onTap: _shareViaX,
             ),
             _buildQuickShareButton(
-              c: c, icon: Icons.more_horiz_rounded, label: 'المزيد',
-              iconColor: c.primary, bgColor: c.primarySoft, onTap: _shareApp,
+              c: c,
+              icon: Icons.more_horiz_rounded,
+              label: 'المزيد',
+              iconColor: c.primary,
+              bgColor: c.primarySoft,
+              onTap: _shareApp,
             ),
           ],
         ),
@@ -448,7 +506,10 @@ class _ShareAppScreenState extends State<ShareAppScreen>
           ),
           const SizedBox(height: 6),
           Text(label,
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: c.textSecondary)),
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: c.textSecondary)),
         ],
       ),
     );
@@ -461,7 +522,10 @@ class _ShareAppScreenState extends State<ShareAppScreen>
         color: c.surface,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
-          BoxShadow(color: c.primary.withValues(alpha: 0.05), blurRadius: 16, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: c.primary.withValues(alpha: 0.05),
+              blurRadius: 16,
+              offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -471,20 +535,29 @@ class _ShareAppScreenState extends State<ShareAppScreen>
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: c.primarySoft, borderRadius: BorderRadius.circular(10)),
-                child: Icon(Icons.format_quote_rounded, color: c.primary, size: 20),
+                decoration: BoxDecoration(
+                    color: c.primarySoft,
+                    borderRadius: BorderRadius.circular(10)),
+                child: Icon(Icons.format_quote_rounded,
+                    color: c.primary, size: 20),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text('رسالة المشاركة المقترحة',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: c.textPrimary)),
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: c.textPrimary)),
               ),
               GestureDetector(
                 onTap: _copyMessage,
                 child: Container(
                   padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(8)),
-                  child: Icon(Icons.copy_rounded, color: c.textSecondary, size: 18),
+                  decoration: BoxDecoration(
+                      color: c.surfaceAlt,
+                      borderRadius: BorderRadius.circular(8)),
+                  child: Icon(Icons.copy_rounded,
+                      color: c.textSecondary, size: 18),
                 ),
               ),
             ],
@@ -497,7 +570,9 @@ class _ShareAppScreenState extends State<ShareAppScreen>
               color: c.surfaceAlt,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Text(_shareText, style: TextStyle(fontSize: 13, height: 1.6, color: c.textPrimary)),
+            child: Text(_shareText,
+                style:
+                    TextStyle(fontSize: 13, height: 1.6, color: c.textPrimary)),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -508,7 +583,8 @@ class _ShareAppScreenState extends State<ShareAppScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: c.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
                 elevation: 4,
                 shadowColor: c.primary.withValues(alpha: 0.3),
               ),
@@ -518,7 +594,8 @@ class _ShareAppScreenState extends State<ShareAppScreen>
                   Icon(Icons.rocket_launch_rounded, size: 20),
                   SizedBox(width: 10),
                   Text('مشاركة الآن 🚀',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                 ],
               ),
             ),
@@ -531,7 +608,8 @@ class _ShareAppScreenState extends State<ShareAppScreen>
   Widget _buildReferralCard(AppColors c) {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(
+          color: c.surfaceAlt, borderRadius: BorderRadius.circular(20)),
       child: Row(
         children: [
           Container(
@@ -549,10 +627,15 @@ class _ShareAppScreenState extends State<ShareAppScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('ساعد دفعتك في الثانوية',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: c.textPrimary)),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: c.textPrimary)),
                 const SizedBox(height: 4),
-                Text('شاركهم التطبيق وساعدهم في اختيار التخصص الجامعي المناسب لمستقبلهم',
-                    style: TextStyle(fontSize: 12, height: 1.5, color: c.textSecondary)),
+                Text(
+                    'شاركهم التطبيق وساعدهم في اختيار التخصص الجامعي المناسب لمستقبلهم',
+                    style: TextStyle(
+                        fontSize: 12, height: 1.5, color: c.textSecondary)),
               ],
             ),
           ),
@@ -566,7 +649,8 @@ class QRCodePlaceholderPainter extends CustomPainter {
   final Color primaryColor;
   final Color secondaryColor;
 
-  QRCodePlaceholderPainter({required this.primaryColor, required this.secondaryColor});
+  QRCodePlaceholderPainter(
+      {required this.primaryColor, required this.secondaryColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -575,8 +659,10 @@ class QRCodePlaceholderPainter extends CustomPainter {
     final Paint accentPaint = Paint()..color = secondaryColor;
 
     _drawFinderPattern(canvas, 0, 0, cellSize, mainPaint);
-    _drawFinderPattern(canvas, size.width - cellSize * 7, 0, cellSize, mainPaint);
-    _drawFinderPattern(canvas, 0, size.height - cellSize * 7, cellSize, mainPaint);
+    _drawFinderPattern(
+        canvas, size.width - cellSize * 7, 0, cellSize, mainPaint);
+    _drawFinderPattern(
+        canvas, 0, size.height - cellSize * 7, cellSize, mainPaint);
 
     final List<List<int>> dataPattern = [
       [9, 2, 15, 11, 7, 18, 4, 13],
@@ -596,12 +682,16 @@ class QRCodePlaceholderPainter extends CustomPainter {
         final double y = (row + 3) * cellSize;
         if (val % 3 == 0) {
           canvas.drawRRect(
-            RRect.fromRectAndRadius(Rect.fromLTWH(x, y, cellSize * 0.85, cellSize * 0.85), Radius.circular(cellSize * 0.15)),
+            RRect.fromRectAndRadius(
+                Rect.fromLTWH(x, y, cellSize * 0.85, cellSize * 0.85),
+                Radius.circular(cellSize * 0.15)),
             accentPaint,
           );
         } else if (val % 2 == 0) {
           canvas.drawRRect(
-            RRect.fromRectAndRadius(Rect.fromLTWH(x, y, cellSize * 0.85, cellSize * 0.85), Radius.circular(cellSize * 0.2)),
+            RRect.fromRectAndRadius(
+                Rect.fromLTWH(x, y, cellSize * 0.85, cellSize * 0.85),
+                Radius.circular(cellSize * 0.2)),
             mainPaint,
           );
         }
@@ -615,7 +705,9 @@ class QRCodePlaceholderPainter extends CustomPainter {
         final double y = (row + 3) * cellSize;
         if (val % 4 != 0) {
           canvas.drawRRect(
-            RRect.fromRectAndRadius(Rect.fromLTWH(x, y, cellSize * 0.85, cellSize * 0.85), Radius.circular(cellSize * 0.15)),
+            RRect.fromRectAndRadius(
+                Rect.fromLTWH(x, y, cellSize * 0.85, cellSize * 0.85),
+                Radius.circular(cellSize * 0.15)),
             val % 2 == 0 ? mainPaint : accentPaint,
           );
         }
@@ -624,12 +716,15 @@ class QRCodePlaceholderPainter extends CustomPainter {
 
     for (int row = 12; row < 20; row++) {
       for (int col = 3; col < 11; col++) {
-        final int val = dataPattern[row % dataPattern.length][col % dataPattern[0].length];
+        final int val =
+            dataPattern[row % dataPattern.length][col % dataPattern[0].length];
         final double x = col * cellSize;
         final double y = row * cellSize;
         if (val % 3 != 1) {
           canvas.drawRRect(
-            RRect.fromRectAndRadius(Rect.fromLTWH(x, y, cellSize * 0.8, cellSize * 0.8), Radius.circular(cellSize * 0.12)),
+            RRect.fromRectAndRadius(
+                Rect.fromLTWH(x, y, cellSize * 0.8, cellSize * 0.8),
+                Radius.circular(cellSize * 0.12)),
             val % 2 == 0 ? mainPaint : accentPaint,
           );
         }
@@ -637,22 +732,27 @@ class QRCodePlaceholderPainter extends CustomPainter {
     }
   }
 
-  void _drawFinderPattern(Canvas canvas, double startX, double startY, double cellSize, Paint paint) {
+  void _drawFinderPattern(Canvas canvas, double startX, double startY,
+      double cellSize, Paint paint) {
     final double outerSize = cellSize * 7;
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(startX, startY, outerSize, outerSize), Radius.circular(cellSize * 1.2)),
+      RRect.fromRectAndRadius(
+          Rect.fromLTWH(startX, startY, outerSize, outerSize),
+          Radius.circular(cellSize * 1.2)),
       paint,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(startX + cellSize * 1.2, startY + cellSize * 1.2, cellSize * 4.6, cellSize * 4.6),
+        Rect.fromLTWH(startX + cellSize * 1.2, startY + cellSize * 1.2,
+            cellSize * 4.6, cellSize * 4.6),
         Radius.circular(cellSize * 0.8),
       ),
       Paint()..color = const Color(0xFFFFFFFF),
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(startX + cellSize * 2, startY + cellSize * 2, cellSize * 2.6, cellSize * 2.6),
+        Rect.fromLTWH(startX + cellSize * 2, startY + cellSize * 2,
+            cellSize * 2.6, cellSize * 2.6),
         Radius.circular(cellSize * 0.6),
       ),
       paint,
@@ -661,6 +761,7 @@ class QRCodePlaceholderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant QRCodePlaceholderPainter oldDelegate) {
-    return oldDelegate.primaryColor != primaryColor || oldDelegate.secondaryColor != secondaryColor;
+    return oldDelegate.primaryColor != primaryColor ||
+        oldDelegate.secondaryColor != secondaryColor;
   }
 }

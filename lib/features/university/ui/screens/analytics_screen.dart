@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
@@ -12,4 +12,3 @@ class AnalyticsScreen extends StatelessWidget {
     );
   }
 }
-

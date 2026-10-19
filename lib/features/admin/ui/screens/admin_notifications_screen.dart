@@ -120,7 +120,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
       {
         'id': '1',
         'title': '🎉 ترحيب بالمستخدمين الجدد',
-        'message': 'نرحب بجميع الطلاب الجدد في منصة NextStep AI للارشاد الأكاديمي والمهني',
+        'message':
+            'نرحب بجميع الطلاب الجدد في منصة NextStep AI للارشاد الأكاديمي والمهني',
         'type': 'general',
         'target': 'الكل',
         'status': 'مقروء',
@@ -133,7 +134,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
       {
         'id': '2',
         'title': '🚀 تحديث نظام التوصية',
-        'message': 'تم تحديث محرك التوصية ليصبح أكثر دقة بنسبة 35% باستخدام تقنيات الذكاء الاصطناعي المتقدمة',
+        'message':
+            'تم تحديث محرك التوصية ليصبح أكثر دقة بنسبة 35% باستخدام تقنيات الذكاء الاصطناعي المتقدمة',
         'type': 'system',
         'target': 'الطلاب',
         'status': 'غير مقروء',
@@ -146,7 +148,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
       {
         'id': '3',
         'title': '🏛️ دعوة للجامعات الشريكة',
-        'message': 'ندعو جميع الجامعات الفلسطينية للتسجيل في المنصة والاستفادة من خدمات الإرشاد الذكي',
+        'message':
+            'ندعو جميع الجامعات الفلسطينية للتسجيل في المنصة والاستفادة من خدمات الإرشاد الذكي',
         'type': 'promotional',
         'target': 'الجامعات',
         'status': 'مقروء',
@@ -159,7 +162,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
       {
         'id': '4',
         'title': '🔧 صيانة النظام',
-        'message': 'سيتم إجراء صيانة دورية للنظام يوم الجمعة من الساعة 2:00 صباحاً حتى 4:00 صباحاً',
+        'message':
+            'سيتم إجراء صيانة دورية للنظام يوم الجمعة من الساعة 2:00 صباحاً حتى 4:00 صباحاً',
         'type': 'system',
         'target': 'الكل',
         'status': 'غير مقروء',
@@ -172,7 +176,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
       {
         'id': '5',
         'title': '📊 نتائج التقييم الجديدة',
-        'message': 'تم إضافة ميزة عرض نتائج التقييم بشكل رسومي مع تحليلات تفصيلية',
+        'message':
+            'تم إضافة ميزة عرض نتائج التقييم بشكل رسومي مع تحليلات تفصيلية',
         'type': 'feature',
         'target': 'الطلاب',
         'status': 'مقروء',
@@ -190,7 +195,7 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
         body: _isLoading
             ? const Center(
@@ -262,7 +267,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
           onPressed: () => _markAllAsRead(),
         ),
         IconButton(
-          icon: const Icon(Icons.refresh_rounded, color: AppTheme.primaryContainer),
+          icon: const Icon(Icons.refresh_rounded,
+              color: AppTheme.primaryContainer),
           onPressed: _loadData,
         ),
       ],
@@ -388,10 +394,12 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
             labelStyle: TextStyle(
               fontSize: 13,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade700,
+              color:
+                  isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade700,
             ),
             side: BorderSide(
-              color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade300,
+              color:
+                  isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade300,
               width: 1.4,
             ),
             shape: RoundedRectangleBorder(
@@ -501,7 +509,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                             notification['title'] as String,
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
+                              fontWeight:
+                                  isUnread ? FontWeight.w700 : FontWeight.w600,
                               color: AppTheme.primaryContainer,
                             ),
                             maxLines: 1,
@@ -672,7 +681,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
       _updateStats();
     });
 
-    await HiveStorage.saveData('notifications_cache', 'notifications', _notifications);
+    await HiveStorage.saveData(
+        'notifications_cache', 'notifications', _notifications);
     _showSnackBar('✅ تم تحديد جميع الإشعارات كمقروءة', Colors.green);
   }
 
@@ -697,7 +707,9 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              _selectedTab == 'الكل' ? 'لا توجد إشعارات' : 'لا توجد نتائج مطابقة',
+              _selectedTab == 'الكل'
+                  ? 'لا توجد إشعارات'
+                  : 'لا توجد نتائج مطابقة',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -728,7 +740,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.error_outline_rounded,
+                size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
@@ -767,7 +780,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
       builder: (BuildContext dialogContext) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Row(
             children: [
               Container(
@@ -817,7 +831,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 2),
+                      borderSide:
+                          const BorderSide(color: Color(0xFF8B5CF6), width: 2),
                     ),
                     prefixIcon: const Icon(Icons.title_rounded,
                         color: Color(0xFF8B5CF6)),
@@ -841,7 +856,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 2),
+                      borderSide:
+                          const BorderSide(color: Color(0xFF8B5CF6), width: 2),
                     ),
                     prefixIcon: const Icon(Icons.message_rounded,
                         color: Color(0xFF8B5CF6)),
@@ -861,7 +877,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 2),
+                      borderSide:
+                          const BorderSide(color: Color(0xFF8B5CF6), width: 2),
                     ),
                     prefixIcon: const Icon(Icons.people_rounded,
                         color: Color(0xFF8B5CF6)),
@@ -869,18 +886,42 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                     fillColor: Colors.grey.shade50,
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'الكل', child: Row(
-                      children: [Icon(Icons.public_rounded, size: 16), SizedBox(width: 6), Text('الكل')],
-                    )),
-                    DropdownMenuItem(value: 'الطلاب', child: Row(
-                      children: [Icon(Icons.school_rounded, size: 16), SizedBox(width: 6), Text('الطلاب')],
-                    )),
-                    DropdownMenuItem(value: 'الجامعات', child: Row(
-                      children: [Icon(Icons.business_rounded, size: 16), SizedBox(width: 6), Text('الجامعات')],
-                    )),
-                    DropdownMenuItem(value: 'الإدارة', child: Row(
-                      children: [Icon(Icons.admin_panel_settings_rounded, size: 16), SizedBox(width: 6), Text('الإدارة')],
-                    )),
+                    DropdownMenuItem(
+                        value: 'الكل',
+                        child: Row(
+                          children: [
+                            Icon(Icons.public_rounded, size: 16),
+                            SizedBox(width: 6),
+                            Text('الكل')
+                          ],
+                        )),
+                    DropdownMenuItem(
+                        value: 'الطلاب',
+                        child: Row(
+                          children: [
+                            Icon(Icons.school_rounded, size: 16),
+                            SizedBox(width: 6),
+                            Text('الطلاب')
+                          ],
+                        )),
+                    DropdownMenuItem(
+                        value: 'الجامعات',
+                        child: Row(
+                          children: [
+                            Icon(Icons.business_rounded, size: 16),
+                            SizedBox(width: 6),
+                            Text('الجامعات')
+                          ],
+                        )),
+                    DropdownMenuItem(
+                        value: 'الإدارة',
+                        child: Row(
+                          children: [
+                            Icon(Icons.admin_panel_settings_rounded, size: 16),
+                            SizedBox(width: 6),
+                            Text('الإدارة')
+                          ],
+                        )),
                   ],
                   onChanged: (value) {
                     if (value != null) selectedTarget = value;
@@ -902,7 +943,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 2),
+                            borderSide: const BorderSide(
+                                color: Color(0xFF8B5CF6), width: 2),
                           ),
                           prefixIcon: const Icon(Icons.category_rounded,
                               color: Color(0xFF8B5CF6)),
@@ -910,18 +952,46 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                           fillColor: Colors.grey.shade50,
                         ),
                         items: const [
-                          DropdownMenuItem(value: 'general', child: Row(
-                            children: [Icon(Icons.info_rounded, size: 14, color: Colors.blue), SizedBox(width: 4), Flexible(child: Text('عام'))],
-                          )),
-                          DropdownMenuItem(value: 'system', child: Row(
-                            children: [Icon(Icons.settings_rounded, size: 14, color: Colors.orange), SizedBox(width: 4), Flexible(child: Text('نظام'))],
-                          )),
-                          DropdownMenuItem(value: 'promotional', child: Row(
-                            children: [Icon(Icons.campaign_rounded, size: 14, color: Colors.green), SizedBox(width: 4), Flexible(child: Text('ترويجي'))],
-                          )),
-                          DropdownMenuItem(value: 'feature', child: Row(
-                            children: [Icon(Icons.star_rounded, size: 14, color: Colors.purple), SizedBox(width: 4), Flexible(child: Text('ميزة جديدة'))],
-                          )),
+                          DropdownMenuItem(
+                              value: 'general',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.info_rounded,
+                                      size: 14, color: Colors.blue),
+                                  SizedBox(width: 4),
+                                  Flexible(child: Text('عام'))
+                                ],
+                              )),
+                          DropdownMenuItem(
+                              value: 'system',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.settings_rounded,
+                                      size: 14, color: Colors.orange),
+                                  SizedBox(width: 4),
+                                  Flexible(child: Text('نظام'))
+                                ],
+                              )),
+                          DropdownMenuItem(
+                              value: 'promotional',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.campaign_rounded,
+                                      size: 14, color: Colors.green),
+                                  SizedBox(width: 4),
+                                  Flexible(child: Text('ترويجي'))
+                                ],
+                              )),
+                          DropdownMenuItem(
+                              value: 'feature',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.star_rounded,
+                                      size: 14, color: Colors.purple),
+                                  SizedBox(width: 4),
+                                  Flexible(child: Text('ميزة جديدة'))
+                                ],
+                              )),
                         ],
                         onChanged: (value) {
                           if (value != null) selectedType = value;
@@ -942,7 +1012,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 2),
+                            borderSide: const BorderSide(
+                                color: Color(0xFF8B5CF6), width: 2),
                           ),
                           prefixIcon: const Icon(Icons.flag_rounded,
                               color: Color(0xFF8B5CF6)),
@@ -950,18 +1021,46 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
                           fillColor: Colors.grey.shade50,
                         ),
                         items: const [
-                          DropdownMenuItem(value: 'normal', child: Row(
-                            children: [Icon(Icons.flag_rounded, size: 14, color: Colors.grey), SizedBox(width: 4), Flexible(child: Text('عادي'))],
-                          )),
-                          DropdownMenuItem(value: 'medium', child: Row(
-                            children: [Icon(Icons.flag_rounded, size: 14, color: Colors.blue), SizedBox(width: 4), Flexible(child: Text('متوسط'))],
-                          )),
-                          DropdownMenuItem(value: 'high', child: Row(
-                            children: [Icon(Icons.flag_rounded, size: 14, color: Colors.orange), SizedBox(width: 4), Flexible(child: Text('مهم'))],
-                          )),
-                          DropdownMenuItem(value: 'urgent', child: Row(
-                            children: [Icon(Icons.flag_rounded, size: 14, color: Colors.red), SizedBox(width: 4), Flexible(child: Text('عاجل'))],
-                          )),
+                          DropdownMenuItem(
+                              value: 'normal',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.flag_rounded,
+                                      size: 14, color: Colors.grey),
+                                  SizedBox(width: 4),
+                                  Flexible(child: Text('عادي'))
+                                ],
+                              )),
+                          DropdownMenuItem(
+                              value: 'medium',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.flag_rounded,
+                                      size: 14, color: Colors.blue),
+                                  SizedBox(width: 4),
+                                  Flexible(child: Text('متوسط'))
+                                ],
+                              )),
+                          DropdownMenuItem(
+                              value: 'high',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.flag_rounded,
+                                      size: 14, color: Colors.orange),
+                                  SizedBox(width: 4),
+                                  Flexible(child: Text('مهم'))
+                                ],
+                              )),
+                          DropdownMenuItem(
+                              value: 'urgent',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.flag_rounded,
+                                      size: 14, color: Colors.red),
+                                  SizedBox(width: 4),
+                                  Flexible(child: Text('عاجل'))
+                                ],
+                              )),
                         ],
                         onChanged: (value) {
                           if (value != null) selectedPriority = value;
@@ -978,14 +1077,17 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
               onPressed: () => Navigator.pop(dialogContext),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.grey.shade600,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: const Text('إلغاء'),
             ),
             ElevatedButton(
               onPressed: () async {
-                if (titleController.text.isEmpty || messageController.text.isEmpty) {
-                  _showSnackBar('الرجاء ملء جميع الحقول المطلوبة', Colors.orange);
+                if (titleController.text.isEmpty ||
+                    messageController.text.isEmpty) {
+                  _showSnackBar(
+                      'الرجاء ملء جميع الحقول المطلوبة', Colors.orange);
                   return;
                 }
 
@@ -1005,8 +1107,9 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
 
                 final cached = await HiveStorage.getData(
                     'notifications_cache', 'notifications');
-                List<Map<String, dynamic>> notifications =
-                    cached != null ? List<Map<String, dynamic>>.from(cached) : [];
+                List<Map<String, dynamic>> notifications = cached != null
+                    ? List<Map<String, dynamic>>.from(cached)
+                    : [];
                 notifications.insert(0, newNotification);
                 await HiveStorage.saveData(
                     'notifications_cache', 'notifications', notifications);
@@ -1020,7 +1123,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF8B5CF6),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -1029,7 +1133,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
             ),
           ],
           actionsAlignment: MainAxisAlignment.center,
-          actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          actionsPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       ),
     );
@@ -1043,7 +1148,8 @@ class _AdminNotificationsScreenState extends State<AdminNotificationsScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: color,
           content: Text(
             message,

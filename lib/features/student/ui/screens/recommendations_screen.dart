@@ -1,4 +1,3 @@
-﻿
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
@@ -94,7 +93,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     });
 
     try {
-      final savedResults = await HiveStorage.getData('assessment_cache', 'results');
+      final savedResults =
+          await HiveStorage.getData('assessment_cache', 'results');
       if (savedResults != null && savedResults.isNotEmpty) {
         _dimensions = Map<String, double>.from(savedResults);
       } else {
@@ -136,8 +136,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
       return;
     }
     _filtered = _recommendations.where((r) {
-      final name = (r['name'] ?? '') as String;
-      return name.contains(_selectedFilter);
+      final category = (r['category'] ?? '').toString();
+      return category == _selectedFilter;
     }).toList();
   }
 
@@ -146,12 +146,15 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
       {
         'id': 1,
         'name': 'هندسة الحاسوب',
+        'category': 'هندسة',
         'description': 'تخصص يهتم بتصميم وتطوير أنظمة الحاسوب والبرمجيات',
         'type': 'بكالوريوس',
         'duration': 4,
         'university_name': 'الجامعة الإسلامية',
+        'university': 'الجامعة الإسلامية',
         'university_location': 'غزة، فلسطين',
         'compatibility': 92,
+        'match': 92,
         'dimensions': {
           'programming': 90,
           'math': 80,
@@ -164,12 +167,15 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
       {
         'id': 2,
         'name': 'الذكاء الاصطناعي',
+        'category': 'علوم',
         'description': 'تخصص يهتم بتطوير أنظمة ذكية وتعلم الآلة',
         'type': 'بكالوريوس',
         'duration': 4,
         'university_name': 'جامعة الأزهر',
+        'university': 'جامعة الأزهر',
         'university_location': 'غزة، فلسطين',
         'compatibility': 85,
+        'match': 85,
         'dimensions': {
           'programming': 85,
           'math': 90,
@@ -182,12 +188,15 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
       {
         'id': 3,
         'name': 'علوم البيانات',
+        'category': 'علوم',
         'description': 'تخصص يهتم بتحليل البيانات الضخمة واستخراج المعلومات',
         'type': 'ماجستير',
         'duration': 2,
         'university_name': 'جامعة الأقصى',
+        'university': 'جامعة الأقصى',
         'university_location': 'غزة، فلسطين',
         'compatibility': 78,
+        'match': 78,
         'dimensions': {
           'programming': 75,
           'math': 85,
@@ -200,12 +209,15 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
       {
         'id': 4,
         'name': 'إدارة الأعمال',
+        'category': 'إدارة',
         'description': 'تخصص يهتم بإدارة المؤسسات والتسويق والموارد البشرية',
         'type': 'بكالوريوس',
         'duration': 4,
         'university_name': 'جامعة فلسطين',
+        'university': 'جامعة فلسطين',
         'university_location': 'غزة، فلسطين',
         'compatibility': 65,
+        'match': 65,
         'dimensions': {
           'programming': 30,
           'math': 40,
@@ -283,9 +295,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: c.background,
-        body: _isLoading
-            ? _buildLoading(c)
-            : _buildContent(c),
+        body: _isLoading ? _buildLoading(c) : _buildContent(c),
       ),
     );
   }
@@ -352,7 +362,10 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
                       _animatedItem(2, _buildFilter(c)),
                       const SizedBox(height: 8),
                       if (_filtered.isEmpty)
-                        _buildEmptyState(c)
+                        _buildEmptyState(
+                          c,
+                          isFiltered: _selectedFilter != 'الكل',
+                        )
                       else
                         ...List.generate(_filtered.length, (i) {
                           return Padding(
@@ -430,7 +443,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(14),
@@ -438,7 +452,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 14),
+                    const Icon(Icons.auto_awesome_rounded,
+                        color: Colors.white, size: 14),
                     const SizedBox(width: 6),
                     Text(
                       '${_filtered.length} تخصص',
@@ -471,6 +486,25 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
               color: Colors.white.withValues(alpha: 0.85),
               fontSize: 12,
               height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.25),
+              ),
+            ),
+            child: const Text(
+              'بيانات تجريبية',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -543,7 +577,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
               final value = _dimensions[key] ?? 0;
               final color = _getScoreColor(c, value);
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
@@ -625,7 +660,8 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
                     filter,
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
                       color: isSelected ? Colors.white : c.textSecondary,
                     ),
                     maxLines: 1,
@@ -642,8 +678,10 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
 
   // ─── Recommendation Card ──────────────────────────────────────────────────
 
-  Widget _buildRecommendationCard(AppColors c, Map<String, dynamic> recommendation) {
-    final compatibility = (recommendation['compatibility'] as num?)?.toDouble() ?? 0;
+  Widget _buildRecommendationCard(
+      AppColors c, Map<String, dynamic> recommendation) {
+    final compatibility =
+        (recommendation['compatibility'] as num?)?.toDouble() ?? 0;
     final color = _getScoreColor(c, compatibility);
     final icon = _majorIcon(recommendation);
 
@@ -697,12 +735,15 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          Icon(Icons.school_rounded, size: 12, color: c.textSecondary),
+                          Icon(Icons.school_rounded,
+                              size: 12, color: c.textSecondary),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              recommendation['university_name'] ?? 'جامعة غير محددة',
-                              style: TextStyle(fontSize: 11, color: c.textSecondary),
+                              recommendation['university_name'] ??
+                                  'جامعة غير محددة',
+                              style: TextStyle(
+                                  fontSize: 11, color: c.textSecondary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -771,11 +812,15 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
           children: [
             Text(
               'نسبة التوافق',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: c.textSecondary),
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: c.textSecondary),
             ),
             Text(
               '${value.toInt()}%',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: color),
+              style: TextStyle(
+                  fontSize: 12, fontWeight: FontWeight.w800, color: color),
             ),
           ],
         ),
@@ -874,7 +919,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
 
   // ─── Empty State ──────────────────────────────────────────────────────────
 
-  Widget _buildEmptyState(AppColors c) {
+  Widget _buildEmptyState(AppColors c, {required bool isFiltered}) {
     return Padding(
       padding: const EdgeInsets.only(top: 48),
       child: Column(
@@ -886,11 +931,17 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
               color: c.surfaceAlt,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.recommend_outlined, size: 40, color: c.textSecondary),
+            child: Icon(
+              isFiltered
+                  ? Icons.filter_alt_off_rounded
+                  : Icons.recommend_outlined,
+              size: 40,
+              color: c.textSecondary,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
-            'لا توجد توصيات',
+            isFiltered ? 'لا توجد توصيات في هذا التصنيف' : 'لا توجد توصيات',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -899,17 +950,28 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'قم بإجراء التقييم الذكي أولاً للحصول على توصيات',
+            isFiltered
+                ? 'جرّب تصنيفاً آخر لعرض التخصصات المتاحة'
+                : 'قم بإجراء التقييم الذكي أولاً للحصول على توصيات',
             style: TextStyle(fontSize: 13, color: c.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
           GestureDetector(
-            onTap: () => context.push('/student/assessment'),
+            onTap: isFiltered
+                ? () {
+                    setState(() {
+                      _selectedFilter = 'الكل';
+                      _applyFilter();
+                    });
+                    _playStaggeredAnimation();
+                  }
+                : () => context.push('/student/assessment'),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [c.primary, c.primaryContainer]),
+                gradient:
+                    LinearGradient(colors: [c.primary, c.primaryContainer]),
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
@@ -919,14 +981,20 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
                   ),
                 ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.psychology_rounded, color: Colors.white, size: 20),
-                  SizedBox(width: 8),
+                  Icon(
+                    isFiltered
+                        ? Icons.filter_alt_rounded
+                        : Icons.psychology_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
                   Text(
-                    'ابدأ التقييم',
-                    style: TextStyle(
+                    isFiltered ? 'عرض كل التوصيات' : 'ابدأ التقييم',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

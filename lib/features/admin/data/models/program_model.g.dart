@@ -1,4 +1,3 @@
-
 part of 'program_model.dart';
 
 class ProgramModelAdapter extends TypeAdapter<ProgramModel> {
@@ -61,4 +60,3 @@ class ProgramModelAdapter extends TypeAdapter<ProgramModel> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
-

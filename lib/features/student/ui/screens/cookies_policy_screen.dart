@@ -33,7 +33,8 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.05),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
+    ).animate(
+        CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
     _scrollController.addListener(_onScroll);
     _animController.forward();
   }
@@ -76,18 +77,23 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          backgroundColor: isSuccess ? const Color(0xFF22C55E) : const Color(0xFFDC2626),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          backgroundColor:
+              isSuccess ? const Color(0xFF22C55E) : const Color(0xFFDC2626),
           content: Row(
             children: [
               Icon(
-                isSuccess ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
+                isSuccess
+                    ? Icons.check_circle_outline_rounded
+                    : Icons.error_outline_rounded,
                 color: Colors.white,
                 size: 20,
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(message, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                child: Text(message,
+                    style: const TextStyle(color: Colors.white, fontSize: 13)),
               ),
             ],
           ),
@@ -96,7 +102,9 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
   }
 
   void _scrollToTop() {
-    _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeOutCubic);
+    _scrollController.animateTo(0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutCubic);
   }
 
   @override
@@ -222,11 +230,12 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
               ],
             ),
             if (_showConsent) _buildConsentBanner(c),
-            if (_showBackToTop) Positioned(
-              bottom: _showConsent ? 190 : 24,
-              left: 20,
-              child: _buildBackToTopButton(c),
-            ),
+            if (_showBackToTop)
+              Positioned(
+                bottom: _showConsent ? 190 : 24,
+                left: 20,
+                child: _buildBackToTopButton(c),
+              ),
             Positioned(
               bottom: _showConsent ? 190 : 24,
               right: 20,
@@ -240,7 +249,8 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
 
   Widget _buildTopBar(AppColors c) {
     return Container(
-      padding: EdgeInsets.fromLTRB(12, MediaQuery.of(context).padding.top + 8, 12, 8),
+      padding: EdgeInsets.fromLTRB(
+          12, MediaQuery.of(context).padding.top + 8, 12, 8),
       decoration: BoxDecoration(
         color: c.surface,
         border: Border(bottom: BorderSide(color: c.divider, width: 0.5)),
@@ -250,7 +260,8 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(color: c.surfaceAlt, shape: BoxShape.circle),
+            decoration:
+                BoxDecoration(color: c.surfaceAlt, shape: BoxShape.circle),
             child: IconButton(
               icon: Icon(Icons.arrow_back_rounded, color: c.primary, size: 22),
               onPressed: () => Navigator.pop(context),
@@ -284,7 +295,8 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
           widthFactor: _scrollProgress,
           child: Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [c.gradientStart, c.gradientEnd]),
+              gradient:
+                  LinearGradient(colors: [c.gradientStart, c.gradientEnd]),
             ),
           ),
         ),
@@ -295,13 +307,17 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
   Widget _buildFontControls(AppColors c) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(14)),
+      decoration: BoxDecoration(
+          color: c.surfaceAlt, borderRadius: BorderRadius.circular(14)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             'حجم الخط',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: c.textSecondary),
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: c.textSecondary),
           ),
           const SizedBox(width: 10),
           _buildFontBtn(c, Icons.remove_rounded, () {
@@ -311,7 +327,8 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
               '${(_fontSizeScale * 100).round()}%',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: c.primary),
+              style: TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w700, color: c.primary),
             ),
           ),
           _buildFontBtn(c, Icons.add_rounded, () {
@@ -349,7 +366,10 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: c.primary.withValues(alpha: 0.25), blurRadius: 30, offset: const Offset(0, 10)),
+          BoxShadow(
+              color: c.primary.withValues(alpha: 0.25),
+              blurRadius: 30,
+              offset: const Offset(0, 10)),
         ],
       ),
       child: Row(
@@ -360,12 +380,17 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
               children: [
                 Text(
                   '🍪 سياسة الكوكيز',
-                  style: TextStyle(fontSize: 21 * _fontSizeScale, fontWeight: FontWeight.w800, color: Colors.white),
+                  style: TextStyle(
+                      fontSize: 21 * _fontSizeScale,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'نستخدم ملفات تعريف الارتباط لتحسين تجربتك وخدماتنا',
-                  style: TextStyle(fontSize: 13 * _fontSizeScale, color: Colors.white.withValues(alpha: 0.8)),
+                  style: TextStyle(
+                      fontSize: 13 * _fontSizeScale,
+                      color: Colors.white.withValues(alpha: 0.8)),
                 ),
               ],
             ),
@@ -377,7 +402,9 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Center(child: Icon(Icons.cookie_rounded, size: 30, color: Colors.white)),
+            child: const Center(
+                child:
+                    Icon(Icons.cookie_rounded, size: 30, color: Colors.white)),
           ),
         ],
       ),
@@ -390,7 +417,8 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
       decoration: BoxDecoration(
         color: c.primarySoft,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: c.primary.withValues(alpha: 0.15), width: 1.2),
+        border:
+            Border.all(color: c.primary.withValues(alpha: 0.15), width: 1.2),
       ),
       child: Row(
         children: [
@@ -399,7 +427,10 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
           Expanded(
             child: Text(
               'آخر تحديث: 12 أغسطس 2026',
-              style: TextStyle(fontSize: 13 * _fontSizeScale, fontWeight: FontWeight.w600, color: c.primary),
+              style: TextStyle(
+                  fontSize: 13 * _fontSizeScale,
+                  fontWeight: FontWeight.w600,
+                  color: c.primary),
             ),
           ),
         ],
@@ -422,14 +453,20 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: c.primarySoft, borderRadius: BorderRadius.circular(10)),
-                child: Icon(Icons.info_outline_rounded, color: c.primary, size: 20),
+                decoration: BoxDecoration(
+                    color: c.primarySoft,
+                    borderRadius: BorderRadius.circular(10)),
+                child: Icon(Icons.info_outline_rounded,
+                    color: c.primary, size: 20),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'ما هي ملفات تعريف الارتباط؟',
-                  style: TextStyle(fontSize: 15 * _fontSizeScale, fontWeight: FontWeight.w700, color: c.primaryContainer),
+                  style: TextStyle(
+                      fontSize: 15 * _fontSizeScale,
+                      fontWeight: FontWeight.w700,
+                      color: c.primaryContainer),
                 ),
               ),
             ],
@@ -438,7 +475,10 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
           Text(
             'ملفات تعريف الارتباط (Cookies) هي ملفات نصية صغيرة يتم تخزينها على جهازك عند زيارة تطبيقنا. '
             'تساعدنا في تذكّر تفضيلاتك وتحسين تجربتك، ولا تحتوي على معلومات شخصية مباشرة تعرّف هويتك.',
-            style: TextStyle(fontSize: 13.5 * _fontSizeScale, height: 1.7, color: c.textSecondary),
+            style: TextStyle(
+                fontSize: 13.5 * _fontSizeScale,
+                height: 1.7,
+                color: c.textSecondary),
           ),
         ],
       ),
@@ -458,7 +498,12 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
         color: c.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: c.divider, width: 1.2),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 12, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 12,
+              offset: const Offset(0, 4))
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -467,14 +512,19 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10)),
                 child: Icon(icon, color: color, size: 20),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(fontSize: 15 * _fontSizeScale, fontWeight: FontWeight.w700, color: c.primaryContainer),
+                  style: TextStyle(
+                      fontSize: 15 * _fontSizeScale,
+                      fontWeight: FontWeight.w700,
+                      color: c.primaryContainer),
                 ),
               ),
             ],
@@ -490,13 +540,17 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
                     margin: const EdgeInsets.only(top: 7),
                     width: 6,
                     height: 6,
-                    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                    decoration:
+                        BoxDecoration(color: color, shape: BoxShape.circle),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: RichText(
                       text: TextSpan(
-                        style: TextStyle(fontSize: 13.5 * _fontSizeScale, height: 1.6, color: c.textSecondary),
+                        style: TextStyle(
+                            fontSize: 13.5 * _fontSizeScale,
+                            height: 1.6,
+                            color: c.textSecondary),
                         children: _parseItemText(item),
                       ),
                     ),
@@ -519,7 +573,8 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
         if (i % 2 == 1) {
           spans.add(TextSpan(
             text: parts[i],
-            style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.primary),
+            style: const TextStyle(
+                fontWeight: FontWeight.w700, color: AppTheme.primary),
           ));
         } else {
           spans.add(TextSpan(text: parts[i]));
@@ -538,7 +593,12 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
         color: c.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: c.divider, width: 1.2),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 12, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 12,
+              offset: const Offset(0, 4))
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -547,20 +607,27 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: c.accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                child: Icon(Icons.contact_support_rounded, color: c.accent, size: 20),
+                decoration: BoxDecoration(
+                    color: c.accent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10)),
+                child: Icon(Icons.contact_support_rounded,
+                    color: c.accent, size: 20),
               ),
               const SizedBox(width: 10),
               Text(
                 'تواصل معنا',
-                style: TextStyle(fontSize: 15 * _fontSizeScale, fontWeight: FontWeight.w700, color: c.primaryContainer),
+                style: TextStyle(
+                    fontSize: 15 * _fontSizeScale,
+                    fontWeight: FontWeight.w700,
+                    color: c.primaryContainer),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             'إذا كان لديك أي استفسار حول سياسة ملفات تعريف الارتباط، يرجى التواصل معنا:',
-            style: TextStyle(fontSize: 13 * _fontSizeScale, color: c.textSecondary),
+            style: TextStyle(
+                fontSize: 13 * _fontSizeScale, color: c.textSecondary),
           ),
           const SizedBox(height: 12),
           InkWell(
@@ -568,7 +635,8 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
             borderRadius: BorderRadius.circular(12),
             child: Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: c.surfaceAlt, borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                  color: c.surfaceAlt, borderRadius: BorderRadius.circular(12)),
               child: Row(
                 children: [
                   Icon(Icons.email_rounded, color: c.primary, size: 20),
@@ -576,10 +644,15 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
                   Expanded(
                     child: Text(
                       'nextstepai12@gmail.com',
-                      style: TextStyle(fontSize: 14 * _fontSizeScale, fontWeight: FontWeight.w600, color: c.primary, decoration: TextDecoration.underline),
+                      style: TextStyle(
+                          fontSize: 14 * _fontSizeScale,
+                          fontWeight: FontWeight.w600,
+                          color: c.primary,
+                          decoration: TextDecoration.underline),
                     ),
                   ),
-                  Icon(Icons.arrow_forward_ios_rounded, size: 16, color: c.divider),
+                  Icon(Icons.arrow_forward_ios_rounded,
+                      size: 16, color: c.divider),
                 ],
               ),
             ),
@@ -601,7 +674,12 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
           color: c.surface.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: c.divider, width: 0.5),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 24, offset: const Offset(0, -4))],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, -4))
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -611,8 +689,12 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(color: c.accent.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-                  child: const Center(child: Icon(Icons.cookie_rounded, color: Color(0xFFF59E0B), size: 26)),
+                  decoration: BoxDecoration(
+                      color: c.accent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12)),
+                  child: const Center(
+                      child: Icon(Icons.cookie_rounded,
+                          color: Color(0xFFF59E0B), size: 26)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -621,12 +703,17 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
                     children: [
                       Text(
                         'نستخدم ملفات تعريف الارتباط',
-                        style: TextStyle(fontSize: 14 * _fontSizeScale, fontWeight: FontWeight.w700, color: c.textPrimary),
+                        style: TextStyle(
+                            fontSize: 14 * _fontSizeScale,
+                            fontWeight: FontWeight.w700,
+                            color: c.textPrimary),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'لتحسين تجربتك وتقديم محتوى مخصص',
-                        style: TextStyle(fontSize: 12 * _fontSizeScale, color: c.textSecondary),
+                        style: TextStyle(
+                            fontSize: 12 * _fontSizeScale,
+                            color: c.textSecondary),
                       ),
                     ],
                   ),
@@ -641,10 +728,14 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
                     onPressed: () => setState(() => _showConsent = false),
                     style: TextButton.styleFrom(
                       foregroundColor: c.textSecondary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: Text('رفض الكل', style: TextStyle(fontSize: 14 * _fontSizeScale, fontWeight: FontWeight.w600)),
+                    child: Text('رفض الكل',
+                        style: TextStyle(
+                            fontSize: 14 * _fontSizeScale,
+                            fontWeight: FontWeight.w600)),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -657,11 +748,15 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
                     style: ElevatedButton.styleFrom(
                       backgroundColor: c.primary,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       elevation: 0,
                     ),
-                    child: Text('قبول الكل', style: TextStyle(fontSize: 14 * _fontSizeScale, fontWeight: FontWeight.w600)),
+                    child: Text('قبول الكل',
+                        style: TextStyle(
+                            fontSize: 14 * _fontSizeScale,
+                            fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
@@ -685,9 +780,15 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
             color: c.surface,
             shape: BoxShape.circle,
             border: Border.all(color: c.divider),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 10, offset: const Offset(0, 2))],
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2))
+            ],
           ),
-          child: Icon(Icons.keyboard_arrow_up_rounded, color: c.primary, size: 26),
+          child:
+              Icon(Icons.keyboard_arrow_up_rounded, color: c.primary, size: 26),
         ),
       ),
     );
@@ -709,7 +810,11 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
           children: [
             Icon(Icons.shield_rounded, color: c.success, size: 16),
             const SizedBox(width: 4),
-            Text('آمن', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: c.success)),
+            Text('آمن',
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: c.success)),
           ],
         ),
       ),

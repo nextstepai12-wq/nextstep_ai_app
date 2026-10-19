@@ -17,7 +17,8 @@ class ProgramRepository {
   Future<ProgramModel?> getProgramById(String id) async {
     try {
       final cached = await HiveStorage.getPrograms();
-      final found = cached.firstWhere((p) => p['id'] == id, orElse: () => <String, dynamic>{});
+      final found = cached.firstWhere((p) => p['id'] == id,
+          orElse: () => <String, dynamic>{});
       if (found.isNotEmpty) {
         return ProgramModel.fromJson(found);
       }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 
 class AdminReportsScreen extends StatefulWidget {
   const AdminReportsScreen({super.key});
@@ -19,8 +20,18 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
   String _selectedPeriod = 'هذا الشهر';
   String _selectedReportType = 'عام';
 
-  final List<String> _periods = ['هذا الأسبوع', 'هذا الشهر', 'هذا العام', 'كل الوقت'];
-  final List<String> _reportTypes = ['عام', 'المستخدمين', 'الجامعات', 'التخصصات'];
+  final List<String> _periods = [
+    'هذا الأسبوع',
+    'هذا الشهر',
+    'هذا العام',
+    'كل الوقت'
+  ];
+  final List<String> _reportTypes = [
+    'عام',
+    'المستخدمين',
+    'الجامعات',
+    'التخصصات'
+  ];
 
   final Map<String, dynamic> _stats = {
     'total_users': 1250,
@@ -54,11 +65,41 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
   ];
 
   final List<Map<String, dynamic>> _recentUsers = [
-    {'name': 'أحمد محمد', 'email': 'ahmed@university.edu', 'role': 'طالب', 'date': '2026-08-14', 'status': 'نشط'},
-    {'name': 'الجامعة الإسلامية', 'email': 'info@iugaza.edu', 'role': 'جامعة', 'date': '2026-08-14', 'status': 'نشط'},
-    {'name': 'سارة أحمد', 'email': 'sara@university.edu', 'role': 'طالب', 'date': '2026-08-13', 'status': 'نشط'},
-    {'name': 'جامعة الأزهر', 'email': 'info@azhar.edu', 'role': 'جامعة', 'date': '2026-08-13', 'status': 'قيد الانتظار'},
-    {'name': 'محمد خالد', 'email': 'mohammed@university.edu', 'role': 'طالب', 'date': '2026-08-12', 'status': 'نشط'},
+    {
+      'name': 'أحمد محمد',
+      'email': 'ahmed@university.edu',
+      'role': 'طالب',
+      'date': '2026-08-14',
+      'status': 'نشط'
+    },
+    {
+      'name': 'الجامعة الإسلامية',
+      'email': 'info@iugaza.edu',
+      'role': 'جامعة',
+      'date': '2026-08-14',
+      'status': 'نشط'
+    },
+    {
+      'name': 'سارة أحمد',
+      'email': 'sara@university.edu',
+      'role': 'طالب',
+      'date': '2026-08-13',
+      'status': 'نشط'
+    },
+    {
+      'name': 'جامعة الأزهر',
+      'email': 'info@azhar.edu',
+      'role': 'جامعة',
+      'date': '2026-08-13',
+      'status': 'قيد الانتظار'
+    },
+    {
+      'name': 'محمد خالد',
+      'email': 'mohammed@university.edu',
+      'role': 'طالب',
+      'date': '2026-08-12',
+      'status': 'نشط'
+    },
   ];
 
   @override
@@ -101,7 +142,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
         body: _isLoading
             ? const Center(
@@ -203,6 +244,8 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
                     color: Colors.white,
                   ),
                 ),
+                const SizedBox(height: 8),
+                const SampleDataBadge(),
               ],
             ),
           ),
@@ -356,40 +399,37 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
   }
 
   Widget _buildStatsGrid() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1.3,
-      children: [
+    return AppAdaptiveGrid(
+      minItemWidth: 160,
+      maxColumns: 4,
+      spacing: 12,
+      children: <Widget>[
         _buildStatCard(
           title: 'إجمالي المستخدمين',
           value: _stats['total_users'].toString(),
           icon: Icons.people_rounded,
-          color: const Color(0xFF3B82F6),
+          color: const Color(0xFF175CD3),
           subtitle: 'نشط: ${_stats['active_users']}',
         ),
         _buildStatCard(
           title: 'الجامعات',
           value: _stats['total_universities'].toString(),
-          icon: Icons.business_rounded,
-          color: const Color(0xFF22C55E),
+          icon: Icons.account_balance_rounded,
+          color: const Color(0xFF067647),
           subtitle: 'جديد: 3 هذا الشهر',
         ),
         _buildStatCard(
           title: 'التخصصات',
           value: _stats['total_programs'].toString(),
-          icon: Icons.school_rounded,
-          color: const Color(0xFF8B5CF6),
+          icon: Icons.menu_book_rounded,
+          color: const Color(0xFF5B4BB7),
           subtitle: 'نشط: 38',
         ),
         _buildStatCard(
           title: 'معدل النمو',
           value: _stats['growth_rate'].toString(),
           icon: Icons.trending_up_rounded,
-          color: const Color(0xFFF97316),
+          color: const Color(0xFFB54708),
           subtitle: 'مستخدمين جدد: ${_stats['new_users_this_month']}',
         ),
       ],
@@ -403,19 +443,13 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
     required Color color,
     required String subtitle,
   }) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: theme.dividerColor, width: 1.2),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -432,12 +466,14 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
                 child: Icon(icon, color: color, size: 18),
               ),
               const SizedBox(width: 8),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.primaryContainer,
+              Flexible(
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
@@ -445,16 +481,18 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
           const SizedBox(height: 4),
           Text(
             title,
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 11,
-              color: Colors.grey.shade500,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
           Text(
             subtitle,
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 9,
-              color: Colors.grey.shade400,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -489,7 +527,8 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
       ],
     );
   }
-Widget _buildChartCard({
+
+  Widget _buildChartCard({
     required String title,
     required List<Map<String, dynamic>> data,
     required Color color,
@@ -644,20 +683,33 @@ Widget _buildChartCard({
                 Colors.grey.shade50,
               ),
               columns: const [
-                DataColumn(label: Text('الاسم', style: TextStyle(fontWeight: FontWeight.w600))),
-                DataColumn(label: Text('البريد', style: TextStyle(fontWeight: FontWeight.w600))),
-                DataColumn(label: Text('الدور', style: TextStyle(fontWeight: FontWeight.w600))),
-                DataColumn(label: Text('التاريخ', style: TextStyle(fontWeight: FontWeight.w600))),
-                DataColumn(label: Text('الحالة', style: TextStyle(fontWeight: FontWeight.w600))),
+                DataColumn(
+                    label: Text('الاسم',
+                        style: TextStyle(fontWeight: FontWeight.w600))),
+                DataColumn(
+                    label: Text('البريد',
+                        style: TextStyle(fontWeight: FontWeight.w600))),
+                DataColumn(
+                    label: Text('الدور',
+                        style: TextStyle(fontWeight: FontWeight.w600))),
+                DataColumn(
+                    label: Text('التاريخ',
+                        style: TextStyle(fontWeight: FontWeight.w600))),
+                DataColumn(
+                    label: Text('الحالة',
+                        style: TextStyle(fontWeight: FontWeight.w600))),
               ],
               rows: _recentUsers.map((user) {
                 return DataRow(
                   cells: [
-                    DataCell(Text(user['name'], style: const TextStyle(fontSize: 13))),
-                    DataCell(Text(user['email'], style: const TextStyle(fontSize: 13))),
+                    DataCell(Text(user['name'],
+                        style: const TextStyle(fontSize: 13))),
+                    DataCell(Text(user['email'],
+                        style: const TextStyle(fontSize: 13))),
                     DataCell(
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppTheme.primary.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(8),
@@ -672,10 +724,12 @@ Widget _buildChartCard({
                         ),
                       ),
                     ),
-                    DataCell(Text(user['date'], style: const TextStyle(fontSize: 13))),
+                    DataCell(Text(user['date'],
+                        style: const TextStyle(fontSize: 13))),
                     DataCell(
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: user['status'] == 'نشط'
                               ? Colors.green.withValues(alpha: 0.1)

@@ -64,8 +64,7 @@ class UserModel {
   bool get isUniversity => role == 'university';
   bool get isAdmin => role == 'admin';
 
-  String get displayName =>
-      fullName ?? email?.split('@').first ?? 'مستخدم';
+  String get displayName => fullName ?? email?.split('@').first ?? 'مستخدم';
 
   String get homeRoute {
     if (isStudent) return '/student';

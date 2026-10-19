@@ -114,7 +114,8 @@ class MajorModel {
     return '${minHighSchoolScore.toStringAsFixed(2)}%';
   }
 
-  bool get hasStudyPlanImage => studyPlanImage != null && studyPlanImage!.isNotEmpty;
+  bool get hasStudyPlanImage =>
+      studyPlanImage != null && studyPlanImage!.isNotEmpty;
 
   bool get hasVideo => videoUrl != null && videoUrl!.isNotEmpty;
 

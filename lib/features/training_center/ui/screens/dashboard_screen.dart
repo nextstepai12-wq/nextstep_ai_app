@@ -1,12 +1,14 @@
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 
 import '../../logic/training_center_bloc/training_center_bloc.dart';
 import '../../logic/training_programs_bloc/training_programs_bloc.dart';
+import '../theme/training_colors.dart';
 import '../widgets/training_center_drawer.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -48,7 +50,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF9F9FF),
+      backgroundColor: TrainingColors.background,
       appBar: _buildAppBar(),
       drawer: const TrainingCenterDrawer(),
       body: SingleChildScrollView(
@@ -59,6 +61,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             _buildStatusBanner(),
             SizedBox(height: 12.h),
+            const Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: SampleDataBadge(),
+            ),
+            SizedBox(height: 8.h),
             _buildKpiGrid(),
             SizedBox(height: 12.h),
             _buildRevenueChartCard(),
@@ -149,7 +156,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       centerTitle: false,
       elevation: 0,
       scrolledUnderElevation: 0,
-      backgroundColor: const Color(0xFFF1F3FF),
+      backgroundColor: TrainingColors.surfaceAlt,
     );
   }
 
@@ -239,7 +246,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   SizedBox(width: 8.w),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: _surfaceContainerLowest.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(999.r),
@@ -257,7 +265,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         SizedBox(width: 4.w),
                         Text(
-                          'محدّث الآن',
+                          'بيانات تجريبية',
                           style: TextStyle(
                             fontSize: 10.sp,
                             height: 1.4,
@@ -274,7 +282,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: _surfaceContainerLowest,
                       borderRadius: BorderRadius.circular(999.r),
@@ -636,7 +645,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.bar_chart_rounded, size: 18.sp, color: _primaryContainer),
+              Icon(Icons.bar_chart_rounded,
+                  size: 18.sp, color: _primaryContainer),
               SizedBox(width: 5.w),
               Expanded(
                 child: Text(
@@ -658,8 +668,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildChartToggle('شهر', _isMonthly, () => setState(() => _isMonthly = true)),
-                    _buildChartToggle('سنة', !_isMonthly, () => setState(() => _isMonthly = false)),
+                    _buildChartToggle('شهر', _isMonthly,
+                        () => setState(() => _isMonthly = true)),
+                    _buildChartToggle('سنة', !_isMonthly,
+                        () => setState(() => _isMonthly = false)),
                   ],
                 ),
               ),
@@ -673,7 +685,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 for (final (index, item) in data.indexed) ...[
                   if (index > 0) SizedBox(width: 4.w),
-                  Expanded(child: _buildBarColumn(item.$1, item.$2, item.$3, index == data.length - 1)),
+                  Expanded(
+                      child: _buildBarColumn(
+                          item.$1, item.$2, item.$3, index == data.length - 1)),
                 ],
               ],
             ),
@@ -695,8 +709,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: TextStyle(
                       fontSize: 10.sp,
                       height: 1.4,
-                      fontWeight: index == data.length - 1 ? FontWeight.w700 : FontWeight.w400,
-                      color: index == data.length - 1 ? _secondaryContainer : _outline,
+                      fontWeight: index == data.length - 1
+                          ? FontWeight.w700
+                          : FontWeight.w400,
+                      color: index == data.length - 1
+                          ? _secondaryContainer
+                          : _outline,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -732,7 +750,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildBarColumn(String label, String value, double height, bool isCurrent) {
+  Widget _buildBarColumn(
+      String label, String value, double height, bool isCurrent) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -752,7 +771,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           width: 22.w,
           height: height.h,
           decoration: BoxDecoration(
-            color: isCurrent ? _secondaryContainer : _primaryContainer.withValues(alpha: 0.85),
+            color: isCurrent
+                ? _secondaryContainer
+                : _primaryContainer.withValues(alpha: 0.85),
             borderRadius: BorderRadius.vertical(top: Radius.circular(8.r)),
           ),
         ),
@@ -817,8 +838,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: const CustomPaint(
               size: Size.infinite,
               painter: _SplineChartPainter(
-                academicPoints: [Offset(0, 95), Offset(110, 60), Offset(220, 38), Offset(320, 18)],
-                fieldPoints: [Offset(0, 105), Offset(120, 80), Offset(230, 55), Offset(320, 40)],
+                academicPoints: [
+                  Offset(0, 95),
+                  Offset(110, 60),
+                  Offset(220, 38),
+                  Offset(320, 18)
+                ],
+                fieldPoints: [
+                  Offset(0, 105),
+                  Offset(120, 80),
+                  Offset(230, 55),
+                  Offset(320, 40)
+                ],
               ),
             ),
           ),
@@ -891,7 +922,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () => context.push('/training-center/programs'),
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
                   minimumSize: Size.zero,
@@ -909,7 +940,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: _secondary,
                       ),
                     ),
-                    Icon(Icons.arrow_back_rounded, size: 13.sp, color: _secondary),
+                    Icon(Icons.arrow_back_rounded,
+                        size: 13.sp, color: _secondary),
                   ],
                 ),
               ),
@@ -1167,7 +1199,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         style: TextStyle(
                           fontSize: 10.sp,
                           height: 1.4,
-                          fontWeight: subtitleColor == _secondary ? FontWeight.w500 : FontWeight.w400,
+                          fontWeight: subtitleColor == _secondary
+                              ? FontWeight.w500
+                              : FontWeight.w400,
                           color: subtitleColor,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -1189,8 +1223,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildRecentReviewsCard() {
     const reviews = [
-      ('عبدالله الشمري', 'محتوى احترافي جداً والمدرب متمكن ومتابع لكل التفاصيل خطوة بخطوة. أنصح بالالتحاق بشدة!', Icons.person_rounded),
-      ('فيصل الخالدي', 'تنظيم ممتاز وبيئة تدريب عملية تفوق التوقعات، التطبيق الميداني أعطى قيمة حقيقية للشهادة.', Icons.person_rounded),
+      (
+        'عبدالله الشمري',
+        'محتوى احترافي جداً والمدرب متمكن ومتابع لكل التفاصيل خطوة بخطوة. أنصح بالالتحاق بشدة!',
+        Icons.person_rounded
+      ),
+      (
+        'فيصل الخالدي',
+        'تنظيم ممتاز وبيئة تدريب عملية تفوق التوقعات، التطبيق الميداني أعطى قيمة حقيقية للشهادة.',
+        Icons.person_rounded
+      ),
     ];
 
     return Container(
@@ -1217,28 +1259,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ),
-              TextButton(
-                onPressed: () {},
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'الكل',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        height: 1.7,
-                        fontWeight: FontWeight.w500,
-                        color: _outline,
-                      ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'عرض تجريبي',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      height: 1.7,
+                      fontWeight: FontWeight.w500,
+                      color: _outline,
                     ),
-                    Icon(Icons.arrow_back_rounded, size: 13.sp, color: _outline),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1317,19 +1350,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // ---------------------------------------------------------------- Colors
 
-  static const Color _primaryContainer = Color(0xFF1B3A6B);
-  static const Color _secondaryContainer = Color(0xFFFC8A40);
-  static const Color _secondary = Color(0xFF9B4500);
-  static const Color _surfaceContainer = Color(0xFFE9EDFF);
-  static const Color _surfaceContainerLow = Color(0xFFF1F3FF);
+  static const Color _primaryContainer = Color(0xFF1E3A8A);
+  static const Color _secondaryContainer = Color(0xFFC2410C);
+  static const Color _secondary = Color(0xFF9A3412);
+  static const Color _surfaceContainer = Color(0xFFEEF2F8);
+  static const Color _surfaceContainerLow = Color(0xFFF5F7FB);
   static const Color _surfaceContainerLowest = Color(0xFFFFFFFF);
-  static const Color _surfaceVariant = Color(0xFFDCE2F7);
-  static const Color _onSurfaceVariant = Color(0xFF44474F);
-  static const Color _outline = Color(0xFF747780);
-  static const Color _outlineVariant = Color(0xFFC4C6D0);
-  static const Color _error = Color(0xFFBA1A1A);
-  static const Color _emerald = Color(0xFF10B981);
-  static const Color _amber = Color(0xFFF59E0B);
+  static const Color _surfaceVariant = Color(0xFFE4EAF4);
+  static const Color _onSurfaceVariant = Color(0xFF475467);
+  static const Color _outline = Color(0xFF98A2B3);
+  static const Color _outlineVariant = Color(0xFFE4E7EC);
+  static const Color _error = Color(0xFFB42318);
+  static const Color _emerald = Color(0xFF067647);
+  static const Color _amber = Color(0xFFB54708);
 
   static const TextStyle _chartLabelStyle = TextStyle(
     fontSize: 10,

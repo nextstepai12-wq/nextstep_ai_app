@@ -319,9 +319,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 alignment: Alignment.center,
                 margin: EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
                 decoration: BoxDecoration(
-                  color: active
-                      ? TrainingColors.primary
-                      : Colors.transparent,
+                  color: active ? TrainingColors.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(999.r),
                 ),
                 child: Row(
@@ -578,7 +576,8 @@ class _SettingsScreenState extends State<SettingsScreen>
               color: TrainingColors.textPrimary,
             ),
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: TrainingColors.primary, size: 19.sp),
+              prefixIcon:
+                  Icon(icon, color: TrainingColors.primary, size: 19.sp),
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 16.w,
@@ -677,8 +676,8 @@ class _SettingsScreenState extends State<SettingsScreen>
             fontSize: 13.sp,
             color: TrainingColors.textMuted,
           ),
-          prefixIcon:
-              Icon(Icons.lock_rounded, color: TrainingColors.primary, size: 19.sp),
+          prefixIcon: Icon(Icons.lock_rounded,
+              color: TrainingColors.primary, size: 19.sp),
           suffixIcon: IconButton(
             icon: Icon(
               _showPassword
@@ -959,9 +958,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     final isPending = member['status'] == 'قيد الانتظار';
     final isAdmin = member['roleType'] == 'admin';
 
-    final roleColor =
-        isAdmin ? TrainingColors.primary : TrainingColors.accent;
-    final roleBg = isAdmin ? TrainingColors.navySoft : TrainingColors.accentSoft;
+    final roleColor = isAdmin ? TrainingColors.primary : TrainingColors.accent;
+    final roleBg =
+        isAdmin ? TrainingColors.navySoft : TrainingColors.accentSoft;
     final statusColor = isActive
         ? TrainingColors.success
         : isPending
@@ -1147,7 +1146,8 @@ class _SettingsScreenState extends State<SettingsScreen>
           value: 'details',
           child: Row(
             children: [
-              Icon(Icons.visibility_rounded, size: 17.sp, color: TrainingColors.primary),
+              Icon(Icons.visibility_rounded,
+                  size: 17.sp, color: TrainingColors.primary),
               SizedBox(width: 8.w),
               Text(
                 'عرض التفاصيل',
@@ -1165,7 +1165,8 @@ class _SettingsScreenState extends State<SettingsScreen>
             value: 'resend',
             child: Row(
               children: [
-                Icon(Icons.refresh_rounded, size: 17.sp, color: TrainingColors.accent),
+                Icon(Icons.refresh_rounded,
+                    size: 17.sp, color: TrainingColors.accent),
                 SizedBox(width: 8.w),
                 Text(
                   'إعادة إرسال الدعوة',
@@ -1182,7 +1183,8 @@ class _SettingsScreenState extends State<SettingsScreen>
           value: 'remove',
           child: Row(
             children: [
-              Icon(Icons.delete_rounded, size: 17.sp, color: TrainingColors.danger),
+              Icon(Icons.delete_rounded,
+                  size: 17.sp, color: TrainingColors.danger),
               SizedBox(width: 8.w),
               Text(
                 'إزالة العضو',
@@ -1367,7 +1369,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                               color: TrainingColors.textMuted,
                             ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                            contentPadding:
+                                EdgeInsets.symmetric(vertical: 12.h),
                           ),
                           textDirection: TextDirection.ltr,
                         ),
@@ -1489,8 +1492,10 @@ class _SettingsScreenState extends State<SettingsScreen>
     required VoidCallback onTap,
   }) {
     final isSelected = selectedRole == value;
-    final color = value == 'admin' ? TrainingColors.primary : TrainingColors.accent;
-    final bg = value == 'admin' ? TrainingColors.navySoft : TrainingColors.accentSoft;
+    final color =
+        value == 'admin' ? TrainingColors.primary : TrainingColors.accent;
+    final bg =
+        value == 'admin' ? TrainingColors.navySoft : TrainingColors.accentSoft;
 
     return Expanded(
       child: GestureDetector(
@@ -1800,7 +1805,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('تم إزالة ${member['name']} من الفريق'),
+                                content: Text(
+                                    'تم إزالة ${member['name']} من الفريق'),
                                 backgroundColor: TrainingColors.danger,
                                 behavior: SnackBarBehavior.floating,
                                 duration: const Duration(seconds: 2),

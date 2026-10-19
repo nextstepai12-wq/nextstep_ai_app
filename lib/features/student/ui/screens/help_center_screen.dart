@@ -21,8 +21,16 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
 
   final List<Map<String, dynamic>> _categories = const [
     {'key': 'all', 'label': 'الكل', 'icon': Icons.grid_view_rounded},
-    {'key': 'assessment', 'label': 'التقييم الأكاديمي', 'icon': Icons.assessment_rounded},
-    {'key': 'universities', 'label': 'الجامعات', 'icon': Icons.account_balance_rounded},
+    {
+      'key': 'assessment',
+      'label': 'التقييم الأكاديمي',
+      'icon': Icons.assessment_rounded
+    },
+    {
+      'key': 'universities',
+      'label': 'الجامعات',
+      'icon': Icons.account_balance_rounded
+    },
     {'key': 'account', 'label': 'الحساب والأمان', 'icon': Icons.shield_rounded},
   ];
 
@@ -91,12 +99,15 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   List<Map<String, dynamic>> get _filteredFaqs {
     List<Map<String, dynamic>> filtered = List.of(_allFaqs);
     if (_selectedCategory != 'all') {
-      filtered = filtered.where((f) => f['category'] == _selectedCategory).toList();
+      filtered =
+          filtered.where((f) => f['category'] == _selectedCategory).toList();
     }
     final query = _searchController.text.trim();
     if (query.isNotEmpty) {
       filtered = filtered
-          .where((f) => (f['question'] as String).contains(query) || (f['answer'] as String).contains(query))
+          .where((f) =>
+              (f['question'] as String).contains(query) ||
+              (f['answer'] as String).contains(query))
           .toList();
     }
     return filtered;
@@ -178,7 +189,9 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: c.surface,
-          border: Border(bottom: BorderSide(color: c.divider.withValues(alpha: 0.4), width: 0.5)),
+          border: Border(
+              bottom: BorderSide(
+                  color: c.divider.withValues(alpha: 0.4), width: 0.5)),
         ),
         child: Row(
           children: [
@@ -190,7 +203,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: Icon(Icons.arrow_forward_ios_rounded, size: 18, color: c.textPrimary),
+                icon: Icon(Icons.arrow_forward_ios_rounded,
+                    size: 18, color: c.textPrimary),
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
               ),
@@ -198,7 +212,10 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             const SizedBox(width: 12),
             Text(
               'مركز المساعدة والدعم',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: c.textPrimary),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: c.textPrimary),
             ),
           ],
         ),
@@ -248,7 +265,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(20),
@@ -256,11 +274,15 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.auto_awesome, size: 14, color: Colors.white),
+                            Icon(Icons.auto_awesome,
+                                size: 14, color: Colors.white),
                             SizedBox(width: 6),
                             Text(
                               ' مركز التوجيه والمساعدة',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white),
                             ),
                           ],
                         ),
@@ -294,7 +316,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                     color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.support_agent_rounded, size: 30, color: Colors.white),
+                  child: const Icon(Icons.support_agent_rounded,
+                      size: 30, color: Colors.white),
                 ),
               ],
             ),
@@ -332,7 +355,9 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: 'ابحث عن سؤال، معيار قبول، أو تخصص...',
-                  hintStyle: TextStyle(fontSize: 13, color: c.textSecondary.withValues(alpha: 0.6)),
+                  hintStyle: TextStyle(
+                      fontSize: 13,
+                      color: c.textSecondary.withValues(alpha: 0.6)),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
@@ -355,7 +380,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                     color: c.surfaceAlt,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.close_rounded, size: 16, color: c.textSecondary),
+                  child: Icon(Icons.close_rounded,
+                      size: 16, color: c.textSecondary),
                 ),
               ),
             const SizedBox(width: 8),
@@ -387,13 +413,20 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 color: isSelected ? c.primaryContainer : c.surfaceAlt,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: isSelected
-                    ? [BoxShadow(color: c.primaryContainer.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 2))]
+                    ? [
+                        BoxShadow(
+                            color: c.primaryContainer.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2))
+                      ]
                     : [],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(cat['icon'] as IconData, size: 16, color: isSelected ? Colors.white : c.textSecondary),
+                  Icon(cat['icon'] as IconData,
+                      size: 16,
+                      color: isSelected ? Colors.white : c.textSecondary),
                   const SizedBox(width: 6),
                   Text(
                     cat['label'] as String,
@@ -420,34 +453,44 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.help_center_rounded, size: 20, color: c.primaryContainer),
+              Icon(Icons.help_center_rounded,
+                  size: 20, color: c.primaryContainer),
               const SizedBox(width: 8),
               Text(
                 'الأسئلة الأكثر تكراراً',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: c.textPrimary),
+                style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: c.textPrimary),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: c.primarySoft,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '${faqs.length} أسئلة',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: c.primaryContainer),
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: c.primaryContainer),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          ...List.generate(faqs.length, (index) => _buildFaqItem(faqs, index, c)),
+          ...List.generate(
+              faqs.length, (index) => _buildFaqItem(faqs, index, c)),
         ],
       ),
     );
   }
 
-  Widget _buildFaqItem(List<Map<String, dynamic>> faqs, int index, AppColors c) {
+  Widget _buildFaqItem(
+      List<Map<String, dynamic>> faqs, int index, AppColors c) {
     final faq = faqs[index];
     final isExpanded = _expandedIndex == index;
 
@@ -548,25 +591,33 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.timer_outlined, size: 16, color: c.primaryContainer),
+                            Icon(Icons.timer_outlined,
+                                size: 16, color: c.primaryContainer),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'اختبارك يستغرق 7 دقائق فقط',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: c.primaryContainer),
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: c.primaryContainer),
                               ),
                             ),
                             GestureDetector(
-                              onTap: () => context.push('/assessment'),
+                              onTap: () => context.push('/student/assessment'),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: c.primaryContainer,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
                                   faq['ctaText'] as String,
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white),
                                 ),
                               ),
                             ),
@@ -597,12 +648,16 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               color: c.surfaceAlt,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.search_off_rounded, size: 40, color: c.textSecondary.withValues(alpha: 0.5)),
+            child: Icon(Icons.search_off_rounded,
+                size: 40, color: c.textSecondary.withValues(alpha: 0.5)),
           ),
           const SizedBox(height: 20),
           Text(
             'لم نعثر على أسئلة مطابقة',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: c.textPrimary),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: c.textPrimary),
           ),
           const SizedBox(height: 8),
           Text(
@@ -620,7 +675,10 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               ),
               child: const Text(
                 'تواصل معنا',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
               ),
             ),
           ),
@@ -675,23 +733,31 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.contact_support_rounded, size: 26, color: Colors.white),
+                  child: const Icon(Icons.contact_support_rounded,
+                      size: 26, color: Colors.white),
                 ),
                 const SizedBox(height: 16),
                 const Text(
                   'لم تجد إجابتك بعد؟',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'فريق الدعم جاهز لمساعدتك في أي وقت. تواصل معنا وسنرد عليك في أقرب وقت.',
-                  style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.85), height: 1.6),
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.85),
+                      height: 1.6),
                 ),
                 const SizedBox(height: 20),
                 GestureDetector(
                   onTap: () => _launchURL('mailto:nextstepai12@gmail.com'),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
@@ -699,11 +765,15 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.mail_outline_rounded, size: 18, color: c.primaryContainer),
+                        Icon(Icons.mail_outline_rounded,
+                            size: 18, color: c.primaryContainer),
                         const SizedBox(width: 8),
                         Text(
                           'تواصل معنا عبر البريد والمحادثة',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: c.primaryContainer),
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: c.primaryContainer),
                         ),
                       ],
                     ),
@@ -728,7 +798,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             SnackBar(
               behavior: SnackBarBehavior.floating,
               margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
               backgroundColor: context.appColors.danger,
               content: const Row(
                 children: [
@@ -752,7 +823,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           SnackBar(
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             backgroundColor: context.appColors.danger,
             content: const Row(
               children: [

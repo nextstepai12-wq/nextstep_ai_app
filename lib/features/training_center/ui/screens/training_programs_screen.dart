@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 
 import '../theme/training_colors.dart';
 import '../widgets/training_center_drawer.dart';
@@ -17,6 +18,7 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   _ProgramType _selectedType = _ProgramType.all;
+  _ProgramSort _sort = _ProgramSort.latest;
   String _searchQuery = '';
 
   final List<_ProgramMock> _allPrograms = const [
@@ -89,14 +91,35 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
   }
 
   List<_ProgramMock> get _filteredPrograms {
-    return _allPrograms.where((p) {
+    final programs = _allPrograms.where((p) {
       final matchesType =
           _selectedType == _ProgramType.all || p.type == _selectedType;
-      final matchesSearch = _searchQuery.trim().isEmpty ||
-          p.title.contains(_searchQuery.trim()) ||
-          p.trainer.contains(_searchQuery.trim());
+      final query = _searchQuery.trim().toLowerCase();
+      final matchesSearch = query.isEmpty ||
+          p.title.toLowerCase().contains(query) ||
+          p.trainer.toLowerCase().contains(query);
       return matchesType && matchesSearch;
     }).toList();
+
+    switch (_sort) {
+      case _ProgramSort.popular:
+        programs.sort((a, b) => b.students.compareTo(a.students));
+        break;
+      case _ProgramSort.rating:
+        programs.sort((a, b) => b.rating.compareTo(a.rating));
+        break;
+      case _ProgramSort.priceLow:
+        programs.sort((a, b) => a.price.compareTo(b.price));
+        break;
+      case _ProgramSort.latest:
+        break;
+    }
+    return programs;
+  }
+
+  int _countFor(_ProgramType type) {
+    if (type == _ProgramType.all) return _allPrograms.length;
+    return _allPrograms.where((p) => p.type == type).length;
   }
 
   @override
@@ -152,7 +175,7 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
               ),
               SizedBox(width: 5.w),
               Text(
-                '24 برنامج تدريبي متاح حالياً',
+                '${_allPrograms.where((p) => p.available).length} برامج متاحة من أصل ${_allPrograms.length}',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 11.5.sp,
@@ -195,19 +218,20 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
               color: TrainingColors.primary,
             ),
           ),
-          Positioned(
-            top: -1,
-            left: -1,
-            child: Container(
-              width: 11.w,
-              height: 11.w,
-              decoration: BoxDecoration(
-                color: TrainingColors.accent,
-                shape: BoxShape.circle,
-                border: Border.all(color: TrainingColors.surface, width: 2),
+          if (_sort != _ProgramSort.latest)
+            Positioned(
+              top: -1,
+              left: -1,
+              child: Container(
+                width: 11.w,
+                height: 11.w,
+                decoration: BoxDecoration(
+                  color: TrainingColors.accent,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: TrainingColors.surface, width: 2),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -221,20 +245,26 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
       physics: const BouncingScrollPhysics(),
       children: [
         _buildSearchBar(),
-        SizedBox(height: 14.h),
+        SizedBox(height: 10.h),
+        const Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: SampleDataBadge(),
+        ),
+        SizedBox(height: 10.h),
         _buildTypeTabs(),
         SizedBox(height: 16.h),
         if (programs.isEmpty)
           _buildEmptyState()
-        else
+        else ...[
           ...programs.map(
             (p) => Padding(
               padding: EdgeInsets.only(bottom: 12.h),
               child: _buildProgramCard(context, p),
             ),
           ),
-        SizedBox(height: 4.h),
-        _buildLoadMore(context),
+          SizedBox(height: 4.h),
+          _buildListFooter(programs.length),
+        ],
       ],
     );
   }
@@ -303,21 +333,21 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
         children: [
           _typeTab(
             label: 'الكل',
-            count: 24,
+            count: _countFor(_ProgramType.all),
             type: _ProgramType.all,
             icon: null,
           ),
           SizedBox(width: 8.w),
           _typeTab(
             label: 'كورسات',
-            count: 16,
+            count: _countFor(_ProgramType.course),
             type: _ProgramType.course,
             icon: Icons.menu_book_rounded,
           ),
           SizedBox(width: 8.w),
           _typeTab(
             label: 'تدريب ميداني',
-            count: 8,
+            count: _countFor(_ProgramType.field),
             type: _ProgramType.field,
             icon: Icons.engineering_rounded,
           ),
@@ -336,9 +366,8 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     final Color badgeBg = active
         ? Colors.white.withValues(alpha: 0.2)
         : TrainingColors.surfaceMuted;
-    final Color badgeText = active
-        ? TrainingColors.onPrimary
-        : TrainingColors.textSecondary;
+    final Color badgeText =
+        active ? TrainingColors.onPrimary : TrainingColors.textSecondary;
 
     return GestureDetector(
       onTap: () => setState(() => _selectedType = type),
@@ -348,9 +377,7 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
         decoration: BoxDecoration(
           color: active ? TrainingColors.primary : TrainingColors.surface,
           borderRadius: BorderRadius.circular(999.r),
-          border: active
-              ? null
-              : Border.all(color: TrainingColors.divider),
+          border: active ? null : Border.all(color: TrainingColors.divider),
           boxShadow: active ? TrainingColors.softShadow : null,
         ),
         child: Row(
@@ -706,7 +733,7 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
             child: Row(
               children: [
                 Text(
-                  'سجل الآن',
+                  'عرض التفاصيل',
                   style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 12.sp,
@@ -766,154 +793,185 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  Widget _buildLoadMore(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text('تم تحميل جميع البرامج المتاحة'),
-              behavior: SnackBarBehavior.floating,
+  Widget _buildListFooter(int visibleCount) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 10.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.done_all_rounded,
+            size: 16.sp,
+            color: TrainingColors.textMuted,
+          ),
+          SizedBox(width: 6.w),
+          Text(
+            'تم عرض $visibleCount من أصل ${_allPrograms.length} برنامج',
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 12.sp,
+              color: TrainingColors.textSecondary,
             ),
-          );
-      },
-      child: Container(
-        height: 50.h,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: TrainingColors.surface,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: TrainingColors.primary, width: 1.2),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'تحميل المزيد من البرامج',
-              style: TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-                color: TrainingColors.primary,
-              ),
-            ),
-            SizedBox(width: 6.w),
-            Icon(
-              Icons.expand_more_rounded,
-              size: 20.sp,
-              color: TrainingColors.primary,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   // ───────────────────────────────────────────────────────────────────────────
-  // Filter sheet (UI only)
+  // Sort sheet
   // ───────────────────────────────────────────────────────────────────────────
 
-  void _showFilterSheet() {
-    showModalBottomSheet<void>(
+  Future<void> _showFilterSheet() async {
+    _ProgramSort selected = _sort;
+
+    final result = await showModalBottomSheet<_ProgramSort>(
       context: context,
       backgroundColor: TrainingColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-      builder: (context) {
+      builder: (sheetContext) {
         return Directionality(
           textDirection: TextDirection.rtl,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: TrainingColors.divider,
-                      borderRadius: BorderRadius.circular(999.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 18.h),
-                Text(
-                  'تصفية وترتيب',
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w800,
-                    color: TrainingColors.textPrimary,
-                  ),
-                ),
-                SizedBox(height: 14.h),
-                _filterOption(Icons.access_time_rounded, 'الأحدث تحديثاً'),
-                _filterOption(Icons.groups_rounded, 'الأكثر تسجيلاً'),
-                _filterOption(Icons.star_rounded, 'الأعلى تقييماً'),
-                _filterOption(Icons.attach_money_rounded, 'السعر: من الأقل'),
-                SizedBox(height: 12.h),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48.h,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: TrainingColors.primary,
-                      foregroundColor: TrainingColors.onPrimary,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
+          child: StatefulBuilder(
+            builder: (context, setSheetState) {
+              return Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: TrainingColors.divider,
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      'تطبيق',
+                    SizedBox(height: 18.h),
+                    Text(
+                      'ترتيب البرامج',
                       style: TextStyle(
                         fontFamily: 'Cairo',
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w800,
+                        color: TrainingColors.textPrimary,
                       ),
                     ),
-                  ),
+                    SizedBox(height: 14.h),
+                    _filterOption(
+                      icon: Icons.access_time_rounded,
+                      label: 'الأحدث تحديثاً',
+                      selected: selected == _ProgramSort.latest,
+                      onTap: () => setSheetState(
+                        () => selected = _ProgramSort.latest,
+                      ),
+                    ),
+                    _filterOption(
+                      icon: Icons.groups_rounded,
+                      label: 'الأكثر تسجيلاً',
+                      selected: selected == _ProgramSort.popular,
+                      onTap: () => setSheetState(
+                        () => selected = _ProgramSort.popular,
+                      ),
+                    ),
+                    _filterOption(
+                      icon: Icons.star_rounded,
+                      label: 'الأعلى تقييماً',
+                      selected: selected == _ProgramSort.rating,
+                      onTap: () => setSheetState(
+                        () => selected = _ProgramSort.rating,
+                      ),
+                    ),
+                    _filterOption(
+                      icon: Icons.attach_money_rounded,
+                      label: 'السعر: من الأقل',
+                      selected: selected == _ProgramSort.priceLow,
+                      onTap: () => setSheetState(
+                        () => selected = _ProgramSort.priceLow,
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48.h,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(sheetContext, selected),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: TrainingColors.primary,
+                          foregroundColor: TrainingColors.onPrimary,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                        child: Text(
+                          'تطبيق',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         );
       },
     );
+
+    if (result != null && mounted) {
+      setState(() => _sort = result);
+    }
   }
 
-  Widget _filterOption(IconData icon, String label) {
+  Widget _filterOption({
+    required IconData icon,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Container(
         width: 38.w,
         height: 38.w,
-        decoration: const BoxDecoration(
-          color: TrainingColors.surfaceAlt,
+        decoration: BoxDecoration(
+          color:
+              selected ? TrainingColors.accentSoft : TrainingColors.surfaceAlt,
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, size: 19.sp, color: TrainingColors.primary),
+        child: Icon(
+          icon,
+          size: 19.sp,
+          color: selected ? TrainingColors.accentDark : TrainingColors.primary,
+        ),
       ),
       title: Text(
         label,
         style: TextStyle(
           fontFamily: 'Cairo',
           fontSize: 13.5.sp,
-          fontWeight: FontWeight.w600,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
           color: TrainingColors.textPrimary,
         ),
       ),
-      trailing: Icon(
-        Icons.chevron_left_rounded,
-        size: 20.sp,
-        color: TrainingColors.textMuted,
-      ),
-      onTap: () => Navigator.pop(context),
+      trailing: selected
+          ? Icon(
+              Icons.check_circle_rounded,
+              size: 20.sp,
+              color: TrainingColors.accent,
+            )
+          : null,
+      onTap: onTap,
     );
   }
 
@@ -960,6 +1018,8 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
 // ───────────────────────────────────────────────────────────────────────────
 
 enum _ProgramType { all, course, field }
+
+enum _ProgramSort { latest, popular, rating, priceLow }
 
 class _ProgramMock {
   final String id;

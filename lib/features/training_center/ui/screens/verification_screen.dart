@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -404,7 +403,8 @@ class _VerificationScreenState extends State<VerificationScreen>
                       step['label'] as String,
                       style: TextStyle(
                         fontSize: 10.sp,
-                        fontWeight: isCurrent ? FontWeight.bold : FontWeight.w400,
+                        fontWeight:
+                            isCurrent ? FontWeight.bold : FontWeight.w400,
                         color: isCurrent
                             ? Colors.blue.shade700
                             : isCompleted

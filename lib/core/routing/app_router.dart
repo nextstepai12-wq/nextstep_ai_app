@@ -187,7 +187,9 @@ class AppRouter {
         path: '/university/edit-program',
         builder: (c, s) => AddEditProgramScreen(
           isEditing: true,
-          programData: const {},
+          programData: s.extra is Map
+              ? Map<String, dynamic>.from(s.extra! as Map)
+              : const <String, dynamic>{},
         ),
       ),
       GoRoute(
@@ -198,7 +200,9 @@ class AppRouter {
         path: '/university/edit-faculty',
         builder: (c, s) => AddFacultyScreen(
           isEditing: true,
-          facultyData: const {},
+          facultyData: s.extra is Map
+              ? Map<String, dynamic>.from(s.extra! as Map)
+              : const <String, dynamic>{},
         ),
       ),
       GoRoute(path: '/admin', builder: (c, s) => const AdminDashboardScreen()),
@@ -300,7 +304,11 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: 'details',
-                builder: (c, s) => const RegistrationRequestDetailsScreen(),
+                builder: (c, s) => RegistrationRequestDetailsScreen(
+                  request: s.extra is RegistrationRequest
+                      ? s.extra! as RegistrationRequest
+                      : null,
+                ),
               ),
             ],
           ),

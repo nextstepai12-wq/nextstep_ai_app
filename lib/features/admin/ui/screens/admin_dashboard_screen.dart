@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
 import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
@@ -132,7 +133,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   String _adminName = 'System Admin';
   String _adminEmail = '';
 
-  // ── Mock data (API-ready) ──
+  // ── Mock data (API-ready, labeled as sample in the UI) ──
   final List<AdminStat> _stats = const [
     AdminStat(
       id: 'users',
@@ -149,46 +150,46 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       periodAr: '٧ أيام',
     ),
     AdminStat(
-      id: 'sales',
-      labelEn: 'Total Sales',
-      labelAr: 'إجمالي المبيعات',
-      value: '\$48,320',
-      delta: '+12.5%',
+      id: 'universities',
+      labelEn: 'Universities',
+      labelAr: 'الجامعات',
+      value: '48',
+      delta: '+3',
       positive: true,
-      icon: Icons.attach_money_rounded,
+      icon: Icons.account_balance_rounded,
       color: _tealDark,
       softColor: Color(0xFFCCFBF1),
-      spark: [5, 4, 4.5, 5.5, 6, 7, 7.5],
-      periodEn: '7 days',
-      periodAr: '٧ أيام',
+      spark: [3, 3, 4, 4, 5, 6, 6.5],
+      periodEn: 'This month',
+      periodAr: 'هذا الشهر',
     ),
     AdminStat(
-      id: 'orders',
-      labelEn: 'New Orders',
-      labelAr: 'طلبات جديدة',
-      value: '1,247',
-      delta: '-3.1%',
-      positive: false,
-      icon: Icons.shopping_cart_rounded,
+      id: 'programs',
+      labelEn: 'Academic Programs',
+      labelAr: 'التخصصات الأكاديمية',
+      value: '312',
+      delta: '+14',
+      positive: true,
+      icon: Icons.menu_book_rounded,
       color: _amberDark,
       softColor: Color(0xFFFEF3C7),
-      spark: [7.5, 7, 6.5, 5.5, 4.5, 3.5, 3],
-      periodEn: '7 days',
-      periodAr: '٧ أيام',
+      spark: [5, 5.5, 5, 6, 6.5, 7, 7.5],
+      periodEn: 'This month',
+      periodAr: 'هذا الشهر',
     ),
     AdminStat(
       id: 'sessions',
-      labelEn: 'Active Sessions',
-      labelAr: 'جلسات نشطة',
-      value: '384',
+      labelEn: 'Active Students',
+      labelAr: 'طلاب نشطون',
+      value: '3,264',
       delta: '+5.4%',
       positive: true,
-      icon: Icons.monitor_heart_rounded,
+      icon: Icons.school_rounded,
       color: _purpleDark,
       softColor: Color(0xFFEDE9FE),
       spark: [3, 2, 4.5, 3, 5, 3.5, 4],
-      periodEn: 'Live',
-      periodAr: 'مباشر',
+      periodEn: '7 days',
+      periodAr: '٧ أيام',
     ),
   ];
 
@@ -202,20 +203,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       route: '/admin/users/add',
     ),
     AdminQuickAction(
-      icon: Icons.post_add_rounded,
+      icon: Icons.account_balance_rounded,
       color: _tealDark,
       softColor: Color(0xFFCCFBF1),
-      labelEn: 'New Product',
-      labelAr: 'منتج جديد',
-      route: '/admin/programs/add',
+      labelEn: 'Add University',
+      labelAr: 'إضافة جامعة',
+      route: '/admin/universities/add',
     ),
     AdminQuickAction(
-      icon: Icons.receipt_long_rounded,
+      icon: Icons.post_add_rounded,
       color: _amberDark,
       softColor: Color(0xFFFEF3C7),
-      labelEn: 'Create Invoice',
-      labelAr: 'إنشاء فاتورة',
-      route: '/admin/programs',
+      labelEn: 'Add Program',
+      labelAr: 'إضافة تخصص',
+      route: '/admin/programs/add',
     ),
     AdminQuickAction(
       icon: Icons.campaign_rounded,
@@ -226,11 +227,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       route: '/admin/notifications',
     ),
     AdminQuickAction(
-      icon: Icons.file_download_rounded,
+      icon: Icons.bar_chart_rounded,
       color: Color(0xFF475569),
       softColor: Color(0xFFE2E8F0),
-      labelEn: 'Export Data',
-      labelAr: 'تصدير البيانات',
+      labelEn: 'Reports',
+      labelAr: 'التقارير',
       route: '/admin/reports',
     ),
     AdminQuickAction(
@@ -243,32 +244,40 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     ),
   ];
 
-  final List<double> _weeklySales = const [45, 60, 52, 75, 95, 68, 40];
+  final List<double> _weeklyRegistrations = const [45, 60, 52, 75, 95, 68, 40];
   static const List<String> _dayLabelsEn = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  static const List<String> _dayLabelsAr = ['إث', 'ث', 'أر', 'خ', 'ج', 'س', 'ح'];
+  static const List<String> _dayLabelsAr = [
+    'إث',
+    'ث',
+    'أر',
+    'خ',
+    'ج',
+    'س',
+    'ح'
+  ];
 
-  final List<AdminProduct> _topProducts = const [
+  final List<AdminProduct> _topPrograms = const [
     AdminProduct(
-      nameEn: 'Wireless Noise-Cancelling Headphones',
-      nameAr: 'سماعات لاسلكية عازلة للضوضاء',
+      nameEn: 'Computer Science',
+      nameAr: 'علوم الحاسوب',
       sold: 840,
       progress: 0.84,
     ),
     AdminProduct(
-      nameEn: 'Mechanical Gaming Keyboard',
-      nameAr: 'لوحة مفاتيح ميكانيكية للألعاب',
+      nameEn: 'Data Science & AI',
+      nameAr: 'علوم البيانات والذكاء الاصطناعي',
       sold: 620,
       progress: 0.62,
     ),
     AdminProduct(
-      nameEn: 'Ultra HD Smart Display',
-      nameAr: 'شاشة ذكية فائقة الدقة',
+      nameEn: 'Business Administration',
+      nameAr: 'إدارة الأعمال',
       sold: 480,
       progress: 0.48,
     ),
     AdminProduct(
-      nameEn: 'Ergonomic Office Chair',
-      nameAr: 'كرسي مكتب مريح',
+      nameEn: 'Civil Engineering',
+      nameAr: 'الهندسة المدنية',
       sold: 310,
       progress: 0.31,
     ),
@@ -279,40 +288,40 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       type: AdminActivityType.success,
       boldEn: 'Ahmed',
       boldAr: 'أحمد',
-      restEn: ' added a new product',
-      restAr: ' أضاف منتجاً جديداً',
+      restEn: ' registered as a new student',
+      restAr: ' سجّل حساب طالب جديد',
       timeEn: '2m ago',
       timeAr: 'منذ دقيقتين',
     ),
     AdminActivity(
       type: AdminActivityType.info,
-      boldEn: 'Sara',
-      boldAr: 'سارة',
-      restEn: ' placed order #4521',
-      restAr: ' قدّمت الطلب #4521',
+      boldEn: 'Islamic University',
+      boldAr: 'الجامعة الإسلامية',
+      restEn: ' published a new program',
+      restAr: ' أضافت تخصصاً أكاديمياً جديداً',
       timeEn: '15m ago',
       timeAr: 'منذ ١٥ دقيقة',
     ),
     AdminActivity(
       type: AdminActivityType.warning,
-      restEn: 'Payment gateway alert',
-      restAr: 'تنبيه بوابة الدفع',
+      restEn: 'University verification pending review',
+      restAr: 'طلب توثيق جامعة بانتظار المراجعة',
       timeEn: '1h ago',
       timeAr: 'منذ ساعة',
     ),
     AdminActivity(
       type: AdminActivityType.success,
-      boldEn: 'Omar',
-      boldAr: 'عمر',
-      restEn: 'New user registration: ',
-      restAr: 'تسجيل مستخدم جديد: ',
+      boldEn: 'Sara',
+      boldAr: 'سارة',
+      restEn: ' completed the academic assessment',
+      restAr: ' أكملت التقييم الأكاديمي',
       timeEn: '2h ago',
       timeAr: 'منذ ساعتين',
     ),
     AdminActivity(
       type: AdminActivityType.info,
-      restEn: 'System backup completed',
-      restAr: 'اكتمل النسخ الاحتياطي',
+      restEn: 'Weekly analytics report generated',
+      restAr: 'تم إنشاء التقرير التحليلي الأسبوعي',
       timeEn: '3h ago',
       timeAr: 'منذ ٣ ساعات',
     ),
@@ -417,11 +426,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   }
 
   String _initials(String name) {
-    final parts = name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((p) => p.isNotEmpty)
-        .toList();
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return '?';
     final first = parts.first.substring(0, 1).toUpperCase();
     final second =
@@ -431,18 +437,50 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
   String _formattedDate(bool en) {
     const weekdaysEn = [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
     ];
     const weekdaysAr = [
-      'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد',
+      'الإثنين',
+      'الثلاثاء',
+      'الأربعاء',
+      'الخميس',
+      'الجمعة',
+      'السبت',
+      'الأحد',
     ];
     const monthsEn = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     const monthsAr = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر',
     ];
     final now = DateTime.now();
     if (en) {
@@ -507,7 +545,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           ),
           const SizedBox(width: 8),
           Text(
-            'AdminPanel',
+            'NextStep AI',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w800,
@@ -557,8 +595,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 isDense: true,
                 filled: true,
                 fillColor: c.surfaceAlt,
-                prefixIcon:
-                    Icon(Icons.search_rounded, size: 18, color: c.textSecondary),
+                prefixIcon: Icon(Icons.search_rounded,
+                    size: 18, color: c.textSecondary),
                 hintText: t(en, 'Search...', 'بحث...'),
                 hintStyle: TextStyle(fontSize: 13, color: c.textSecondary),
                 border: OutlineInputBorder(
@@ -665,7 +703,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           value: 'profile',
           height: 42,
           child: Row(children: [
-            Icon(Icons.person_outline_rounded, size: 18, color: c.textSecondary),
+            Icon(Icons.person_outline_rounded,
+                size: 18, color: c.textSecondary),
             const SizedBox(width: 10),
             Text(t(en, 'Profile', 'الملف الشخصي'),
                 style: TextStyle(fontSize: 13, color: c.textPrimary)),
@@ -833,33 +872,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             const SizedBox(height: 12),
             Expanded(
               child: ListView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 children: [
                   _drawerItem(Icons.dashboard_rounded,
                       t(en, 'Dashboard', 'لوحة التحكم'), '', en, c,
                       active: true),
-                  _drawerItem(Icons.group_rounded,
-                      t(en, 'Users', 'المستخدمون'), '/admin/users', en, c),
+                  _drawerItem(Icons.group_rounded, t(en, 'Users', 'المستخدمون'),
+                      '/admin/users', en, c),
                   _drawerItem(
-                      Icons.inventory_2_rounded,
-                      t(en, 'Products', 'المنتجات'),
-                      '/admin/programs',
+                      Icons.account_balance_rounded,
+                      t(en, 'Universities', 'الجامعات'),
+                      '/admin/universities',
                       en,
                       c),
-                  _drawerItem(Icons.shopping_cart_rounded,
-                      t(en, 'Orders', 'الطلبات'), '/admin/reports', en, c),
+                  _drawerItem(Icons.menu_book_rounded,
+                      t(en, 'Programs', 'التخصصات'), '/admin/programs', en, c),
                   _drawerItem(Icons.analytics_rounded,
                       t(en, 'Reports', 'التقارير'), '/admin/reports', en, c),
                   _drawerItem(
-                      Icons.notifications_rounded,
-                      t(en, 'Notifications', 'الإشعارات'),
-                      'NOTIF',
+                      Icons.memory_rounded,
+                      t(en, 'LLM Usage', 'استخدام الذكاء الاصطناعي'),
+                      '/admin/llm-usage',
                       en,
-                      c,
+                      c),
+                  _drawerItem(Icons.notifications_rounded,
+                      t(en, 'Notifications', 'الإشعارات'), 'NOTIF', en, c,
                       trailing: notifBadge),
-                  _drawerItem(Icons.person_rounded,
-                      t(en, 'Profile', 'الملف الشخصي'), '/admin/profile', en, c),
+                  _drawerItem(
+                      Icons.person_rounded,
+                      t(en, 'Profile', 'الملف الشخصي'),
+                      '/admin/profile',
+                      en,
+                      c),
                   _drawerItem(Icons.settings_rounded,
                       t(en, 'Settings', 'الإعدادات'), '/admin/settings', en, c),
                 ],
@@ -886,8 +930,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     bool danger = false,
     Widget? trailing,
   }) {
-    final Color fg =
-        danger ? c.danger : active ? _indigo : c.textSecondary;
+    final Color fg = danger
+        ? c.danger
+        : active
+            ? _indigo
+            : c.textSecondary;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Material(
@@ -995,6 +1042,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                           color: _indigo,
                         ),
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    SampleDataBadge(
+                      label: en ? 'Sample data' : 'بيانات تجريبية',
                     ),
                   ],
                 ),
@@ -1139,8 +1190,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 Text(
                   t(
                     en,
-                    "Here's what's happening with your platform today.",
-                    'إليك ما يحدث في منصتك اليوم.',
+                    "Here's the learning platform overview for today.",
+                    'إليك نظرة عامة على المنصة التعليمية اليوم.',
                   ),
                   style: TextStyle(
                     fontSize: 13,
@@ -1198,15 +1249,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     return SizedBox(
       width: width,
       height: height,
-      child: CustomPaint(painter: _SparklinePainter(points, color, strokeWidth)),
+      child:
+          CustomPaint(painter: _SparklinePainter(points, color, strokeWidth)),
     );
   }
 
   // ── 2. Stats grid ──
 
   Widget _buildStatsGrid(bool en, AppColors c) {
-    final List<Widget> cards =
-        _stats.map((s) => _statCard(en, c, s)).toList();
+    final List<Widget> cards = _stats.map((s) => _statCard(en, c, s)).toList();
 
     return LayoutBuilder(builder: (context, cons) {
       final bool fourUp = cons.maxWidth >= 900;
@@ -1290,8 +1341,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               ),
               const Spacer(),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: deltaBg,
                   borderRadius: BorderRadius.circular(999),
@@ -1364,8 +1414,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               ),
             ),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: c.surfaceAlt,
                 borderRadius: BorderRadius.circular(999),
@@ -1492,7 +1541,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      t(en, 'Sales Overview', 'نظرة عامة على المبيعات'),
+                      t(en, 'Student Registrations', 'تسجيلات الطلاب'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -1501,8 +1550,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      t(en, 'Last 7 days performance metrics',
-                          'مؤشرات الأداء خلال آخر ٧ أيام'),
+                      t(en, 'Last 7 days registration activity',
+                          'نشاط التسجيل خلال آخر ٧ أيام'),
                       style: TextStyle(
                         fontSize: 12,
                         color: c.textSecondary,
@@ -1559,7 +1608,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             child: Container(
               width: double.infinity,
               constraints: const BoxConstraints(maxWidth: 24),
-              height: _weeklySales[i] / 100 * 100,
+              height: _weeklyRegistrations[i] / 100 * 100,
               decoration: BoxDecoration(
                 gradient: peak
                     ? const LinearGradient(
@@ -1617,7 +1666,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  t(en, 'Top Products', 'أفضل المنتجات'),
+                  t(en, 'Top Specializations', 'أعلى التخصصات إقبالاً'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -1626,14 +1675,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 ),
               ),
               Text(
-                t(en, 'Units Sold', 'الوحدات المبيعة'),
+                t(en, 'Interested students', 'طلاب مهتمون'),
                 style: TextStyle(fontSize: 11, color: c.textSecondary),
               ),
             ],
           ),
           const SizedBox(height: 14),
-          ...List.generate(_topProducts.length, (i) {
-            final p = _topProducts[i];
+          ...List.generate(_topPrograms.length, (i) {
+            final p = _topPrograms[i];
             return Padding(
               padding: EdgeInsets.only(top: i > 0 ? 12 : 0),
               child: Column(
@@ -1655,7 +1704,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '${p.sold} ${t(en, 'sold', 'مبيعاً')}',
+                        '${p.sold} ${t(en, 'interested', 'مهتم')}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -1671,8 +1720,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       value: p.progress,
                       minHeight: 7,
                       backgroundColor: c.surfaceAlt,
-                      valueColor:
-                          const AlwaysStoppedAnimation<Color>(_indigo),
+                      valueColor: const AlwaysStoppedAnimation<Color>(_indigo),
                     ),
                   ),
                 ],
@@ -1755,8 +1803,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
             return Container(
               margin: EdgeInsets.only(top: i > 0 ? 8 : 0),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: c.surfaceAlt.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(12),
@@ -1774,9 +1821,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     child: Text.rich(
                       TextSpan(
                         children: [
-                          if (en
-                              ? a.boldEn.isNotEmpty
-                              : a.boldAr.isNotEmpty)
+                          if (en ? a.boldEn.isNotEmpty : a.boldAr.isNotEmpty)
                             TextSpan(
                               text: en ? a.boldEn : a.boldAr,
                               style: TextStyle(
@@ -1797,8 +1842,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.13),
                       borderRadius: BorderRadius.circular(999),
@@ -1829,8 +1874,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         Divider(height: 1, color: c.divider.withValues(alpha: 0.35)),
         const SizedBox(height: 14),
         Text(
-          t(en, '© 2025 AdminPanel. All rights reserved.',
-              '© 2025 AdminPanel. جميع الحقوق محفوظة.'),
+          t(en, '© 2025 NextStep AI. All rights reserved.',
+              '© 2025 NextStep AI. جميع الحقوق محفوظة.'),
           style: TextStyle(fontSize: 12, color: c.textSecondary),
         ),
         const SizedBox(height: 8),

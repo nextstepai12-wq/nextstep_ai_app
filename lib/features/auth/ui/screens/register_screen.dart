@@ -124,68 +124,68 @@ class _RegisterScreenState extends State<RegisterScreen>
     super.dispose();
   }
 
-Future<void> _register() async {
-  if (!_formKey.currentState!.validate()) return;
-  if (!_agreedToTerms) {
-    _showSnack('يرجى الموافقة على الشروط والأحكام', const Color(0xFFF97316));
-    return;
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (!_agreedToTerms) {
+      _showSnack('يرجى الموافقة على الشروط والأحكام', const Color(0xFFF97316));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final authResponse = await _supabase.signUpWithEmail(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        fullName: _fullNameController.text.trim(),
+        role: 'student',
+      );
+
+      if (authResponse.user == null) {
+        throw Exception('فشل إنشاء الحساب');
+      }
+
+      final userId = authResponse.user!.id;
+
+      await _supabase.upsertStudentProfileWithUuid(
+        StudentProfileModel(
+          userId: userId,
+          studentType: _selectedPath,
+          phone: _selectedPhoneCode! + _phoneController.text.trim(),
+          highSchoolScore: _selectedPath == 'new_student'
+              ? double.tryParse(_gpaController.text)
+              : null,
+          highSchoolBranchId: _selectedPath == 'new_student'
+              ? _getBranchId(_selectedBranch)
+              : null,
+          currentUniversityId: _selectedPath == 'university_student'
+              ? int.tryParse(_universityController.text)
+              : null,
+          currentMajorId: _selectedPath == 'university_student'
+              ? int.tryParse(_majorController.text)
+              : null,
+          academicLevel: _selectedYear,
+          gpa: _selectedPath == 'university_student'
+              ? double.tryParse(_gpaController.text)
+              : null,
+        ),
+      );
+
+      if (mounted) {
+        _showSnack('تم إنشاء الحساب بنجاح!', const Color(0xFF22C55E),
+            icon: Icons.check_circle_outline_rounded);
+        context.pushReplacement('/login');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnack(e.toString().replaceFirst('Exception: ', ''),
+            const Color(0xFFDC2626));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
-  setState(() => _isLoading = true);
-
-  try {
-
-    final authResponse = await _supabase.signUpWithEmail(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-      fullName: _fullNameController.text.trim(),
-      role: 'student',
-    );
-
-    if (authResponse.user == null) {
-      throw Exception('فشل إنشاء الحساب');
-    }
-
-    final userId = authResponse.user!.id;
-
-    await _supabase.upsertStudentProfileWithUuid(
-      StudentProfileModel(
-        userId: userId,
-        studentType: _selectedPath,
-        phone: _selectedPhoneCode! + _phoneController.text.trim(),
-        highSchoolScore: _selectedPath == 'new_student'
-            ? double.tryParse(_gpaController.text)
-            : null,
-        highSchoolBranchId: _selectedPath == 'new_student'
-            ? _getBranchId(_selectedBranch)
-            : null,
-        currentUniversityId: _selectedPath == 'university_student'
-            ? int.tryParse(_universityController.text)
-            : null,
-        currentMajorId: _selectedPath == 'university_student'
-            ? int.tryParse(_majorController.text)
-            : null,
-        academicLevel: _selectedYear,
-        gpa: _selectedPath == 'university_student'
-            ? double.tryParse(_gpaController.text)
-            : null,
-      ),
-    );
-
-    if (mounted) {
-      _showSnack('تم إنشاء الحساب بنجاح!', const Color(0xFF22C55E),
-          icon: Icons.check_circle_outline_rounded);
-      context.pushReplacement('/login');
-    }
-  } catch (e) {
-    if (mounted) {
-      _showSnack(e.toString().replaceFirst('Exception: ', ''),
-          const Color(0xFFDC2626));
-    }
-  } finally {
-    if (mounted) setState(() => _isLoading = false);
-  }
-}
   void _showSnack(String message, Color color, {IconData? icon}) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -193,7 +193,8 @@ Future<void> _register() async {
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: color,
           content: Row(
             children: [
@@ -230,7 +231,7 @@ Future<void> _register() async {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Directionality(
         textDirection: TextDirection.rtl,
         child: Stack(
@@ -239,7 +240,8 @@ Future<void> _register() async {
             SafeArea(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: SlideTransition(
@@ -368,31 +370,31 @@ Future<void> _register() async {
     );
   }
 
-Widget _buildPathSelection() {
-  return Row(
-    children: [
-      Expanded(
-        child: _buildPathCard(
-          title: 'طالب توجيهي',
-          subtitle: 'للذين يتطلعون للالتحاق بالجامعة',
-          icon: Icons.school_rounded,
-          isSelected: _selectedPath == 'new_student',
-          onTap: () => setState(() => _selectedPath = 'new_student'),
+  Widget _buildPathSelection() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildPathCard(
+            title: 'طالب توجيهي',
+            subtitle: 'للذين يتطلعون للالتحاق بالجامعة',
+            icon: Icons.school_rounded,
+            isSelected: _selectedPath == 'new_student',
+            onTap: () => setState(() => _selectedPath = 'new_student'),
+          ),
         ),
-      ),
-      const SizedBox(width: 12),
-      Expanded(
-        child: _buildPathCard(
-          title: 'طالب جامعي',
-          subtitle: 'لتطوير مسارك الأكاديمي والمهني',
-          icon: Icons.local_library_rounded,
-          isSelected: _selectedPath == 'university_student',
-          onTap: () => setState(() => _selectedPath = 'university_student'),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildPathCard(
+            title: 'طالب جامعي',
+            subtitle: 'لتطوير مسارك الأكاديمي والمهني',
+            icon: Icons.local_library_rounded,
+            isSelected: _selectedPath == 'university_student',
+            onTap: () => setState(() => _selectedPath = 'university_student'),
+          ),
         ),
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
   Widget _buildPathCard({
     required String title,
@@ -419,9 +421,7 @@ Widget _buildPathSelection() {
           color: isSelected ? null : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : const Color(0xFFECEDF3),
+            color: isSelected ? Colors.transparent : const Color(0xFFECEDF3),
             width: 1.4,
           ),
           boxShadow: [
@@ -486,7 +486,8 @@ Widget _buildPathSelection() {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.2),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: AppTheme.primaryContainer.withValues(alpha: 0.06),
@@ -515,7 +516,8 @@ Widget _buildPathSelection() {
               icon: Icons.mail_outline_rounded,
               keyboardType: TextInputType.emailAddress,
               validator: (v) {
-                if (v == null || v.isEmpty) return 'الرجاء إدخال البريد الإلكتروني';
+                if (v == null || v.isEmpty)
+                  return 'الرجاء إدخال البريد الإلكتروني';
                 if (!v.contains('@') || !v.contains('.')) {
                   return 'الرجاء إدخال بريد إلكتروني صحيح';
                 }
@@ -551,8 +553,9 @@ Widget _buildPathSelection() {
                 label: 'الجامعة الحالية',
                 hint: 'أدخل اسم جامعتك',
                 icon: Icons.business_outlined,
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? 'الرجاء إدخال اسم الجامعة' : null,
+                validator: (v) => (v == null || v.isEmpty)
+                    ? 'الرجاء إدخال اسم الجامعة'
+                    : null,
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -572,10 +575,12 @@ Widget _buildPathSelection() {
               label: 'كلمة المرور',
               icon: Icons.lock_outline_rounded,
               obscureText: _obscurePassword,
-              onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
+              onToggle: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'الرجاء إدخال كلمة المرور';
-                if (v.length < 6) return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+                if (v.length < 6)
+                  return 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
                 return null;
               },
               showStrength: true,
@@ -614,7 +619,7 @@ Widget _buildPathSelection() {
       hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
       hintTextDirection: TextDirection.rtl,
       filled: true,
-      fillColor: const Color(0xFFF7F8FB),
+      fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
       prefixIcon: Icon(icon, color: AppTheme.onSurfaceVariant, size: 21),
       suffixIcon: suffix,
       border: OutlineInputBorder(
@@ -673,7 +678,8 @@ Widget _buildPathSelection() {
           keyboardType: keyboardType,
           textDirection: TextDirection.rtl,
           textAlign: TextAlign.right,
-          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
+          style:
+              const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
           decoration: _fieldDecoration(hint: hint, icon: icon),
           validator: validator,
         ),
@@ -699,7 +705,8 @@ Widget _buildPathSelection() {
           obscureText: obscureText,
           textDirection: TextDirection.ltr,
           textAlign: TextAlign.right,
-          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
+          style:
+              const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
           decoration: _fieldDecoration(
             hint: '••••••••',
             icon: icon,
@@ -753,9 +760,9 @@ Widget _buildPathSelection() {
     );
   }
 
-InputDecoration _buildDropdownDecoration({required IconData icon}) {
-  return _fieldDecoration(hint: '', icon: icon);
-}
+  InputDecoration _buildDropdownDecoration({required IconData icon}) {
+    return _fieldDecoration(hint: '', icon: icon);
+  }
 
   Widget _buildPhoneSection() {
     return Column(
@@ -801,7 +808,8 @@ InputDecoration _buildDropdownDecoration({required IconData icon}) {
           keyboardType: TextInputType.phone,
           textDirection: TextDirection.ltr,
           textAlign: TextAlign.left,
-          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
+          style:
+              const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
           decoration: _fieldDecoration(
             hint: '599 000 000',
             icon: Icons.phone_android_rounded,
@@ -836,7 +844,8 @@ InputDecoration _buildDropdownDecoration({required IconData icon}) {
           onChanged: (value) => setState(() => _selectedBranch = value),
           validator: (v) =>
               (v == null || v.isEmpty) ? 'الرجاء اختيار الفرع الدراسي' : null,
-          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
+          style:
+              const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
         ),
       ],
     );
@@ -863,7 +872,8 @@ InputDecoration _buildDropdownDecoration({required IconData icon}) {
           onChanged: (value) => setState(() => _selectedYear = value),
           validator: (v) =>
               (v == null || v.isEmpty) ? 'الرجاء اختيار السنة الدراسية' : null,
-          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
+          style:
+              const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
         ),
       ],
     );
@@ -1019,7 +1029,8 @@ InputDecoration _buildDropdownDecoration({required IconData icon}) {
                 onTap: () => context.pushReplacement('/login'),
                 borderRadius: BorderRadius.circular(8),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                   child: Text(
                     'سجل دخولك هنا',
                     style: TextStyle(
@@ -1028,7 +1039,8 @@ InputDecoration _buildDropdownDecoration({required IconData icon}) {
                       height: 1.5,
                       color: AppTheme.secondary,
                       decoration: TextDecoration.underline,
-                      decorationColor: AppTheme.secondary.withValues(alpha: 0.3),
+                      decorationColor:
+                          AppTheme.secondary.withValues(alpha: 0.3),
                     ),
                   ),
                 ),

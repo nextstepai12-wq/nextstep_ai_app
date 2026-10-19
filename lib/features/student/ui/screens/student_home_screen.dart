@@ -1,9 +1,10 @@
-﻿
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 import 'package:nextstep_ai_app/features/student/ui/screens/student_main_screen.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
+import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -18,6 +19,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
   Map<String, dynamic>? _profileData;
   bool _isLoading = true;
   String? _errorMessage;
+  int _answeredQuestions = 0;
+  int _totalQuestions = 6;
+  int _assessmentPercent = 0;
+  bool _assessmentCompleted = false;
 
   late AnimationController _staggerController;
   late List<Animation<double>> _fadeAnimations;
@@ -83,13 +88,20 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     });
     try {
       final cachedData = await TokenManager.getUserData();
+      final savedAnswers =
+          await HiveStorage.getData('assessment_cache', 'answers');
+      final completed =
+          await HiveStorage.getData('assessment_cache', 'completed');
+      final answerCount = savedAnswers is Map ? savedAnswers.length : 0;
+      final answered = answerCount.clamp(0, _totalQuestions).toInt();
       if (mounted) {
         setState(() {
           _userName = cachedData['name'] ?? 'طالب';
-          _profileData = {
-            'student_type': 'tawjihi',
-            'high_school_score': 96.4,
-          };
+          _profileData = <String, dynamic>{};
+          _answeredQuestions = answered;
+          _assessmentPercent = ((answered / _totalQuestions) * 100).round();
+          _assessmentCompleted =
+              completed == true || answered >= _totalQuestions;
         });
       }
     } catch (e) {
@@ -215,7 +227,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.error_outline_rounded, size: 56, color: c.textSecondary),
+                Icon(Icons.error_outline_rounded,
+                    size: 56, color: c.textSecondary),
                 const SizedBox(height: 16),
                 Text(
                   _errorMessage!,
@@ -309,12 +322,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
         _iconButton(
           c: c,
           icon: Icons.menu_rounded,
+          tooltip: 'القائمة',
           onTap: () => Scaffold.of(context).openDrawer(),
         ),
         const SizedBox(width: 8),
         _iconButton(
           c: c,
           icon: Icons.notifications_outlined,
+          tooltip: 'الإشعارات',
           badge: '3',
           onTap: () => context.push('/student/notifications'),
         ),
@@ -355,10 +370,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
   Widget _iconButton({
     required AppColors c,
     required IconData icon,
+    String? tooltip,
     String? badge,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return Tooltip(
+      message: tooltip ?? '',
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
         width: 44,
@@ -402,15 +420,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
           ],
         ),
       ),
+      ),
     );
   }
 
   // ─── Welcome Section ──────────────────────────────────────────────────────
 
   Widget _buildWelcomeSection(AppColors c) {
-    final studentType = _profileData?['student_type'] == 'university'
-        ? 'طالب جامعي'
-        : 'طالب توجيهي';
+    final studentType =
+        _profileData?['student_type'] == 'university' ? 'طالب جامعي' : 'طالب';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,7 +557,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
 
   Widget _buildSearchBar(AppColors c) {
     return GestureDetector(
-      onTap: () => _changeTab(3),
+      onTap: () => context.push('/chat'),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
@@ -603,6 +621,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
   // ─── Progress Reminder Card ───────────────────────────────────────────────
 
   Widget _buildProgressCard(AppColors c) {
+    final remaining =
+        (_totalQuestions - _answeredQuestions).clamp(0, _totalQuestions);
+    final isComplete = _assessmentCompleted;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -677,9 +698,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                     ),
                   ),
                   const Spacer(),
-                  const Text(
-                    'باقي خطوة واحدة',
-                    style: TextStyle(
+                  Text(
+                    isComplete ? 'مكتمل' : 'باقي $remaining',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -688,9 +709,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                 ],
               ),
               const SizedBox(height: 12),
-              const Text(
-                'استكمل تقييم الميول الأكاديمي 🎯',
-                style: TextStyle(
+              Text(
+                isComplete
+                    ? 'اكتمل تقييم الميول الأكاديمي 🎯'
+                    : 'استكمل تقييم الميول الأكاديمي 🎯',
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
@@ -699,7 +722,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
               ),
               const SizedBox(height: 6),
               Text(
-                'أنهِ المحور الأخير لتحصل على دقة مطابقة 100% مع التخصصات الجامعية الواعدة وسوق العمل.',
+                isComplete
+                    ? 'يمكنك الآن مراجعة نتيجتك والتوصيات المبنية على إجاباتك.'
+                    : 'أكمل الأسئلة المتبقية لعرض توصيات مبنية على ميولك.',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.8),
                   fontSize: 13,
@@ -724,7 +749,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'متابعة التقييم الآن',
+                            isComplete
+                                ? 'عرض نتيجة التقييم'
+                                : 'متابعة التقييم الآن',
                             style: TextStyle(
                               color: c.primary,
                               fontSize: 13,
@@ -742,9 +769,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                     ),
                   ),
                   const Spacer(),
-                  const Text(
-                    '3 من 4 مكتملة',
-                    style: TextStyle(
+                  Text(
+                    '$_answeredQuestions من $_totalQuestions مكتملة',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -762,45 +789,40 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
   // ─── Stats Section ────────────────────────────────────────────────────────
 
   Widget _buildStatsSection(AppColors c) {
-    return Row(
-      children: [
-        Expanded(
-          child: _statCard(
-            c: c,
-            icon: Icons.school_rounded,
-            iconBg: c.primarySoft,
-            iconColor: c.primary,
-            value: '${_profileData?['high_school_score'] ?? '--'}%',
-            label: 'المعدل التراكمي',
-            badge: 'مرتفع',
-            badgeColor: c.success,
-            badgeBg: c.successSoft,
-          ),
+    return AppAdaptiveGrid(
+      minItemWidth: 104,
+      maxColumns: 3,
+      spacing: 10,
+      children: <Widget>[
+        _statCard(
+          c: c,
+          icon: Icons.school_rounded,
+          iconBg: c.primarySoft,
+          iconColor: c.primary,
+          value: '--',
+          label: 'المعدل التراكمي',
+          badge: 'غير محدد',
+          badgeColor: c.textSecondary,
+          badgeBg: c.surfaceAlt,
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _statCard(
-            c: c,
-            icon: Icons.insights_rounded,
-            iconBg: c.surfaceAlt,
-            iconColor: c.purple,
-            value: '78%',
-            label: 'اكتمال التقييم',
-            progress: 0.78,
-            progressColor: c.purple,
-          ),
+        _statCard(
+          c: c,
+          icon: Icons.insights_rounded,
+          iconBg: c.surfaceAlt,
+          iconColor: c.purple,
+          value: '$_assessmentPercent%',
+          label: 'اكتمال التقييم',
+          progress: _assessmentPercent / 100,
+          progressColor: c.purple,
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _statCard(
-            c: c,
-            icon: Icons.auto_graph_rounded,
-            iconBg: c.primarySoft,
-            iconColor: c.primary,
-            value: '12',
-            label: 'تخصص ملائم',
-            dot: c.purple,
-          ),
+        _statCard(
+          c: c,
+          icon: Icons.auto_graph_rounded,
+          iconBg: c.primarySoft,
+          iconColor: c.primary,
+          value: '4',
+          label: 'تخصص ملائم',
+          dot: c.purple,
         ),
       ],
     );
@@ -986,7 +1008,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                 gradient: [c.primarySoft, c.surfaceAlt],
                 iconColor: c.primary,
                 title: 'التقييم الذكي',
-                subtitle: 'تحليل الميول والقدرات عبر 40 سؤالاً ذكياً',
+                subtitle: 'تحليل الميول والقدرات عبر 6 أسئلة قصيرة',
                 badge: 'نشط الآن',
                 badgeColor: c.primary,
                 badgeBg: c.primarySoft,
@@ -1022,7 +1044,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                 badge: 'مستشار 24/7',
                 badgeColor: c.purple,
                 badgeBg: c.surfaceAlt,
-                onTap: () => _changeTab(3),
+                onTap: () => context.push('/chat'),
               ),
             ),
             const SizedBox(width: 12),
@@ -1170,6 +1192,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
             ),
             const SizedBox(width: 6),
             Icon(Icons.arrow_back_ios_new_rounded, color: c.primary, size: 18),
+            const SizedBox(width: 8),
+            const SampleDataBadge(),
             const Spacer(),
             GestureDetector(
               onTap: () => _changeTab(2),
@@ -1248,7 +1272,18 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     required List<IconData> tagIcons,
   }) {
     return GestureDetector(
-      onTap: () => context.push('/student/recommendations'),
+      onTap: () => context.push(
+        '/student/major-detail',
+        extra: <String, dynamic>{
+          'id': title,
+          'name': title,
+          'university': subtitle,
+          'category': 'تخصص أكاديمي',
+          'match': matchPercent,
+          'duration': tags.isNotEmpty ? tags.first : '4 سنوات',
+          'description': badgeText,
+        },
+      ),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

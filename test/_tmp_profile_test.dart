@@ -18,10 +18,23 @@ void main() {
         ),
       ),
     );
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('شركة التدريب التقني'), findsOneWidget);
+
+    final scrollable = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(
+      find.text('إدارة المنشأة'),
+      240,
+      scrollable: scrollable,
+    );
     expect(find.text('إدارة المنشأة'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('المالية والحساب'),
+      240,
+      scrollable: scrollable,
+    );
     expect(find.text('المالية والحساب'), findsOneWidget);
   });
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/training_colors.dart';
@@ -141,6 +143,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
 
   final List<StudentRequest> _requests = List.of(mockStudentRequests);
   StudentRequestStatus? _selectedTab;
+  String? _courseFilter;
+  bool _newestFirst = true;
   bool _tabsVisible = true;
   double _lastScrollOffset = 0;
 
@@ -186,9 +190,16 @@ class _StudentsScreenState extends State<StudentsScreen> {
   int _countOf(StudentRequestStatus status) =>
       _requests.where((r) => r.status == status).length;
 
-  List<StudentRequest> get _visibleRequests => _selectedTab == null
-      ? _requests
-      : _requests.where((r) => r.status == _selectedTab).toList();
+  List<StudentRequest> get _visibleRequests {
+    final list = _requests.where((request) {
+      final matchesTab =
+          _selectedTab == null || request.status == _selectedTab;
+      final matchesCourse =
+          _courseFilter == null || request.course == _courseFilter;
+      return matchesTab && matchesCourse;
+    }).toList();
+    return _newestFirst ? list : list.reversed.toList();
+  }
 
   void _applyDecision(StudentRequest request, bool accept) {
     setState(() {
@@ -211,7 +222,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
         backgroundColor: color,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         duration: const Duration(seconds: 3),
         content: Row(
           children: [
@@ -223,8 +235,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
             Expanded(
               child: Text(
                 accept
-                    ? 'تم قبول طلب الطالب $name بنجاح!'
-                    : 'تم رفض طلب $name وتحديث الحالة',
+                    ? 'تم قبول طلب $name وتحديث الحالة محلياً'
+                    : 'تم رفض طلب $name وتحديث الحالة محلياً',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 13.sp,
@@ -257,8 +269,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
     return false;
   }
 
-  Future<void> _openDecisionSheet(
-      StudentRequest request, bool accept) async {
+  Future<void> _openDecisionSheet(StudentRequest request, bool accept) async {
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -273,6 +284,15 @@ class _StudentsScreenState extends State<StudentsScreen> {
     }
   }
 
+  Future<void> _openDetails(StudentRequest request) async {
+    final status = await context.push<StudentRequestStatus>(
+      '/training-center/students/details',
+      extra: request,
+    );
+    if (!mounted || status == null) return;
+    _applyDecision(request, status == StudentRequestStatus.accepted);
+  }
+
   @override
   Widget build(BuildContext context) {
     final visible = _visibleRequests;
@@ -284,7 +304,13 @@ class _StudentsScreenState extends State<StudentsScreen> {
       drawer: const TrainingCenterDrawer(),
       body: Column(
         children: [
-          
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 0),
+            child: const Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: SampleDataBadge(),
+            ),
+          ),
           _buildStatusTabs(),
           _buildSecondaryFilters(visible.length),
           Expanded(
@@ -313,6 +339,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                           child: _RequestCard(
                             request: request,
                             swipeHint: index == 0,
+                            onTap: () => _openDetails(request),
                             onDecision: (accept) =>
                                 _openDecisionSheet(request, accept),
                           ),
@@ -320,6 +347,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                       : _RequestCard(
                           request: request,
                           swipeHint: false,
+                          onTap: () => _openDetails(request),
                           onDecision: (accept) =>
                               _openDecisionSheet(request, accept),
                         ),
@@ -458,8 +486,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
-
-
   Widget _buildStatusTabs() {
     final tabs = <(String, int, StudentRequestStatus?)>[
       ('الكل', _totalCount, null),
@@ -516,13 +542,23 @@ class _StudentsScreenState extends State<StudentsScreen> {
       padding: EdgeInsets.fromLTRB(16.w, 2.h, 16.w, 10.h),
       child: Row(
         children: [
-          const Expanded(
-              child: _FilterButton(
-                  icon: Icons.filter_list_rounded, text: 'تصفية حسب الدورة')),
+          Expanded(
+            child: _FilterButton(
+              icon: Icons.filter_list_rounded,
+              text: _courseFilter ?? 'كل الدورات',
+              active: _courseFilter != null,
+              onTap: _showCourseFilter,
+            ),
+          ),
           SizedBox(width: 10.w),
-          const Expanded(
-              child: _FilterButton(
-                  icon: Icons.schedule_rounded, text: 'الأحدث')),
+          Expanded(
+            child: _FilterButton(
+              icon: Icons.schedule_rounded,
+              text: _newestFirst ? 'الأحدث' : 'الأقدم',
+              active: !_newestFirst,
+              onTap: _showSortFilter,
+            ),
+          ),
           SizedBox(width: 10.w),
           Text(
             '$shownCount من أصل $_totalCount',
@@ -535,6 +571,108 @@ class _StudentsScreenState extends State<StudentsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showCourseFilter() {
+    final courses = _requests.map((request) => request.course).toSet().toList();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: TrainingColors.surface,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Text(
+                'تصفية حسب الدورة',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: TrainingColors.primary,
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text('كل الدورات'),
+              trailing: _courseFilter == null
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
+              onTap: () {
+                setState(() => _courseFilter = null);
+                Navigator.pop(ctx);
+              },
+            ),
+            for (final course in courses)
+              ListTile(
+                title: Text(course),
+                trailing: _courseFilter == course
+                    ? const Icon(Icons.check_rounded,
+                        color: TrainingColors.primary)
+                    : null,
+                onTap: () {
+                  setState(() => _courseFilter = course);
+                  Navigator.pop(ctx);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSortFilter() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: TrainingColors.surface,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  'ترتيب الطلبات',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: TrainingColors.primary,
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text('الأحدث أولاً'),
+              trailing: _newestFirst
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
+              onTap: () {
+                setState(() => _newestFirst = true);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              title: const Text('الأقدم أولاً'),
+              trailing: !_newestFirst
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
+              onTap: () {
+                setState(() => _newestFirst = false);
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -567,11 +705,13 @@ class _Entrance extends StatelessWidget {
 class _RequestCard extends StatelessWidget {
   const _RequestCard({
     required this.request,
+    required this.onTap,
     required this.onDecision,
     this.swipeHint = false,
   });
 
   final StudentRequest request;
+  final VoidCallback onTap;
   final ValueChanged<bool> onDecision;
   final bool swipeHint;
 
@@ -589,10 +729,7 @@ class _RequestCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16.r),
       child: InkWell(
         borderRadius: BorderRadius.circular(16.r),
-        onTap: () => context.push(
-          '/training-center/students/details',
-          extra: request,
-        ),
+        onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -721,8 +858,7 @@ class _RequestCard extends StatelessWidget {
                   SizedBox(width: 6.w),
                   Text('•',
                       style: TextStyle(
-                          fontSize: 10.sp,
-                          color: TrainingColors.textMuted)),
+                          fontSize: 10.sp, color: TrainingColors.textMuted)),
                   SizedBox(width: 6.w),
                   Flexible(
                     child: Text(request.bio,
@@ -994,9 +1130,7 @@ class _StatusTabPill extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
-              color: selected
-                  ? TrainingColors.primary
-                  : TrainingColors.divider,
+              color: selected ? TrainingColors.primary : TrainingColors.divider,
             ),
             boxShadow: selected ? TrainingColors.softShadow : null,
           ),
@@ -1012,12 +1146,10 @@ class _StatusTabPill extends StatelessWidget {
                       fontFamily: 'Cairo',
                       fontWeight: FontWeight.w600,
                       fontSize: 12.sp,
-                      color:
-                          selected ? Colors.white : TrainingColors.primary)),
+                      color: selected ? Colors.white : TrainingColors.primary)),
               SizedBox(width: 6.w),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
                 decoration: BoxDecoration(
                   color: selected
                       ? Colors.white.withValues(alpha: .22)
@@ -1029,9 +1161,8 @@ class _StatusTabPill extends StatelessWidget {
                         fontFamily: 'Cairo',
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w700,
-                        color: selected
-                            ? Colors.white
-                            : TrainingColors.primary)),
+                        color:
+                            selected ? Colors.white : TrainingColors.primary)),
               ),
             ],
           ),
@@ -1042,24 +1173,35 @@ class _StatusTabPill extends StatelessWidget {
 }
 
 class _FilterButton extends StatelessWidget {
-  const _FilterButton({required this.icon, required this.text});
+  const _FilterButton({
+    required this.icon,
+    required this.text,
+    required this.onTap,
+    this.active = false,
+  });
 
   final IconData icon;
   final String text;
+  final VoidCallback onTap;
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: active ? TrainingColors.accentSoft : Colors.white,
       borderRadius: BorderRadius.circular(10.r),
       child: InkWell(
         borderRadius: BorderRadius.circular(10.r),
-        onTap: () {},
+        onTap: onTap,
         child: Container(
           height: 42.h,
           padding: EdgeInsets.symmetric(horizontal: 11.w),
           decoration: BoxDecoration(
-            border: Border.all(color: TrainingColors.divider),
+            border: Border.all(
+              color: active
+                  ? TrainingColors.accent
+                  : TrainingColors.divider,
+            ),
             borderRadius: BorderRadius.circular(10.r),
           ),
           child: Row(
@@ -1278,13 +1420,25 @@ class StudentRequestDetailsScreen extends StatelessWidget {
                 fontSize: 20)),
         actions: [
           IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.ios_share_rounded,
-                  color: TrainingColors.primary)),
-          IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.print_outlined,
-                  color: TrainingColors.primary)),
+            tooltip: 'نسخ ملخص الطلب',
+            onPressed: () async {
+              await Clipboard.setData(
+                ClipboardData(
+                  text: '${request.name}\n${request.course}\n'
+                      'رقم الطلب: ${request.id}',
+                ),
+              );
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('تم نسخ ملخص الطلب'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            icon: const Icon(Icons.copy_all_rounded,
+                color: TrainingColors.primary),
+          ),
         ],
       ),
       body: Stack(
@@ -1292,11 +1446,13 @@ class StudentRequestDetailsScreen extends StatelessWidget {
           ListView(
             padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 140.h),
             children: [
-              const _RequestIdRow(),
+              _RequestIdRow(request: request),
               SizedBox(height: 12.h),
               _StudentHeader(request: request),
               SizedBox(height: 16.h),
-              const _CourseCard(),
+              const SampleDataBadge(),
+              SizedBox(height: 16.h),
+              _CourseCard(course: request.course),
               SizedBox(height: 16.h),
               const _InfoCard(),
               SizedBox(height: 16.h),
@@ -1320,45 +1476,15 @@ class StudentRequestDetailsScreen extends StatelessWidget {
                 ),
               );
               if (confirmed == true && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    margin:
-                        EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                    backgroundColor: accept
-                        ? Colors.green.shade600
-                        : Colors.red.shade600,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14.r)),
-                    content: Row(
-                      children: [
-                        Icon(
-                          accept
-                              ? Icons.check_circle_rounded
-                              : Icons.cancel_rounded,
-                          color: Colors.white,
-                        ),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: Text(
-                            accept
-                                ? 'تم قبول طلب الطالب ${request.name} بنجاح!'
-                                : 'تم رفض طلب ${request.name} وتحديث الحالة',
-                            style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                Navigator.pop(
+                  context,
+                  accept
+                      ? StudentRequestStatus.accepted
+                      : StudentRequestStatus.rejected,
                 );
               }
             },
-            onContact: () =>
-                _launch('https://wa.me/966551234567'),
+            onContact: () => _launch('https://wa.me/966551234567'),
           ),
         ],
       ),
@@ -1367,7 +1493,9 @@ class StudentRequestDetailsScreen extends StatelessWidget {
 }
 
 class _RequestIdRow extends StatelessWidget {
-  const _RequestIdRow();
+  const _RequestIdRow({required this.request});
+
+  final StudentRequest request;
 
   @override
   Widget build(BuildContext context) {
@@ -1376,7 +1504,7 @@ class _RequestIdRow extends StatelessWidget {
         const _PulseDot(),
         SizedBox(width: 8.w),
         Expanded(
-          child: Text('طلب رقم #REQ-2025-884',
+          child: Text('طلب رقم #${request.id}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -1502,8 +1630,7 @@ class _StudentHeader extends StatelessWidget {
                 ),
                 SizedBox(width: 8.w),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 9.w, vertical: 5.h),
+                  padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 5.h),
                   decoration: BoxDecoration(
                     color: TrainingColors.successSoft,
                     borderRadius: BorderRadius.circular(20.r),
@@ -1553,7 +1680,9 @@ class _StudentHeader extends StatelessWidget {
 }
 
 class _CourseCard extends StatelessWidget {
-  const _CourseCard();
+  const _CourseCard({required this.course});
+
+  final String course;
 
   @override
   Widget build(BuildContext context) {
@@ -1603,49 +1732,25 @@ class _CourseCard extends StatelessWidget {
                       color: Colors.white, size: 32.sp),
                 ),
                 SizedBox(width: 10.w),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('دورة إدارة المشاريع الاحترافية PMP®',
-                          maxLines: 1,
+                      Text(course,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontFamily: 'Cairo',
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
                               color: TrainingColors.primary)),
-                      SizedBox(height: 5),
-                      _MiniBadge('تدريب ميداني', TrainingColors.accent),
-                      SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Icon(Icons.calendar_month_outlined,
-                              size: 14, color: TrainingColors.accent),
-                          SizedBox(width: 4),
-                          Text('تبدأ 15 يونيو 2025',
-                              style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 10,
-                                  color: TrainingColors.textSecondary)),
-                        ],
-                      ),
-                      SizedBox(height: 3),
-                      Row(
-                        children: [
-                          Icon(Icons.devices_outlined,
-                              size: 14, color: TrainingColors.accent),
-                          SizedBox(width: 4),
-                          Flexible(
-                            child: Text('تدريب هجين (الرياض / عن بُعد)',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontFamily: 'Cairo',
-                                    fontSize: 10,
-                                    color: TrainingColors.textSecondary)),
-                          ),
-                        ],
+                      const SizedBox(height: 5),
+                      const Text(
+                        'التفاصيل الإضافية للدورة غير متوفرة في هذه النسخة.',
+                        style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 10,
+                            color: TrainingColors.textSecondary),
                       ),
                     ],
                   ),
@@ -2463,7 +2568,8 @@ class _RequestConfirmationSheetState extends State<RequestConfirmationSheet>
             ),
             SizedBox(height: 6.h),
             TextButton(
-              onPressed: canInteract ? () => Navigator.pop(context, false) : null,
+              onPressed:
+                  canInteract ? () => Navigator.pop(context, false) : null,
               child: Text(
                 accept ? 'رجوع وإلغاء' : 'رجوع',
                 style: TextStyle(
@@ -2696,8 +2802,7 @@ class _SuccessNotice extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_rounded,
-                size: 20.sp, color: Colors.white),
+            Icon(Icons.check_circle_rounded, size: 20.sp, color: Colors.white),
             SizedBox(width: 8.w),
             Flexible(
               child: Text(
@@ -2705,9 +2810,7 @@ class _SuccessNotice extends StatelessWidget {
                 maxLines: 2,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 12.sp,
-                    color: Colors.white),
+                    fontFamily: 'Cairo', fontSize: 12.sp, color: Colors.white),
               ),
             ),
           ],
@@ -2732,7 +2835,8 @@ class _ConfirmButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = accept ? TrainingColors.success : TrainingColors.danger;
     final label = switch (phase) {
-      _SheetPhase.idle => accept ? 'تأكيد القبول وإرسال الإشعار' : 'تأكيد الرفض',
+      _SheetPhase.idle =>
+        accept ? 'تأكيد القبول وإرسال الإشعار' : 'تأكيد الرفض',
       _SheetPhase.loading => 'جاري تأكيد التسجيل...',
       _SheetPhase.success => 'تم تأكيد القبول',
     };
@@ -2766,8 +2870,7 @@ class _ConfirmButton extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                  _SheetPhase.success => Icon(
-                      Icons.done_all_rounded,
+                  _SheetPhase.success => Icon(Icons.done_all_rounded,
                       key: const ValueKey('success'),
                       size: 22.sp,
                       color: Colors.white),

@@ -1,7 +1,8 @@
-﻿import 'dart:math';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 
@@ -56,7 +57,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       begin: const Offset(0.3, 0),
       end: Offset.zero,
     ).animate(
-      CurvedAnimation(parent: _questionAnimController, curve: Curves.easeOutCubic),
+      CurvedAnimation(
+          parent: _questionAnimController, curve: Curves.easeOutCubic),
     );
     _confettiController = AnimationController(
       vsync: this,
@@ -80,49 +82,47 @@ class _AssessmentScreenState extends State<AssessmentScreen>
   // ─── Data helpers ────────────────────────────────────────────────────────
 
   String _dimName(String key) => switch (key) {
-    'programming' => 'البرمجة',
-    'math' => 'الرياضيات',
-    'communication' => 'التواصل',
-    'research' => 'البحث العلمي',
-    'practical' => 'العملي',
-    'management' => 'الإدارة',
-    _ => key,
-  };
+        'programming' => 'البرمجة',
+        'math' => 'الرياضيات',
+        'communication' => 'التواصل',
+        'research' => 'البحث العلمي',
+        'practical' => 'العملي',
+        'management' => 'الإدارة',
+        _ => key,
+      };
 
   String _dimIcon(String key) => switch (key) {
-    'programming' => '💻',
-    'math' => '📐',
-    'communication' => '🗣️',
-    'research' => '🔬',
-    'practical' => '🔧',
-    'management' => '📊',
-    _ => '📌',
-  };
+        'programming' => '💻',
+        'math' => '📐',
+        'communication' => '🗣️',
+        'research' => '🔬',
+        'practical' => '🔧',
+        'management' => '📊',
+        _ => '📌',
+      };
 
   IconData _dimMaterialIcon(String key) => switch (key) {
-    'programming' => Icons.code_rounded,
-    'math' => Icons.calculate_rounded,
-    'communication' => Icons.forum_rounded,
-    'research' => Icons.science_rounded,
-    'practical' => Icons.build_rounded,
-    'management' => Icons.analytics_rounded,
-    _ => Icons.star_rounded,
-  };
+        'programming' => Icons.code_rounded,
+        'math' => Icons.calculate_rounded,
+        'communication' => Icons.forum_rounded,
+        'research' => Icons.science_rounded,
+        'practical' => Icons.build_rounded,
+        'management' => Icons.analytics_rounded,
+        _ => Icons.star_rounded,
+      };
 
   Color _dimColor(String key, AppColors c) => switch (key) {
-    'programming' => c.primary,
-    'math' => const Color(0xFF4953BC),
-    'communication' => const Color(0xFF00414D),
-    'research' => const Color(0xFF4338CA),
-    'practical' => c.success,
-    'management' => c.purple,
-    _ => c.primary,
-  };
+        'programming' => c.primary,
+        'math' => const Color(0xFF4953BC),
+        'communication' => const Color(0xFF00414D),
+        'research' => const Color(0xFF4338CA),
+        'practical' => c.success,
+        'management' => c.purple,
+        _ => c.primary,
+      };
 
   double get _progress =>
       _totalQuestions > 0 ? _answers.length / _totalQuestions : 0;
-
-
 
   // ─── Load / Save ─────────────────────────────────────────────────────────
 
@@ -130,32 +130,38 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     return [
       {
         'id': 1,
-        'question_text': 'إلى أي مدى تجد نفسك مستمتعاً عند تفكيك المشكلات المعقدة وتصميم خطوات خوارزمية لحلها؟',
+        'question_text':
+            'إلى أي مدى تجد نفسك مستمتعاً عند تفكيك المشكلات المعقدة وتصميم خطوات خوارزمية لحلها؟',
         'dimension': 'programming',
       },
       {
         'id': 2,
-        'question_text': 'كم تستمتع بحل المعادلات الرياضية واستكشاف الأنماط الكمية والمنطقية؟',
+        'question_text':
+            'كم تستمتع بحل المعادلات الرياضية واستكشاف الأنماط الكمية والمنطقية؟',
         'dimension': 'math',
       },
       {
         'id': 3,
-        'question_text': 'ما مدى راحتك في التواصل مع الآخرين وتقديم الأفكار والإقناع في بيئة عمل مشتركة؟',
+        'question_text':
+            'ما مدى راحتك في التواصل مع الآخرين وتقديم الأفكار والإقناع في بيئة عمل مشتركة؟',
         'dimension': 'communication',
       },
       {
         'id': 4,
-        'question_text': 'إلى أي مدى تشعر بالفضول لاكتشاف معلومات جديدة والتحقق منها بشكل علمي منهجي؟',
+        'question_text':
+            'إلى أي مدى تشعر بالفضول لاكتشاف معلومات جديدة والتحقق منها بشكل علمي منهجي؟',
         'dimension': 'research',
       },
       {
         'id': 5,
-        'question_text': 'كم تستمتع بتطبيق المعرفة عملياً وحل المشكلات الواقعية بيديك؟',
+        'question_text':
+            'كم تستمتع بتطبيق المعرفة عملياً وحل المشكلات الواقعية بيديك؟',
         'dimension': 'practical',
       },
       {
         'id': 6,
-        'question_text': 'ما مدى ميلك لتنظيم المهام وقيادة الفرق واتخاذ القرارات الاستراتيجية؟',
+        'question_text':
+            'ما مدى ميلك لتنظيم المهام وقيادة الفرق واتخاذ القرارات الاستراتيجية؟',
         'dimension': 'management',
       },
     ];
@@ -289,11 +295,45 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       }
     }
     for (var e in dimAnswers.entries) {
-      _dimensions[e.key] =
-          e.value.reduce((a, b) => a + b) / e.value.length;
+      _dimensions[e.key] = e.value.reduce((a, b) => a + b) / e.value.length;
     }
     HiveStorage.saveData('assessment_cache', 'results', _dimensions);
     HiveStorage.saveData('assessment_cache', 'completed', true);
+  }
+
+  Future<void> _restartAssessment() async {
+    await HiveStorage.deleteData('assessment_cache', 'answers');
+    await HiveStorage.deleteData('assessment_cache', 'results');
+    await HiveStorage.deleteData('assessment_cache', 'completed');
+    if (!mounted) return;
+    setState(() {
+      _state = _AssessmentState.question;
+      _answers.clear();
+      _dimensions.updateAll((key, value) => 0.0);
+      _currentQuestionIndex = 0;
+    });
+    _questionAnimController.forward(from: 0);
+  }
+
+  Future<void> _shareResults() async {
+    final sorted = _dimensions.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final summary = sorted
+        .take(3)
+        .map((entry) => '${_dimName(entry.key)}: ${entry.value.toInt()}%')
+        .join('\n');
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: 'نتيجة التقييم الذكي في NextStep AI\n\n$summary',
+          subject: 'نتيجة التقييم الذكي',
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      _showSnack(
+          'تعذّرت مشاركة النتيجة على هذا الجهاز', const Color(0xFFDC2626));
+    }
   }
 
   void _showExitDialog() {
@@ -304,7 +344,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: c.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           contentPadding: const EdgeInsets.all(24),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -316,7 +357,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   color: c.danger.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.pause_circle_rounded, color: c.danger, size: 28),
+                child:
+                    Icon(Icons.pause_circle_rounded, color: c.danger, size: 28),
               ),
               const SizedBox(height: 16),
               Text(
@@ -387,9 +429,11 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: color,
-          content: Text(msg, style: const TextStyle(color: Colors.white, fontSize: 13)),
+          content: Text(msg,
+              style: const TextStyle(color: Colors.white, fontSize: 13)),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -445,10 +489,14 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                 Icon(Icons.quiz_outlined, size: 64, color: c.textSecondary),
                 const SizedBox(height: 16),
                 Text('لا توجد أسئلة حالياً',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: c.textPrimary)),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: c.textPrimary)),
                 const SizedBox(height: 8),
                 Text(_errorMessage ?? 'يرجى المحاولة مرة أخرى',
-                    style: TextStyle(fontSize: 14, color: c.textSecondary), textAlign: TextAlign.center),
+                    style: TextStyle(fontSize: 14, color: c.textSecondary),
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: _loadQuestions,
@@ -457,7 +505,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: c.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                 ),
               ],
@@ -499,7 +548,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       left: 0,
       right: 0,
       child: Container(
-        padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 8, 16, 0),
+        padding: EdgeInsets.fromLTRB(
+            16, MediaQuery.of(context).padding.top + 8, 16, 0),
         color: c.background.withValues(alpha: 0.85),
         child: Row(
           children: [
@@ -512,10 +562,13 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   color: c.surface,
                   shape: BoxShape.circle,
                   boxShadow: [
-                    BoxShadow(color: c.primary.withValues(alpha: 0.06), blurRadius: 8),
+                    BoxShadow(
+                        color: c.primary.withValues(alpha: 0.06),
+                        blurRadius: 8),
                   ],
                 ),
-                child: Icon(Icons.arrow_back_ios_new_rounded, color: c.textPrimary, size: 20),
+                child: Icon(Icons.arrow_back_ios_new_rounded,
+                    color: c.textPrimary, size: 20),
               ),
             ),
             const Spacer(),
@@ -523,7 +576,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               children: [
                 Text(
                   'التقييم الذكي',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: c.textPrimary),
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: c.textPrimary),
                 ),
                 const SizedBox(height: 2),
                 Row(
@@ -548,10 +604,13 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   color: c.surface,
                   shape: BoxShape.circle,
                   boxShadow: [
-                    BoxShadow(color: c.primary.withValues(alpha: 0.06), blurRadius: 8),
+                    BoxShadow(
+                        color: c.primary.withValues(alpha: 0.06),
+                        blurRadius: 8),
                   ],
                 ),
-                child: Icon(Icons.close_rounded, color: c.textSecondary, size: 20),
+                child:
+                    Icon(Icons.close_rounded, color: c.textSecondary, size: 20),
               ),
             ),
           ],
@@ -608,7 +667,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         color: c.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: c.primary.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: c.primary.withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -616,7 +678,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: c.primarySoft,
                   borderRadius: BorderRadius.circular(10),
@@ -628,7 +691,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     const SizedBox(width: 4),
                     Text(
                       'السؤال ${_currentQuestionIndex + 1} من $_totalQuestions',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: c.primary),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: c.primary),
                     ),
                   ],
                 ),
@@ -642,7 +708,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               const Spacer(),
               Text(
                 '$pct%',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: c.primary),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: c.primary),
               ),
             ],
           ),
@@ -666,12 +735,16 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               Container(
                 width: 8,
                 height: 8,
-                decoration: BoxDecoration(color: _dimColor(dim, c), shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                    color: _dimColor(dim, c), shape: BoxShape.circle),
               ),
               const SizedBox(width: 6),
               Text(
                 _dimName(dim),
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _dimColor(dim, c)),
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _dimColor(dim, c)),
               ),
             ],
           ),
@@ -682,7 +755,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
 
   // ─── Question Card ───────────────────────────────────────────────────────
 
-  Widget _buildQuestionCard(AppColors c, Map<String, dynamic> q, String dim, int? selected) {
+  Widget _buildQuestionCard(
+      AppColors c, Map<String, dynamic> q, String dim, int? selected) {
     final dimLabel = _dimName(dim);
 
     return Container(
@@ -691,7 +765,10 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         color: c.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: c.primary.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: c.primary.withValues(alpha: 0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -706,7 +783,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   color: _dimColor(dim, c).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(_dimMaterialIcon(dim), color: _dimColor(dim, c), size: 22),
+                child: Icon(_dimMaterialIcon(dim),
+                    color: _dimColor(dim, c), size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -715,12 +793,19 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   children: [
                     Text(
                       dimLabel,
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _dimColor(dim, c)),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _dimColor(dim, c)),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       q['question_text'] ?? '',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: c.textPrimary, height: 1.4),
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: c.textPrimary,
+                          height: 1.4),
                     ),
                   ],
                 ),
@@ -766,7 +851,12 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                 width: isSelected ? 2 : 1,
               ),
               boxShadow: isSelected
-                  ? [BoxShadow(color: c.primary.withValues(alpha: 0.12), blurRadius: 8, offset: const Offset(0, 4))]
+                  ? [
+                      BoxShadow(
+                          color: c.primary.withValues(alpha: 0.12),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4))
+                    ]
                   : [],
             ),
             child: Row(
@@ -784,11 +874,15 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     ),
                   ),
                   child: isSelected
-                      ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                      ? const Icon(Icons.check_rounded,
+                          color: Colors.white, size: 16)
                       : Center(
                           child: Text(
                             '$value',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: c.textSecondary),
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: c.textSecondary),
                           ),
                         ),
                 ),
@@ -798,7 +892,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     labels[i],
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w500,
                       color: isSelected ? c.primary : c.textPrimary,
                     ),
                   ),
@@ -834,9 +929,14 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.arrow_forward_rounded, color: c.textSecondary, size: 18),
+                      Icon(Icons.arrow_forward_rounded,
+                          color: c.textSecondary, size: 18),
                       const SizedBox(width: 6),
-                      Text('السابق', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: c.textPrimary)),
+                      Text('السابق',
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: c.textPrimary)),
                     ],
                   ),
                 ),
@@ -850,12 +950,18 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   height: 48,
                   decoration: BoxDecoration(
                     gradient: hasAnswer
-                        ? LinearGradient(colors: [c.primary, c.primaryContainer])
+                        ? LinearGradient(
+                            colors: [c.primary, c.primaryContainer])
                         : null,
                     color: hasAnswer ? null : c.surfaceAlt,
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: hasAnswer
-                        ? [BoxShadow(color: c.primary.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 6))]
+                        ? [
+                            BoxShadow(
+                                color: c.primary.withValues(alpha: 0.3),
+                                blurRadius: 16,
+                                offset: const Offset(0, 6))
+                          ]
                         : [],
                   ),
                   child: Center(
@@ -916,7 +1022,9 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                             height: 120,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: c.primary.withValues(alpha: 0.15), width: 3),
+                              border: Border.all(
+                                  color: c.primary.withValues(alpha: 0.15),
+                                  width: 3),
                             ),
                           ),
                         ),
@@ -930,7 +1038,9 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                             height: 96,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: c.purple.withValues(alpha: 0.1), width: 3),
+                              border: Border.all(
+                                  color: c.purple.withValues(alpha: 0.1),
+                                  width: 3),
                             ),
                           ),
                         ),
@@ -941,43 +1051,58 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                         decoration: BoxDecoration(
                           color: c.primaryContainer,
                           shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.3), blurRadius: 20)],
+                          boxShadow: [
+                            BoxShadow(
+                                color: c.primary.withValues(alpha: 0.3),
+                                blurRadius: 20)
+                          ],
                         ),
-                        child: Icon(Icons.psychology_rounded, color: Colors.white, size: 36),
+                        child: Icon(Icons.psychology_rounded,
+                            color: Colors.white, size: 36),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: c.primarySoft,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     'محرك NextStep AI',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: c.primary),
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: c.primary),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'جاري تحليل إجاباتك بالذكاء الاصطناعي...',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: c.textPrimary),
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: c.textPrimary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'يقوم الذكاء الاصطناعي بتحليل إجاباتك عبر 6 أبعاد تحليلية',
+                  'يتم احتساب النتائج محلياً على هذا الجهاز عبر 6 أبعاد تحليلية',
                   style: TextStyle(fontSize: 13, color: c.textSecondary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-                _analyzingStep(c, Icons.check_circle_rounded, 'فحص المهارات التحليلية', '100%', c.primary, false),
+                _analyzingStep(c, Icons.check_circle_rounded,
+                    'فحص المهارات التحليلية', '100%', c.primary, false),
                 const SizedBox(height: 12),
-                _analyzingStep(c, Icons.sync_rounded, 'ربط التفضيلات بالتخصصات', '84%', c.purple, true),
+                _analyzingStep(c, Icons.sync_rounded, 'ربط التفضيلات بالتخصصات',
+                    '84%', c.purple, true),
                 const SizedBox(height: 12),
-                _analyzingStep(c, Icons.hourglass_empty_rounded, 'توليد الخلاصة والنتائج', '...', c.textSecondary, false),
+                _analyzingStep(c, Icons.hourglass_empty_rounded,
+                    'توليد الخلاصة والنتائج', '...', c.textSecondary, false),
               ],
             ),
           ),
@@ -986,13 +1111,16 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  Widget _analyzingStep(AppColors c, IconData icon, String text, String pct, Color color, bool spinning) {
+  Widget _analyzingStep(AppColors c, IconData icon, String text, String pct,
+      Color color, bool spinning) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.04), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(color: c.primary.withValues(alpha: 0.04), blurRadius: 8)
+        ],
       ),
       child: Row(
         children: [
@@ -1000,14 +1128,21 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               ? SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: color),
+                  child:
+                      CircularProgressIndicator(strokeWidth: 2, color: color),
                 )
               : Icon(icon, color: color, size: 20),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(text, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: c.textPrimary)),
+            child: Text(text,
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: c.textPrimary)),
           ),
-          Text(pct, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
+          Text(pct,
+              style: TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w700, color: color)),
         ],
       ),
     );
@@ -1074,7 +1209,12 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           colors: [c.primaryContainer, c.primary, c.purple],
         ),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.2), blurRadius: 24, offset: const Offset(0, 8))],
+        boxShadow: [
+          BoxShadow(
+              color: c.primary.withValues(alpha: 0.2),
+              blurRadius: 24,
+              offset: const Offset(0, 8))
+        ],
       ),
       child: Column(
         children: [
@@ -1085,7 +1225,8 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               color: Colors.white.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.verified_rounded, color: Colors.white, size: 32),
+            child: const Icon(Icons.verified_rounded,
+                color: Colors.white, size: 32),
           ),
           const SizedBox(height: 12),
           Container(
@@ -1096,18 +1237,23 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             ),
             child: const Text(
               'اكتمل التحليل بنجاح 🎉',
-              style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(height: 12),
           const Text(
             'تهانينا! 🎉',
-            style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800),
+            style: TextStyle(
+                color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           Text(
             'أكملت التقييم الذكي بنجاح',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 14),
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.85), fontSize: 14),
           ),
         ],
       ),
@@ -1120,7 +1266,9 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.04), blurRadius: 12)],
+        boxShadow: [
+          BoxShadow(color: c.primary.withValues(alpha: 0.04), blurRadius: 12)
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1129,9 +1277,14 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             children: [
               Icon(Icons.stars_rounded, color: c.primary, size: 20),
               const SizedBox(width: 6),
-              Text('أبرز أبعادك', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: c.textPrimary)),
+              Text('أبرز أبعادك',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: c.textPrimary)),
               const Spacer(),
-              Text('بناءً على ${_totalQuestions} مؤشر', style: TextStyle(fontSize: 11, color: c.textSecondary)),
+              Text('بناءً على ${_totalQuestions} مؤشر',
+                  style: TextStyle(fontSize: 11, color: c.textSecondary)),
             ],
           ),
           const SizedBox(height: 16),
@@ -1155,7 +1308,11 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
-                      child: Text('$rank', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+                      child: Text('$rank',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1163,12 +1320,21 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_dimName(e.key), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: c.textPrimary)),
-                        Text(_dimIcon(e.key), style: const TextStyle(fontSize: 12)),
+                        Text(_dimName(e.key),
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: c.textPrimary)),
+                        Text(_dimIcon(e.key),
+                            style: const TextStyle(fontSize: 12)),
                       ],
                     ),
                   ),
-                  Text('${e.value.toInt()}%', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: color)),
+                  Text('${e.value.toInt()}%',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: color)),
                   const SizedBox(width: 4),
                   Icon(Icons.trending_up_rounded, color: color, size: 18),
                 ],
@@ -1186,19 +1352,31 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.04), blurRadius: 12)],
+        boxShadow: [
+          BoxShadow(color: c.primary.withValues(alpha: 0.04), blurRadius: 12)
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text('مخطط الكفاءات', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: c.textPrimary)),
+              Text('مخطط الكفاءات',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: c.textPrimary)),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: c.primarySoft, borderRadius: BorderRadius.circular(8)),
-                child: Text('NextStep AI', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: c.primary)),
+                decoration: BoxDecoration(
+                    color: c.primarySoft,
+                    borderRadius: BorderRadius.circular(8)),
+                child: Text('NextStep AI',
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: c.primary)),
               ),
             ],
           ),
@@ -1221,7 +1399,9 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.04), blurRadius: 12)],
+        boxShadow: [
+          BoxShadow(color: c.primary.withValues(alpha: 0.04), blurRadius: 12)
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1230,19 +1410,26 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             children: [
               Icon(Icons.school_rounded, color: c.primary, size: 20),
               const SizedBox(width: 6),
-              Text('أعلى التخصصات المقترحة', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: c.textPrimary)),
+              Text('أعلى التخصصات المقترحة',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: c.textPrimary)),
             ],
           ),
           const SizedBox(height: 14),
-          _majorChip(c, '98%', 'علوم الحاسب والذكاء الاصطناعي', 'جامعة الملك سعود', c.primary),
+          _majorChip(c, '98%', 'علوم الحاسب والذكاء الاصطناعي',
+              'جامعة الملك سعود', c.primary),
           const SizedBox(height: 8),
-          _majorChip(c, '94%', 'هندسة البرمجيات والأمن السيبراني', 'جامعة الملك فهد', c.purple),
+          _majorChip(c, '94%', 'هندسة البرمجيات والأمن السيبراني',
+              'جامعة الملك فهد', c.purple),
         ],
       ),
     );
   }
 
-  Widget _majorChip(AppColors c, String pct, String title, String uni, Color color) {
+  Widget _majorChip(
+      AppColors c, String pct, String title, String uni, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -1257,15 +1444,22 @@ class _AssessmentScreenState extends State<AssessmentScreen>
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text(pct, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
+            child: Text(pct,
+                style: TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w700, color: color)),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textPrimary)),
-                Text(uni, style: TextStyle(fontSize: 11, color: c.textSecondary)),
+                Text(title,
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: c.textPrimary)),
+                Text(uni,
+                    style: TextStyle(fontSize: 11, color: c.textSecondary)),
               ],
             ),
           ),
@@ -1285,16 +1479,25 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: [c.primary, c.primaryContainer]),
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: c.primary.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 6))],
+              boxShadow: [
+                BoxShadow(
+                    color: c.primary.withValues(alpha: 0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6))
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 20),
+                const Icon(Icons.rocket_launch_rounded,
+                    color: Colors.white, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'عرض التوصيات المناسبة',
-                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700),
                 ),
               ],
             ),
@@ -1305,14 +1508,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
           children: [
             Expanded(
               child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _state = _AssessmentState.question;
-                    _answers.clear();
-                    _currentQuestionIndex = 0;
-                  });
-                  _questionAnimController.forward(from: 0);
-                },
+                onTap: _restartAssessment,
                 child: Container(
                   height: 48,
                   decoration: BoxDecoration(
@@ -1322,9 +1518,14 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.replay_rounded, color: c.textPrimary, size: 18),
+                      Icon(Icons.replay_rounded,
+                          color: c.textPrimary, size: 18),
                       const SizedBox(width: 6),
-                      Text('إعادة التقييم', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textPrimary)),
+                      Text('إعادة التقييم',
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: c.textPrimary)),
                     ],
                   ),
                 ),
@@ -1333,7 +1534,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
             const SizedBox(width: 10),
             Expanded(
               child: GestureDetector(
-                onTap: () => context.push('/student/recommendations'),
+                onTap: _shareResults,
                 child: Container(
                   height: 48,
                   decoration: BoxDecoration(
@@ -1345,7 +1546,11 @@ class _AssessmentScreenState extends State<AssessmentScreen>
                     children: [
                       Icon(Icons.share_rounded, color: c.textPrimary, size: 18),
                       const SizedBox(width: 6),
-                      Text('مشاركة النتيجة', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textPrimary)),
+                      Text('مشاركة النتيجة',
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: c.textPrimary)),
                     ],
                   ),
                 ),
@@ -1355,7 +1560,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
         ),
         const SizedBox(height: 8),
         Text(
-          '✓ تم حفظ جميع النتائج في ملفك الشخصي',
+          '✓ تم حفظ النتائج على هذا الجهاز',
           style: TextStyle(fontSize: 11, color: c.textSecondary),
         ),
       ],
@@ -1377,8 +1582,22 @@ class _RadarChartPainter extends CustomPainter {
     final cy = size.height / 2;
     final radius = min(cx, cy) - 30;
 
-    final keys = ['programming', 'math', 'communication', 'management', 'practical', 'research'];
-    final labels = ['البرمجة', 'الرياضيات', 'التواصل', 'الإدارة', 'العملي', 'البحث العلمي'];
+    final keys = [
+      'programming',
+      'math',
+      'communication',
+      'management',
+      'practical',
+      'research'
+    ];
+    final labels = [
+      'البرمجة',
+      'الرياضيات',
+      'التواصل',
+      'الإدارة',
+      'العملي',
+      'البحث العلمي'
+    ];
     final angles = List.generate(6, (i) => (pi / 3) * i - pi / 2);
 
     // Draw web
@@ -1493,11 +1712,15 @@ class _ConfettiPainter extends CustomPainter {
       final r = 2.0 + rng.nextDouble() * 4;
       final color = colors[rng.nextInt(colors.length)];
 
-      final paint = Paint()..color = color.withValues(alpha: (1 - progress).clamp(0.0, 1.0));
-      canvas.drawRect(Rect.fromCenter(center: Offset(x, y), width: r * 2, height: r), paint);
+      final paint = Paint()
+        ..color = color.withValues(alpha: (1 - progress).clamp(0.0, 1.0));
+      canvas.drawRect(
+          Rect.fromCenter(center: Offset(x, y), width: r * 2, height: r),
+          paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _ConfettiPainter old) => old.progress != progress;
+  bool shouldRepaint(covariant _ConfettiPainter old) =>
+      old.progress != progress;
 }

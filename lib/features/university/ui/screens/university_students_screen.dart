@@ -216,7 +216,7 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen> {
         student: student,
         onAction: (String action) {
           Navigator.of(context).pop();
-          _showMessage('$action: ${student.name}');
+          _showMessage('$action غير متاح في النسخة الحالية');
         },
       ),
     );
@@ -261,7 +261,9 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen> {
                   child: _StudentsHeader(
                     studentCount: students.length,
                     onFilter: _openFilterSheet,
-                    onExport: () => _showMessage('جاري تصدير قائمة الطلاب...'),
+                    onExport: () => _showMessage(
+                      'تصدير القائمة غير متاح في النسخة الحالية',
+                    ),
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -300,8 +302,9 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen> {
                           padding: const EdgeInsets.only(bottom: 12),
                           child: _StudentCard(
                             student: student,
-                            onContact: () =>
-                                _showMessage('تواصل مع ${student.name}'),
+                            onContact: () => _showMessage(
+                              'التواصل المباشر غير متاح في النسخة الحالية',
+                            ),
                             onOptions: () => _openStudentOptions(student),
                           ),
                         );

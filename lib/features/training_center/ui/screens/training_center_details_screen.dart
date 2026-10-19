@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -93,9 +92,8 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
           Center(
             child: CircleAvatar(
               radius: 50.r,
-              backgroundImage: center.logoUrl != null
-                  ? NetworkImage(center.logoUrl!)
-                  : null,
+              backgroundImage:
+                  center.logoUrl != null ? NetworkImage(center.logoUrl!) : null,
               child: center.logoUrl == null
                   ? Icon(
                       Icons.business,
@@ -106,7 +104,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             ),
           ),
           SizedBox(height: 16.h),
-
           Center(
             child: Text(
               center.name,
@@ -118,7 +115,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             ),
           ),
           SizedBox(height: 8.h),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -187,7 +183,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             ),
           ],
           SizedBox(height: 16.h),
-
           if (center.description != null) ...[
             Text(
               'الوصف',
@@ -203,7 +198,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
           ],
-
           if (center.address != null) ...[
             Text(
               'العنوان',
@@ -231,7 +225,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
           ],
-
           if (center.phone != null || center.email != null) ...[
             Text(
               'معلومات الاتصال',
@@ -275,7 +268,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             ],
             SizedBox(height: 16.h),
           ],
-
           if (center.specialties != null && center.specialties!.isNotEmpty) ...[
             Text(
               'التخصصات',
@@ -290,7 +282,8 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
               runSpacing: 8.h,
               children: center.specialties!.map((specialty) {
                 return Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(20.r),
@@ -308,7 +301,6 @@ class TrainingCenterDetailsScreen extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
           ],
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(

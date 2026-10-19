@@ -1,5 +1,6 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
 
@@ -144,18 +145,22 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         'أفضل جامعات للهندسة',
         'الفرق بين الجامعات الحكومية والخاصة',
       ];
-    } else if (msg.contains('عمل') || msg.contains('وظيفة') || msg.contains('مستقبل')) {
+    } else if (msg.contains('عمل') ||
+        msg.contains('وظيفة') ||
+        msg.contains('مستقبل')) {
       newSuggestions = [
         'مجالات العمل في الذكاء الاصطناعي',
         'أكثر الوظائف طلباً في المستقبل',
         'كيف أبدأ مسيرتي المهنية؟',
         'نصائح للتقديم على وظائف تقنية',
       ];
-    } else if (msg.contains('دراسة') || msg.contains('نصيحة') || msg.contains('نجاح')) {
+    } else if (msg.contains('دراسة') ||
+        msg.contains('نصيحة') ||
+        msg.contains('نجاح')) {
       newSuggestions = [
-        'كيف أManage وقتي بشكل أفضل؟',
+        'كيف أنظم وقتي بشكل أفضل؟',
         'نصائح للجامعة الأولى',
-        'كيف أ提高 my GPA؟',
+        'كيف أرفع معدلي الدراسي؟',
         'الجمع بين الدراسة والعمل',
       ];
     } else {
@@ -176,49 +181,63 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     if (msg.contains('تخصص') || msg.contains('مسار')) {
       return _ChatMessage(
         isUser: false,
-        text: 'بناءً على اهتماماتك، أقترح عليك التخصصات التالية:\n\n📌 هندسة الحاسوب - مناسب لمحبي التكنولوجيا والبرمجة\n📌 الذكاء الاصطناعي - لمحبي الابتكار والتقنيات المستقبلية\n📌 علوم البيانات - لمحبي التحليل والإحصاء',
+        text:
+            'بناءً على اهتماماتك، أقترح عليك التخصصات التالية:\n\n📌 هندسة الحاسوب - مناسب لمحبي التكنولوجيا والبرمجة\n📌 الذكاء الاصطناعي - لمحبي الابتكار والتقنيات المستقبلية\n📌 علوم البيانات - لمحبي التحليل والإحصاء',
         time: DateTime.now(),
         majorMatch: _MajorMatch(
           title: 'هندسة الحاسوب',
           matchPercentage: 92,
           university: 'الجامعة الإسلامية - غزة',
-          explanation: 'بناءً على تحليل اهتماماتك وقدراتك، نوصي بتخصص هندسة الحاسوب因其它 يجمع بين البرمجة وحل المشاكل.',
+          explanation:
+              'بناءً على تحليل اهتماماتك وقدراتك، نوصي بتخصص هندسة الحاسوب لأنه يجمع بين البرمجة وحل المشكلات.',
         ),
       );
     } else if (msg.contains('جامعة') || msg.contains('كلية')) {
       return _ChatMessage(
         isUser: false,
-        text: 'من أفضل الجامعات في فلسطين:\n\n🏛️ الجامعة الإسلامية - غزة (الأعلى ترتيباً)\n🏛️ جامعة الأزهر - غزة (strong programs)\n🏛️ جامعة الأقصى - غزة\n🏛️ جامعة القدس - القدس\n\nهل تريد معلومات عن تخصص معين في إحداها؟',
+        text:
+            'من أفضل الجامعات في فلسطين:\n\n🏛️ الجامعة الإسلامية - غزة (الأعلى ترتيباً)\n🏛️ جامعة الأزهر - غزة (برامج قوية)\n🏛️ جامعة الأقصى - غزة\n🏛️ جامعة القدس - القدس\n\nهل تريد معلومات عن تخصص معين في إحداها؟',
         time: DateTime.now(),
       );
-    } else if (msg.contains('عمل') || msg.contains('وظيفة') || msg.contains('مستقبل')) {
+    } else if (msg.contains('عمل') ||
+        msg.contains('وظيفة') ||
+        msg.contains('مستقبل')) {
       return _ChatMessage(
         isUser: false,
-        text: 'من أهم مجالات العمل المستقبلية:\n\n💻 تكنولوجيا المعلومات - مطلوب بشدة\n🤖 الذكاء الاصطناعي - مستقبل واعد\n📊 تحليل البيانات - طلب متزايد\n🏥 الصحة الرقمية - مجال حيوي\n\nكل هذه المجالات تشهد نمواً متسارعاً في سوق العمل.',
+        text:
+            'من أهم مجالات العمل المستقبلية:\n\n💻 تكنولوجيا المعلومات - مطلوب بشدة\n🤖 الذكاء الاصطناعي - مستقبل واعد\n📊 تحليل البيانات - طلب متزايد\n🏥 الصحة الرقمية - مجال حيوي\n\nكل هذه المجالات تشهد نمواً متسارعاً في سوق العمل.',
         time: DateTime.now(),
       );
-    } else if (msg.contains('دراسة') || msg.contains('نصيحة') || msg.contains('نجاح')) {
+    } else if (msg.contains('دراسة') ||
+        msg.contains('نصيحة') ||
+        msg.contains('نجاح')) {
       return _ChatMessage(
         isUser: false,
-        text: 'نصائح للنجاح في الدراسة الجامعية:\n\n📚 نظم وقتك - ضع جدولاً دراسياً منتظماً\n👥 شارك في الأنشطة - طور مهاراتك الشخصية\n💡 ابحث عن شغفك - اختر تخصصاً تحبه\n🤝 ابنِ علاقات - تواصل مع زملائك وأساتذتك\n\nهل لديك استفسار محدد؟',
+        text:
+            'نصائح للنجاح في الدراسة الجامعية:\n\n📚 نظم وقتك - ضع جدولاً دراسياً منتظماً\n👥 شارك في الأنشطة - طور مهاراتك الشخصية\n💡 ابحث عن شغفك - اختر تخصصاً تحبه\n🤝 ابنِ علاقات - تواصل مع زملائك وأساتذتك\n\nهل لديك استفسار محدد؟',
         time: DateTime.now(),
       );
     } else if (msg.contains('هندسة') || msg.contains('engineering')) {
       return _ChatMessage(
         isUser: false,
-        text: 'تخصص هندسة الحاسوب من أكثر التخصصات طلباً!\n\nالمدة الدراسية: 4 سنوات\nالمواد الأساسية: البرمجة، الدوائر الكهربائية، الخوارزميات، هياكل البيانات\n\nالوظائف المتاحة:\n• مهندس برمجيات\n• مهندس أجهزة\n• مطور تطبيقات\n• محلل أنظمة',
+        text:
+            'تخصص هندسة الحاسوب من أكثر التخصصات طلباً!\n\nالمدة الدراسية: 4 سنوات\nالمواد الأساسية: البرمجة، الدوائر الكهربائية، الخوارزميات، هياكل البيانات\n\nالوظائف المتاحة:\n• مهندس برمجيات\n• مهندس أجهزة\n• مطور تطبيقات\n• محلل أنظمة',
         time: DateTime.now(),
       );
-    } else if (msg.contains('ذكاء') || msg.contains('اصطناعي') || msg.contains('ai')) {
+    } else if (msg.contains('ذكاء') ||
+        msg.contains('اصطناعي') ||
+        msg.contains('ai')) {
       return _ChatMessage(
         isUser: false,
-        text: 'الذكاء الاصطناعي هو المستقبل! 🤖\n\nهذا التخصص يشمل:\n• التعلم الآلي\n• الشبكات العصبية معالجة اللغات الطبيعية\n• الرؤية الحاسوبية\n\nالطلب على خبراء AI في تزايد مستمر مع رواتب تنافسية.',
+        text:
+            'الذكاء الاصطناعي هو المستقبل! 🤖\n\nهذا التخصص يشمل:\n• التعلم الآلي\n• الشبكات العصبية معالجة اللغات الطبيعية\n• الرؤية الحاسوبية\n\nالطلب على خبراء AI في تزايد مستمر مع رواتب تنافسية.',
         time: DateTime.now(),
       );
     } else {
       return _ChatMessage(
         isUser: false,
-        text: 'شكراً لسؤالك! 🙏\n\nيمكنني مساعدتك في:\n• اختيار التخصص المناسب\n• معلومات عن الجامعات\n• مجالات العمل المستقبلية\n• نصائح للدراسة\n\nاطرح سؤالك بوضوح وسأجيبك بأفضل شكل.',
+        text:
+            'شكراً لسؤالك! 🙏\n\nيمكنني مساعدتك في:\n• اختيار التخصص المناسب\n• معلومات عن الجامعات\n• مجالات العمل المستقبلية\n• نصائح للدراسة\n\nاطرح سؤالك بوضوح وسأجيبك بأفضل شكل.',
         time: DateTime.now(),
       );
     }
@@ -374,19 +393,22 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       AnimatedBuilder(
                         animation: _onlineDotController,
                         builder: (_, __) {
-                          final opacity = 0.5 + (_onlineDotController.value * 0.5);
-                          final scale = 0.8 + (_onlineDotController.value * 0.2);
+                          final opacity =
+                              0.5 + (_onlineDotController.value * 0.5);
+                          final scale =
+                              0.8 + (_onlineDotController.value * 0.2);
                           return Transform.scale(
                             scale: scale,
                             child: Container(
                               width: 8,
                               height: 8,
                               decoration: BoxDecoration(
-                                color: c.success.withValues(alpha: opacity),
+                                color: c.warning.withValues(alpha: opacity),
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: c.success.withValues(alpha: opacity * 0.4),
+                                    color: c.warning
+                                        .withValues(alpha: opacity * 0.4),
                                     blurRadius: 6,
                                   ),
                                 ],
@@ -397,10 +419,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'متصل الآن',
+                        'نسخة تجريبية — ردود محلية',
                         style: TextStyle(
                           fontSize: 12,
-                          color: c.success,
+                          color: c.warning,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -413,13 +435,15 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             _buildHeaderAction(
               c: c,
               icon: Icons.delete_outline_rounded,
-              onTap: () {},
+              tooltip: 'مسح المحادثة',
+              onTap: _confirmClearChat,
             ),
             const SizedBox(width: 8),
             _buildHeaderAction(
               c: c,
               icon: Icons.more_vert_rounded,
-              onTap: () {},
+              tooltip: 'معلومات المحادثة',
+              onTap: _showChatInfo,
             ),
           ],
         ),
@@ -430,18 +454,86 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget _buildHeaderAction({
     required AppColors c,
     required IconData icon,
+    required String tooltip,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: c.surfaceAlt,
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onTap,
+      style: IconButton.styleFrom(
+        backgroundColor: c.surfaceAlt,
+        foregroundColor: c.textSecondary,
+        minimumSize: const Size(42, 42),
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, size: 20, color: c.textSecondary),
+      ),
+      icon: Icon(icon, size: 20),
+    );
+  }
+
+  Future<void> _confirmClearChat() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('مسح المحادثة؟'),
+        content: const Text(
+          'سيتم حذف الرسائل من هذه الجلسة فقط. لا توجد محادثة محفوظة على الخادم.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('مسح'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() {
+      _messages = [
+        _ChatMessage(
+          isUser: false,
+          text: _getWelcomeMessage(),
+          time: DateTime.now(),
+        ),
+      ];
+      _currentSuggestions = const [
+        'ما هو أفضل تخصص يناسبني؟',
+        'كيف أختار جامعتي؟',
+        'ما هي مجالات العمل المستقبلية؟',
+        'نصائح للنجاح في الدراسة الجامعية',
+      ];
+    });
+  }
+
+  void _showChatInfo() {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                'عن المساعد الأكاديمي',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'هذه محادثة تجريبية تعمل بقواعد محلية ولا تتصل بخادم ذكاء '
+                'اصطناعي. الردود محدودة ومخصصة للعرض فقط.',
+                style: TextStyle(fontSize: 13, height: 1.6),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -458,8 +550,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       itemCount: _messages.length,
       itemBuilder: (context, index) {
         final message = _messages[index];
-        final showDatePill = index == 0 ||
-            !_isSameDay(_messages[index - 1].time, message.time);
+        final showDatePill =
+            index == 0 || !_isSameDay(_messages[index - 1].time, message.time);
 
         return Column(
           children: [
@@ -796,9 +888,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           Padding(
             padding: const EdgeInsets.only(left: 14, right: 14, bottom: 14),
             child: GestureDetector(
-              onTap: () {},
+              onTap: () => context.push('/student/recommendations'),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
@@ -892,7 +985,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         height: 7,
                         margin: const EdgeInsets.symmetric(horizontal: 2.5),
                         decoration: BoxDecoration(
-                          color: c.primary.withValues(alpha: 0.4 + (value * 0.6)),
+                          color:
+                              c.primary.withValues(alpha: 0.4 + (value * 0.6)),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -1017,11 +1111,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     vertical: 12,
                   ),
                   border: InputBorder.none,
-                  prefixIcon: Icon(
-                    Icons.attach_file_rounded,
-                    size: 20,
-                    color: c.textSecondary.withValues(alpha: 0.4),
-                  ),
                 ),
                 onSubmitted: (_) => _sendMessage(_messageController.text),
               ),
@@ -1116,7 +1205,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   String _formatDate(DateTime time) {
     final now = DateTime.now();
-    if (time.year == now.year && time.month == now.month && time.day == now.day) {
+    if (time.year == now.year &&
+        time.month == now.month &&
+        time.day == now.day) {
       return 'اليوم';
     }
     final yesterday = now.subtract(const Duration(days: 1));

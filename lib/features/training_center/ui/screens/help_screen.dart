@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 
 import '../theme/training_colors.dart';
 import '../widgets/training_center_drawer.dart';
@@ -118,6 +119,14 @@ class _HelpScreenState extends State<HelpScreen> {
           children: [
             _buildHeader(context),
             SizedBox(height: 34.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: const Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: SampleDataBadge(),
+              ),
+            ),
+            SizedBox(height: 12.h),
             _buildQuickContact(context),
             SizedBox(height: 22.h),
             _buildSupportStats(),
@@ -243,8 +252,8 @@ class _HelpScreenState extends State<HelpScreen> {
                               style: TextStyle(
                                 fontFamily: 'Cairo',
                                 fontSize: 12.sp,
-                                color:
-                                    TrainingColors.onPrimary.withValues(alpha: 0.8),
+                                color: TrainingColors.onPrimary
+                                    .withValues(alpha: 0.8),
                               ),
                             ),
                           ],
@@ -493,19 +502,24 @@ class _HelpScreenState extends State<HelpScreen> {
       ),
       child: Row(
         children: [
-          _buildStatItem('48', 'مقالات', Icons.article_rounded, TrainingColors.primary),
+          _buildStatItem(
+              '48', 'مقالات', Icons.article_rounded, TrainingColors.primary),
           _buildStatDivider(),
-          _buildStatItem('156', 'تذاكر محلولة', Icons.check_circle_rounded, TrainingColors.success),
+          _buildStatItem('156', 'تذاكر محلولة', Icons.check_circle_rounded,
+              TrainingColors.success),
           _buildStatDivider(),
-          _buildStatItem('2.5س', 'متوسط الرد', Icons.schedule_rounded, TrainingColors.accent),
+          _buildStatItem('2.5س', 'متوسط الرد', Icons.schedule_rounded,
+              TrainingColors.accent),
           _buildStatDivider(),
-          _buildStatItem('94%', 'الرضا', Icons.star_rounded, TrainingColors.rating),
+          _buildStatItem(
+              '94%', 'الرضا', Icons.star_rounded, TrainingColors.rating),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String value, String label, IconData icon, Color color) {
+  Widget _buildStatItem(
+      String value, String label, IconData icon, Color color) {
     return Expanded(
       child: Column(
         children: [
@@ -605,7 +619,8 @@ class _HelpScreenState extends State<HelpScreen> {
             color: selected ? color : Colors.transparent,
             width: 1.4,
           ),
-          boxShadow: selected ? TrainingColors.cardShadow : TrainingColors.softShadow,
+          boxShadow:
+              selected ? TrainingColors.cardShadow : TrainingColors.softShadow,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

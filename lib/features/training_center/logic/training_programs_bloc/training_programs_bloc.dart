@@ -1,4 +1,3 @@
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -87,7 +86,9 @@ class TrainingProgramsBloc
       final filtered = currentState.programs
           .where((p) =>
               p.title.toLowerCase().contains(event.query.toLowerCase()) ||
-              (p.description?.toLowerCase().contains(event.query.toLowerCase()) ??
+              (p.description
+                      ?.toLowerCase()
+                      .contains(event.query.toLowerCase()) ??
                   false))
           .toList();
       emit(TrainingProgramsLoaded(

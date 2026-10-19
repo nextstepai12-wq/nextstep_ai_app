@@ -34,9 +34,16 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
   late final Animation<Offset> _slideAnim;
 
   static const List<_StatusOption> _statuses = [
-    _StatusOption(value: 'نشط', icon: Icons.check_circle_rounded, color: Color(0xFF22C55E)),
-    _StatusOption(value: 'قيد الانتظار', icon: Icons.hourglass_top_rounded, color: Color(0xFFF97316)),
-    _StatusOption(value: 'محظور', icon: Icons.block_rounded, color: Color(0xFFDC2626)),
+    _StatusOption(
+        value: 'نشط',
+        icon: Icons.check_circle_rounded,
+        color: Color(0xFF22C55E)),
+    _StatusOption(
+        value: 'قيد الانتظار',
+        icon: Icons.hourglass_top_rounded,
+        color: Color(0xFFF97316)),
+    _StatusOption(
+        value: 'محظور', icon: Icons.block_rounded, color: Color(0xFFDC2626)),
   ];
 
   @override
@@ -61,7 +68,8 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.04),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
+    ).animate(
+        CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
     _animController.forward();
   }
 
@@ -87,7 +95,9 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
     setState(() => _isSubmitting = false);
 
     _showResultSnackBar(
-      widget.isEditing ? 'تم حفظ تعديلات الجامعة بنجاح' : 'تم إضافة الجامعة بنجاح',
+      widget.isEditing
+          ? 'تم حفظ تعديلات الجامعة بنجاح'
+          : 'تم إضافة الجامعة بنجاح',
     );
     Navigator.pop(context, true);
   }
@@ -99,14 +109,17 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: const Color(0xFF22C55E),
           content: Row(
             children: [
-              const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
+              const Icon(Icons.check_circle_outline_rounded,
+                  color: Colors.white, size: 20),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(message, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                child: Text(message,
+                    style: const TextStyle(color: Colors.white, fontSize: 13)),
               ),
             ],
           ),
@@ -119,7 +132,7 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
@@ -221,7 +234,9 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
                 curve: Curves.easeOut,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: isSelected ? s.color.withValues(alpha: 0.1) : Colors.white,
+                  color: isSelected
+                      ? s.color.withValues(alpha: 0.1)
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isSelected ? s.color : Colors.grey.shade200,
@@ -239,14 +254,17 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
                 ),
                 child: Column(
                   children: [
-                    Icon(s.icon, color: isSelected ? s.color : Colors.grey.shade400, size: 22),
+                    Icon(s.icon,
+                        color: isSelected ? s.color : Colors.grey.shade400,
+                        size: 22),
                     const SizedBox(height: 6),
                     Text(
                       s.value,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
                         color: isSelected ? s.color : Colors.grey.shade500,
                       ),
                     ),
@@ -284,7 +302,9 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
             controller: _nameController,
             hint: 'مثال: الجامعة الإسلامية',
             icon: Icons.business_rounded,
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'الرجاء إدخال اسم الجامعة' : null,
+            validator: (v) => (v == null || v.trim().isEmpty)
+                ? 'الرجاء إدخال اسم الجامعة'
+                : null,
           ),
           const SizedBox(height: 18),
           _fieldLabel('الموقع (المدينة/الدولة)'),
@@ -293,7 +313,8 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
             controller: _locationController,
             hint: 'مثال: غزة، فلسطين',
             icon: Icons.location_on_outlined,
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'الرجاء إدخال الموقع' : null,
+            validator: (v) =>
+                (v == null || v.trim().isEmpty) ? 'الرجاء إدخال الموقع' : null,
           ),
           const SizedBox(height: 18),
           _fieldLabel('البريد الإلكتروني'),
@@ -305,8 +326,10 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
             keyboardType: TextInputType.emailAddress,
             ltr: true,
             validator: (v) {
-              if (v == null || v.isEmpty) return 'الرجاء إدخال البريد الإلكتروني';
-              if (!v.contains('@') || !v.contains('.')) return 'بريد إلكتروني غير صحيح';
+              if (v == null || v.isEmpty)
+                return 'الرجاء إدخال البريد الإلكتروني';
+              if (!v.contains('@') || !v.contains('.'))
+                return 'بريد إلكتروني غير صحيح';
               return null;
             },
           ),
@@ -319,7 +342,9 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
             ltr: true,
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'الرجاء إدخال رقم الهاتف' : null,
+            validator: (v) => (v == null || v.trim().isEmpty)
+                ? 'الرجاء إدخال رقم الهاتف'
+                : null,
           ),
           const SizedBox(height: 18),
           _fieldLabel('الموقع الإلكتروني (اختياري)'),
@@ -367,7 +392,7 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
         filled: true,
-        fillColor: const Color(0xFFF7F8FB),
+        fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
         prefixIcon: Icon(icon, color: AppTheme.onSurfaceVariant, size: 20),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -385,7 +410,8 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.6),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
     );
   }
@@ -399,9 +425,11 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF22C55E),
           foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFF22C55E).withValues(alpha: 0.6),
+          disabledBackgroundColor:
+              const Color(0xFF22C55E).withValues(alpha: 0.6),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ).copyWith(
           shadowColor: WidgetStateProperty.all(Colors.transparent),
         ),
@@ -412,7 +440,8 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
                   key: ValueKey('loading'),
                   height: 22,
                   width: 22,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.4),
+                  child: CircularProgressIndicator(
+                      color: Colors.white, strokeWidth: 2.4),
                 )
               : Row(
                   key: const ValueKey('label'),
@@ -422,7 +451,8 @@ class _AdminAddUniversityScreenState extends State<AdminAddUniversityScreen>
                     const SizedBox(width: 8),
                     Text(
                       widget.isEditing ? 'حفظ التعديلات' : 'إضافة الجامعة',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),
@@ -454,5 +484,6 @@ class _StatusOption {
   final IconData icon;
   final Color color;
 
-  const _StatusOption({required this.value, required this.icon, required this.color});
+  const _StatusOption(
+      {required this.value, required this.icon, required this.color});
 }

@@ -92,7 +92,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen>
         });
       }
 
-      final cached = await HiveStorage.getData('admin_profile_cache', 'profile');
+      final cached =
+          await HiveStorage.getData('admin_profile_cache', 'profile');
       if (cached != null && cached.isNotEmpty) {
         setState(() {
           _adminPhone = cached['phone'] ?? '';
@@ -131,8 +132,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen>
               'updated_at': DateTime.now().toIso8601String(),
             });
           }
-        } catch (e) {
-        }
+        } catch (e) {}
       }
 
       if (mounted) {
@@ -166,7 +166,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen>
         'updated_at': DateTime.now().toIso8601String(),
       };
 
-      final cached = await HiveStorage.getData('admin_profile_cache', 'profile');
+      final cached =
+          await HiveStorage.getData('admin_profile_cache', 'profile');
       final updated = {
         ...?cached,
         ...updatedProfile,
@@ -217,7 +218,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen>
       return;
     }
     if (_newPasswordController.text.length < 6) {
-      _showSnackBar('يجب أن تتكون كلمة المرور من 6 أحرف على الأقل', Colors.orange);
+      _showSnackBar(
+          'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل', Colors.orange);
       return;
     }
     if (_newPasswordController.text != _confirmPasswordController.text) {
@@ -248,7 +250,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
         body: _isLoading
             ? const Center(
@@ -293,7 +295,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen>
       backgroundColor: Colors.white,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.primaryContainer),
+        icon: const Icon(Icons.arrow_back_rounded,
+            color: AppTheme.primaryContainer),
         onPressed: () => Navigator.pop(context),
       ),
       title: const Text(
@@ -813,7 +816,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen>
                     },
                   ),
                   helperText: 'يجب أن تكون 6 أحرف على الأقل',
-                  helperStyle: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  helperStyle:
+                      TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 ),
               ),
               const SizedBox(height: 12),
@@ -889,7 +893,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen>
           foregroundColor: Colors.white,
           disabledBackgroundColor: AppTheme.primary.withValues(alpha: 0.6),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
         child: _isSaving
             ? const SizedBox(
@@ -922,7 +927,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.error_outline_rounded,
+                size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
@@ -979,7 +985,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: color,
           content: Text(
             message,

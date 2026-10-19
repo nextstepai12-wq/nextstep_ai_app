@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -18,11 +19,14 @@ class _TrainingProgramDetailsScreenState
     extends State<TrainingProgramDetailsScreen> {
   bool _isFavorite = false;
 
-  _ProgramDetailsMock get _details => _detailsFor(widget.programId);
+  _ProgramDetailsMock? get _details => _detailsFor(widget.programId);
 
   @override
   Widget build(BuildContext context) {
     final details = _details;
+    if (details == null) {
+      return _buildProgramUnavailable(context);
+    }
 
     return DefaultTabController(
       length: 4,
@@ -157,14 +161,25 @@ class _TrainingProgramDetailsScreenState
             children: [
               _circleButton(
                 icon: Icons.ios_share_rounded,
-                onTap: () => _snack(context, 'مشاركة الدورة'),
+                onTap: () async {
+                  await Clipboard.setData(
+                    ClipboardData(
+                      text: '${details.title}\n${details.centerName}\n'
+                          '${details.price} ر.س',
+                    ),
+                  );
+                  if (!context.mounted) return;
+                  _snack(context, 'تم نسخ ملخص الدورة');
+                },
               ),
               SizedBox(width: 8.w),
               _circleButton(
                 icon: _isFavorite
                     ? Icons.favorite_rounded
                     : Icons.favorite_border_rounded,
-                color: _isFavorite ? TrainingColors.danger : TrainingColors.primary,
+                color: _isFavorite
+                    ? TrainingColors.danger
+                    : TrainingColors.primary,
                 onTap: () => setState(() => _isFavorite = !_isFavorite),
               ),
             ],
@@ -359,9 +374,7 @@ class _TrainingProgramDetailsScreenState
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(9.r),
-        border: borderColor != null
-            ? Border.all(color: borderColor)
-            : null,
+        border: borderColor != null ? Border.all(color: borderColor) : null,
       ),
       child: Row(
         children: [
@@ -429,9 +442,8 @@ class _TrainingProgramDetailsScreenState
           iconColor: TrainingColors.success,
           title: 'ماذا ستتعلم في هذه الدورة؟',
           child: Column(
-            children: details.learnPoints
-                .map((point) => _learnRow(point))
-                .toList(),
+            children:
+                details.learnPoints.map((point) => _learnRow(point)).toList(),
           ),
         ),
         SizedBox(height: 16.h),
@@ -960,7 +972,8 @@ class _TrainingProgramDetailsScreenState
                 children: [
                   _instructorStat('${instructor.rating}', 'التقييم'),
                   _statDivider(),
-                  _instructorStat('+${instructor.yearsExperience}', 'سنوات خبرة'),
+                  _instructorStat(
+                      '+${instructor.yearsExperience}', 'سنوات خبرة'),
                   _statDivider(),
                   _instructorStat(instructor.trainees, 'متدرب'),
                 ],
@@ -1473,11 +1486,74 @@ class _TrainingProgramDetailsScreenState
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text('$label: قريباً'),
+          content: Text(label),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ),
       );
+  }
+
+  Widget _buildProgramUnavailable(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: TrainingColors.background,
+        appBar: AppBar(
+          backgroundColor: TrainingColors.surface,
+          title: const Text(
+            'تفاصيل البرنامج',
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              color: TrainingColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.menu_book_outlined,
+                    size: 48, color: TrainingColors.textMuted),
+                const SizedBox(height: 12),
+                const Text(
+                  'البرنامج غير متاح',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: TrainingColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'لم نعثر على برنامج بهذا المعرّف في البيانات التجريبية.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 12,
+                    color: TrainingColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/training-center/programs');
+                    }
+                  },
+                  child: const Text('عرض البرامج'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -1639,11 +1715,18 @@ const List<String> _baseLearnPoints = [
 ];
 
 const List<_ModuleMock> _baseModules = [
-  _ModuleMock(title: 'مقدمة في إدارة المشاريع', lessons: 4, duration: '3 ساعات'),
-  _ModuleMock(title: 'إدارة النطاق والجدول الزمني', lessons: 6, duration: '5 ساعات'),
-  _ModuleMock(title: 'إدارة التكاليف والميزانية', lessons: 5, duration: '4 ساعات'),
-  _ModuleMock(title: 'إدارة المخاطر وأصحاب المصلحة', lessons: 5, duration: '4 ساعات'),
-  _ModuleMock(title: 'المنهجيات الرشيقة والاختبار النهائي', lessons: 6, duration: '6 ساعات'),
+  _ModuleMock(
+      title: 'مقدمة في إدارة المشاريع', lessons: 4, duration: '3 ساعات'),
+  _ModuleMock(
+      title: 'إدارة النطاق والجدول الزمني', lessons: 6, duration: '5 ساعات'),
+  _ModuleMock(
+      title: 'إدارة التكاليف والميزانية', lessons: 5, duration: '4 ساعات'),
+  _ModuleMock(
+      title: 'إدارة المخاطر وأصحاب المصلحة', lessons: 5, duration: '4 ساعات'),
+  _ModuleMock(
+      title: 'المنهجيات الرشيقة والاختبار النهائي',
+      lessons: 6,
+      duration: '6 ساعات'),
 ];
 
 const List<_ReviewMock> _baseReviews = [
@@ -1652,7 +1735,8 @@ const List<_ReviewMock> _baseReviews = [
     initial: 'أ',
     rating: 5,
     date: 'قبل 3 أيام',
-    text: 'دورة ممتازة ومحتوى عملي جداً، ساعدتني في اجتياز اختبار PMP من المحاولة الأولى.',
+    text:
+        'دورة ممتازة ومحتوى عملي جداً، ساعدتني في اجتياز اختبار PMP من المحاولة الأولى.',
   ),
   _ReviewMock(
     name: 'منى العتيبي',
@@ -1666,11 +1750,12 @@ const List<_ReviewMock> _baseReviews = [
     initial: 'س',
     rating: 4,
     date: 'قبل أسبوعين',
-    text: 'تجربة رائعة بشكل عام، أتمنى إضافة المزيد من الجلسات العملية التطبيقية.',
+    text:
+        'تجربة رائعة بشكل عام، أتمنى إضافة المزيد من الجلسات العملية التطبيقية.',
   ),
 ];
 
-_ProgramDetailsMock _detailsFor(String programId) {
+_ProgramDetailsMock? _detailsFor(String programId) {
   switch (programId) {
     case 'p2':
       return const _ProgramDetailsMock(
@@ -1749,7 +1834,12 @@ _ProgramDetailsMock _detailsFor(String programId) {
           trainees: '980',
           bio: 'قائدة تصميم تجربة المستخدم في منتجات رقمية كبرى، '
               'متخصصة في أبحاث المستخدم وبناء أنظمة التصميم.',
-          expertise: ['Figma', 'أنظمة التصميم', 'أبحاث المستخدم', 'Prototyping'],
+          expertise: [
+            'Figma',
+            'أنظمة التصميم',
+            'أبحاث المستخدم',
+            'Prototyping'
+          ],
         ),
         modules: _baseModules,
         reviewItems: _baseReviews,
@@ -1790,13 +1880,17 @@ _ProgramDetailsMock _detailsFor(String programId) {
           trainees: '1,200',
           bio: 'مستشار أمن سيبراني متخصص في اختبار الاختراق وحماية '
               'البنى التحتية، مدرّب معتمد في الشهادات الدولية.',
-          expertise: ['اختبار الاختراق', 'أمن الشبكات', 'الاستجابة للحوادث', 'OSCP'],
+          expertise: [
+            'اختبار الاختراق',
+            'أمن الشبكات',
+            'الاستجابة للحوادث',
+            'OSCP'
+          ],
         ),
         modules: _baseModules,
         reviewItems: _baseReviews,
       );
     case 'p1':
-    default:
       return const _ProgramDetailsMock(
         id: 'p1',
         title: 'دورة إدارة المشاريع الاحترافية PMP®',
@@ -1838,5 +1932,7 @@ _ProgramDetailsMock _detailsFor(String programId) {
         modules: _baseModules,
         reviewItems: _baseReviews,
       );
+    default:
+      return null;
   }
 }

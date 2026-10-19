@@ -1,4 +1,3 @@
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -11,8 +10,7 @@ part 'instructor_state.dart';
 class InstructorBloc extends Bloc<InstructorEvent, InstructorState> {
   final TrainingCenterRepository repository;
 
-  InstructorBloc({required this.repository})
-      : super(InstructorInitial()) {
+  InstructorBloc({required this.repository}) : super(InstructorInitial()) {
     on<LoadInstructorProfile>(_onLoadProfile);
     on<LoadInstructorsForCenter>(_onLoadInstructors);
   }

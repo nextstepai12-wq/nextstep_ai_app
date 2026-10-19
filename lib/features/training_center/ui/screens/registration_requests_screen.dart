@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../theme/training_colors.dart';
@@ -7,6 +8,7 @@ enum RequestStatus { pending, accepted, rejected }
 
 class RegistrationRequest {
   const RegistrationRequest({
+    required this.id,
     required this.name,
     required this.initials,
     required this.course,
@@ -19,6 +21,7 @@ class RegistrationRequest {
     this.rejectionReason,
   });
 
+  final String id;
   final String name;
   final String initials;
   final String course;
@@ -29,10 +32,27 @@ class RegistrationRequest {
   final bool verified;
   final String? meta;
   final String? rejectionReason;
+
+  RegistrationRequest copyWith({RequestStatus? status}) {
+    return RegistrationRequest(
+      id: id,
+      name: name,
+      initials: initials,
+      course: course,
+      time: time,
+      job: job,
+      status: status ?? this.status,
+      attachment: attachment,
+      verified: verified,
+      meta: meta,
+      rejectionReason: rejectionReason,
+    );
+  }
 }
 
-const _requests = <RegistrationRequest>[
+const _mockRequests = <RegistrationRequest>[
   RegistrationRequest(
+    id: 'REQ-2025-884',
     name: 'عبدالله الشمري',
     initials: 'ع ش',
     course: 'دورة إدارة المشاريع الاحترافية PMP®',
@@ -43,6 +63,7 @@ const _requests = <RegistrationRequest>[
     verified: true,
   ),
   RegistrationRequest(
+    id: 'REQ-2025-881',
     name: 'سارة ناصر الدوسري',
     initials: 'س ن',
     course: 'دبلوم الأمن السيبراني واختبار الاختراق',
@@ -52,6 +73,7 @@ const _requests = <RegistrationRequest>[
     attachment: true,
   ),
   RegistrationRequest(
+    id: 'REQ-2025-877',
     name: 'م. فيصل الخالدي',
     initials: 'ف خ',
     course: 'تدريب ميداني — صيانة خطوط الإنتاج',
@@ -60,6 +82,7 @@ const _requests = <RegistrationRequest>[
     job: 'مهندس ميكانيكي',
   ),
   RegistrationRequest(
+    id: 'REQ-2025-869',
     name: 'فهد تركي القحطاني',
     initials: 'ف ت',
     course: 'دورة إدارة المشاريع الاحترافية PMP®',
@@ -69,6 +92,7 @@ const _requests = <RegistrationRequest>[
     rejectionReason: 'عدم استيفاء شروط سنوات الخبرة العملية المطلوبة للدورة.',
   ),
   RegistrationRequest(
+    id: 'REQ-2025-885',
     name: 'عمر عبدالعزيز الحربي',
     initials: 'ع ع',
     course: 'تدريب ميداني — إدارة وضبط جودة المشاريع',
@@ -88,16 +112,76 @@ class RegistrationRequestsScreen extends StatefulWidget {
 
 class _RegistrationRequestsScreenState
     extends State<RegistrationRequestsScreen> {
+  final List<RegistrationRequest> _requests = List.of(_mockRequests);
   String _tab = 'الكل';
+  String? _courseFilter;
+  bool _newestFirst = true;
 
-  List<RegistrationRequest> get _visible => _requests.where((request) {
-        return switch (_tab) {
-          'جديد' => request.status == RequestStatus.pending,
-          'مقبول' => request.status == RequestStatus.accepted,
-          'مرفوض' => request.status == RequestStatus.rejected,
-          _ => true,
-        };
-      }).toList();
+  int _countOf(RequestStatus status) =>
+      _requests.where((request) => request.status == status).length;
+
+  List<RegistrationRequest> get _visible {
+    final list = _requests.where((request) {
+      final matchesTab = switch (_tab) {
+        'جديد' => request.status == RequestStatus.pending,
+        'مقبول' => request.status == RequestStatus.accepted,
+        'مرفوض' => request.status == RequestStatus.rejected,
+        _ => true,
+      };
+      final matchesCourse =
+          _courseFilter == null || request.course == _courseFilter;
+      return matchesTab && matchesCourse;
+    }).toList();
+    return _newestFirst ? list : list.reversed.toList();
+  }
+
+  Future<void> _handleDecision(
+    RegistrationRequest request,
+    bool accept,
+  ) async {
+    final confirmed = await _showDecisionSheet(context, accept, request);
+    if (confirmed != true || !mounted) return;
+    _applyStatus(
+      request,
+      accept ? RequestStatus.accepted : RequestStatus.rejected,
+    );
+  }
+
+  Future<void> _openDetails(RegistrationRequest request) async {
+    final status = await context.push<RequestStatus>(
+      '/training-center/registration-requests/details',
+      extra: request,
+    );
+    if (!mounted || status == null) return;
+    _applyStatus(request, status);
+  }
+
+  void _applyStatus(
+    RegistrationRequest request,
+    RequestStatus status,
+  ) {
+    setState(() {
+      final index = _requests.indexWhere((item) => item.id == request.id);
+      if (index != -1) {
+        _requests[index] = _requests[index].copyWith(status: status);
+      }
+    });
+    final accepted = status == RequestStatus.accepted;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            accepted
+                ? 'تم تحديث حالة ${request.name} إلى مقبول (محلياً)'
+                : 'تم تحديث حالة ${request.name} إلى مرفوض (محلياً)',
+            style: const TextStyle(fontFamily: 'Cairo'),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) => Directionality(
@@ -105,7 +189,6 @@ class _RegistrationRequestsScreenState
         child: Scaffold(
           backgroundColor: TrainingColors.background,
           appBar: _appBar(context),
-          bottomNavigationBar: const _CompanyNav(),
           body: Column(
             children: [
               _tabs(),
@@ -117,11 +200,11 @@ class _RegistrationRequestsScreenState
                     for (int i = 0; i < _visible.length; i++) ...[
                       _RequestCard(
                         request: _visible[i],
-                        swipeHint: i == 0 && _visible[i].status == RequestStatus.pending,
-                        onTap: () => context
-                            .push('/training-center/registration-requests/details'),
+                        swipeHint: i == 0 &&
+                            _visible[i].status == RequestStatus.pending,
+                        onTap: () => _openDetails(_visible[i]),
                         onDecision: (accept) =>
-                            _showDecisionSheet(context, accept, _visible[i]),
+                            _handleDecision(_visible[i], accept),
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -177,11 +260,11 @@ class _RegistrationRequestsScreenState
             decoration: BoxDecoration(
                 color: TrainingColors.accentSoft,
                 borderRadius: BorderRadius.circular(20)),
-            child: const Row(mainAxisSize: MainAxisSize.min, children: [
-              _PulseDot(),
-              SizedBox(width: 5),
-              Text('3 طلبات',
-                  style: TextStyle(
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const _PulseDot(),
+              const SizedBox(width: 5),
+              Text('${_countOf(RequestStatus.pending)} طلبات',
+                  style: const TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -190,8 +273,7 @@ class _RegistrationRequestsScreenState
           ),
           Stack(clipBehavior: Clip.none, children: [
             IconButton(
-                onPressed: () =>
-                    context.push('/training-center/notifications'),
+                onPressed: () => context.push('/training-center/notifications'),
                 icon: const Icon(Icons.notifications_none_rounded,
                     color: TrainingColors.textPrimary)),
             const Positioned(
@@ -212,16 +294,15 @@ class _RegistrationRequestsScreenState
       );
 
   Widget _tabs() {
-    const tabs = [
-      ('الكل', 12),
-      ('جديد', 5),
-      ('مقبول', 6),
-      ('مرفوض', 1),
+    final tabs = [
+      ('الكل', _requests.length),
+      ('جديد', _countOf(RequestStatus.pending)),
+      ('مقبول', _countOf(RequestStatus.accepted)),
+      ('مرفوض', _countOf(RequestStatus.rejected)),
     ];
     return SizedBox(
       height: 60,
       child: ListView.separated(
-        reverse: true,
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         itemCount: tabs.length,
@@ -244,43 +325,170 @@ class _RegistrationRequestsScreenState
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: Row(children: [
           Expanded(
-              child:
-                  _filterButton(Icons.filter_list_rounded, 'تصفية حسب الدورة')),
+            child: _filterButton(
+              Icons.filter_list_rounded,
+              _courseFilter ?? 'كل الدورات',
+              _showCourseFilter,
+              active: _courseFilter != null,
+            ),
+          ),
           const SizedBox(width: 10),
           Expanded(
-              child:
-                  _filterButton(Icons.schedule_rounded, 'الأحدث')),
+            child: _filterButton(
+              Icons.schedule_rounded,
+              _newestFirst ? 'الأحدث' : 'الأقدم',
+              _showSortFilter,
+              active: !_newestFirst,
+            ),
+          ),
           const SizedBox(width: 10),
-          const Text('5 من أصل 12',
+          Text('${_visible.length} من أصل ${_requests.length}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 10,
                   color: TrainingColors.textSecondary)),
         ]),
       );
 
-  Widget _filterButton(IconData icon, String text) => InkWell(
+  void _showCourseFilter() {
+    final courses = _requests.map((request) => request.course).toSet().toList();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: TrainingColors.surface,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Text(
+                'تصفية حسب الدورة',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: TrainingColors.primary,
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text('كل الدورات'),
+              trailing: _courseFilter == null
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
+              onTap: () {
+                setState(() => _courseFilter = null);
+                Navigator.pop(ctx);
+              },
+            ),
+            for (final course in courses)
+              ListTile(
+                title: Text(course),
+                trailing: _courseFilter == course
+                    ? const Icon(Icons.check_rounded,
+                        color: TrainingColors.primary)
+                    : null,
+                onTap: () {
+                  setState(() => _courseFilter = course);
+                  Navigator.pop(ctx);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSortFilter() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: TrainingColors.surface,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  'ترتيب الطلبات',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: TrainingColors.primary,
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text('الأحدث أولاً'),
+              trailing: _newestFirst
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
+              onTap: () {
+                setState(() => _newestFirst = true);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              title: const Text('الأقدم أولاً'),
+              trailing: !_newestFirst
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
+              onTap: () {
+                setState(() => _newestFirst = false);
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _filterButton(
+    IconData icon,
+    String text,
+    VoidCallback onTap, {
+    bool active = false,
+  }) =>
+      InkWell(
         borderRadius: BorderRadius.circular(10),
-        onTap: () {},
+        onTap: onTap,
         child: Container(
           height: 42,
           padding: const EdgeInsets.symmetric(horizontal: 11),
           decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: TrainingColors.divider),
+              color: active ? TrainingColors.accentSoft : Colors.white,
+              border: Border.all(
+                color: active ? TrainingColors.accent : TrainingColors.divider,
+              ),
               borderRadius: BorderRadius.circular(10)),
           child: Row(children: [
-            Icon(icon, size: 17, color: TrainingColors.primary),
+            Icon(icon,
+                size: 17,
+                color: active
+                    ? TrainingColors.accentDark
+                    : TrainingColors.primary),
             const SizedBox(width: 7),
             Expanded(
                 child: Text(text,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 11,
-                        color: TrainingColors.textPrimary))),
+                        fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                        color: active
+                            ? TrainingColors.accentDark
+                            : TrainingColors.textPrimary))),
             const Icon(Icons.keyboard_arrow_down_rounded,
                 size: 18, color: TrainingColors.textSecondary),
           ]),
@@ -289,62 +497,140 @@ class _RegistrationRequestsScreenState
 }
 
 class RegistrationRequestDetailsScreen extends StatelessWidget {
-  const RegistrationRequestDetailsScreen({super.key});
+  const RegistrationRequestDetailsScreen({super.key, this.request});
+
+  final RegistrationRequest? request;
 
   @override
-  Widget build(BuildContext context) => Directionality(
+  Widget build(BuildContext context) {
+    final selected = request;
+    if (selected == null) {
+      return Directionality(
         textDirection: TextDirection.rtl,
         child: Scaffold(
           backgroundColor: TrainingColors.background,
           appBar: AppBar(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
-            elevation: 0,
-            scrolledUnderElevation: 1,
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_forward_ios_rounded,
-                    size: 19, color: TrainingColors.primary),
-                onPressed: () => context.pop()),
-            title: const Text('تفاصيل الطلب',
-                style: TextStyle(
-                    fontFamily: 'Cairo',
-                    color: TrainingColors.primary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20)),
-            actions: [
-              IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.ios_share_rounded,
-                      color: TrainingColors.primary)),
-              IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.print_outlined,
-                      color: TrainingColors.primary)),
-            ],
+            title: const Text('تفاصيل الطلب'),
+            backgroundColor: TrainingColors.surface,
           ),
-          body: Stack(children: [
-            ListView(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 140),
-                children: const [
-                  _RequestIdRow(),
-                  SizedBox(height: 12),
-                  _StudentHeader(),
-                  _CourseCard(),
-                  SizedBox(height: 16),
-                  _InfoCard(),
-                  SizedBox(height: 16),
-                  _AttachmentsCard(),
-                  SizedBox(height: 16),
-                  _MessageCard(),
-                  SizedBox(height: 16),
-                  _PaymentCard(),
-                ]),
-            _DetailActions(
-                onDecision: (accept) =>
-                    _showDecisionSheet(context, accept, _requests.first)),
-          ]),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.assignment_outlined,
+                      size: 48, color: TrainingColors.textMuted),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'لم يتم تحديد طلب',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: TrainingColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'افتح التفاصيل من قائمة طلبات التسجيل.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 12,
+                      color: TrainingColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.pop(),
+                    child: const Text('رجوع'),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       );
+    }
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: TrainingColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
+          elevation: 0,
+          scrolledUnderElevation: 1,
+          leading: IconButton(
+              icon: const Icon(Icons.arrow_forward_ios_rounded,
+                  size: 19, color: TrainingColors.primary),
+              onPressed: () => context.pop()),
+          title: const Text('تفاصيل الطلب',
+              style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: TrainingColors.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20)),
+          actions: [
+            IconButton(
+              tooltip: 'نسخ ملخص الطلب',
+              onPressed: () async {
+                await Clipboard.setData(
+                  ClipboardData(
+                    text: '${selected.name}\n${selected.course}\n'
+                        'الحالة: ${selected.status.name}\n'
+                        'رقم الطلب: ${selected.id}',
+                  ),
+                );
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text('تم نسخ ملخص الطلب'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+              },
+              icon: const Icon(Icons.copy_all_rounded,
+                  color: TrainingColors.primary),
+            ),
+          ],
+        ),
+        body: Stack(children: [
+          ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 140),
+              children: [
+                _RequestIdRow(request: selected),
+                const SizedBox(height: 12),
+                _StudentHeader(request: selected),
+                _CourseCard(request: selected),
+                const SizedBox(height: 16),
+                const _DemoDetailsNotice(),
+                const SizedBox(height: 16),
+                const _InfoCard(),
+                const SizedBox(height: 16),
+                const _AttachmentsCard(),
+                const SizedBox(height: 16),
+                const _MessageCard(),
+                const SizedBox(height: 16),
+                const _PaymentCard(),
+              ]),
+          _DetailActions(onDecision: (accept) async {
+            final confirmed =
+                await _showDecisionSheet(context, accept, selected);
+            if (confirmed == true && context.mounted) {
+              Navigator.pop(
+                context,
+                accept ? RequestStatus.accepted : RequestStatus.rejected,
+              );
+            }
+          }),
+        ]),
+      ),
+    );
+  }
 }
 
 class _RequestCard extends StatelessWidget {
@@ -386,61 +672,67 @@ class _RequestCard extends StatelessWidget {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        _Avatar(initials: request.initials),
-                        const SizedBox(width: 11),
-                        Expanded(
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                              Row(children: [
-                                Flexible(
-                                    child: Text(request.name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                            fontFamily: 'Cairo',
-                                            fontSize: 14.5,
-                                            fontWeight: FontWeight.w700,
-                                            color: TrainingColors.primary))),
-                                if (request.verified) ...[
-                                  const SizedBox(width: 4),
-                                  const Icon(Icons.verified_rounded,
-                                      size: 16, color: TrainingColors.primary)
-                                ],
-                              ]),
-                              const SizedBox(height: 2),
-                              Row(children: [
-                                const Icon(Icons.history_rounded,
-                                    size: 13, color: TrainingColors.textMuted),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                    child: Text(request.time,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                            fontFamily: 'Cairo',
-                                            fontSize: 10.5,
-                                            color:
-                                                TrainingColors.textSecondary))),
-                                const SizedBox(width: 6),
-                                const Text('•',
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        color: TrainingColors.textMuted)),
-                                const SizedBox(width: 6),
-                                Flexible(
-                                    child: Text(request.job,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                            fontFamily: 'Cairo',
-                                            fontSize: 10.5,
-                                            color:
-                                                TrainingColors.textSecondary))),
-                              ]),
-                            ])),
-                        const SizedBox(width: 6),
-                        _StatusPill(status: request.status),
-                      ]),
+                      Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _Avatar(initials: request.initials),
+                            const SizedBox(width: 11),
+                            Expanded(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                  Row(children: [
+                                    Flexible(
+                                        child: Text(request.name,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 14.5,
+                                                fontWeight: FontWeight.w700,
+                                                color:
+                                                    TrainingColors.primary))),
+                                    if (request.verified) ...[
+                                      const SizedBox(width: 4),
+                                      const Icon(Icons.verified_rounded,
+                                          size: 16,
+                                          color: TrainingColors.primary)
+                                    ],
+                                  ]),
+                                  const SizedBox(height: 2),
+                                  Row(children: [
+                                    const Icon(Icons.history_rounded,
+                                        size: 13,
+                                        color: TrainingColors.textMuted),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                        child: Text(request.time,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 10.5,
+                                                color: TrainingColors
+                                                    .textSecondary))),
+                                    const SizedBox(width: 6),
+                                    const Text('•',
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: TrainingColors.textMuted)),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                        child: Text(request.job,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 10.5,
+                                                color: TrainingColors
+                                                    .textSecondary))),
+                                  ]),
+                                ])),
+                            const SizedBox(width: 6),
+                            _StatusPill(status: request.status),
+                          ]),
                       const SizedBox(height: 10),
                       _CourseBox(course: request.course),
                       if (request.attachment) ...[
@@ -484,13 +776,15 @@ class _RequestCard extends StatelessWidget {
                                     size: 16, color: TrainingColors.danger),
                                 const SizedBox(width: 7),
                                 Expanded(
-                                    child: Text.rich(TextSpan(children: [
-                                  const TextSpan(
-                                      text: 'سبب الرفض: ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w700)),
-                                  TextSpan(text: request.rejectionReason!),
-                                ]),
+                                    child: Text.rich(
+                                        TextSpan(children: [
+                                          const TextSpan(
+                                              text: 'سبب الرفض: ',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w700)),
+                                          TextSpan(
+                                              text: request.rejectionReason!),
+                                        ]),
                                         style: const TextStyle(
                                             fontFamily: 'Cairo',
                                             fontSize: 10.5,
@@ -588,17 +882,19 @@ class _RequestCard extends StatelessWidget {
 }
 
 class _RequestIdRow extends StatelessWidget {
-  const _RequestIdRow();
+  const _RequestIdRow({required this.request});
+
+  final RegistrationRequest request;
 
   @override
-  Widget build(BuildContext context) => const Row(children: [
-        _PulseDot(),
-        SizedBox(width: 8),
+  Widget build(BuildContext context) => Row(children: [
+        const _PulseDot(),
+        const SizedBox(width: 8),
         Expanded(
-            child: Text('طلب رقم #REQ-2025-884',
+            child: Text('طلب رقم #${request.id}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
+                style: const TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 12,
                     color: TrainingColors.textSecondary))),
@@ -606,27 +902,38 @@ class _RequestIdRow extends StatelessWidget {
 }
 
 class _StudentHeader extends StatelessWidget {
-  const _StudentHeader();
+  const _StudentHeader({required this.request});
+
+  final RegistrationRequest request;
 
   @override
   Widget build(BuildContext context) => _Card(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const _Avatar(initials: 'ع ش', size: 72, verified: true),
+          _Avatar(
+              initials: request.initials, size: 72, verified: request.verified),
           const SizedBox(width: 12),
           Expanded(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                const Text('عبدالله الشمري',
-                    style: TextStyle(
+                Text(request.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: TrainingColors.primary)),
                 const SizedBox(height: 3),
-                const Text('25 سنة • الرياض • طالب خريج',
-                    style: TextStyle(
+                Text(
+                    request.meta == null
+                        ? request.job
+                        : '${request.meta} • ${request.job}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 11,
                         color: TrainingColors.textSecondary)),
@@ -635,14 +942,19 @@ class _StudentHeader extends StatelessWidget {
                   Container(
                       width: 7,
                       height: 7,
-                      decoration: const BoxDecoration(
-                          color: TrainingColors.success,
+                      decoration: BoxDecoration(
+                          color: request.verified
+                              ? TrainingColors.success
+                              : TrainingColors.rating,
                           shape: BoxShape.circle)),
                   const SizedBox(width: 6),
-                  const Expanded(
-                      child: Text('تم تدقيق الهوية الوطنية',
+                  Expanded(
+                      child: Text(
+                          request.verified
+                              ? 'تم تدقيق الهوية الوطنية'
+                              : 'بانتظار تدقيق الهوية',
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 10,
                               color: TrainingColors.textSecondary))),
@@ -655,81 +967,46 @@ class _StudentHeader extends StatelessWidget {
           decoration: BoxDecoration(
               color: TrainingColors.surfaceMuted,
               borderRadius: BorderRadius.circular(10)),
-          child: const Row(children: [
-            Icon(Icons.hourglass_top_rounded,
+          child: Row(children: [
+            const Icon(Icons.hourglass_top_rounded,
                 size: 18, color: TrainingColors.rating),
-            SizedBox(width: 8),
-            Expanded(
+            const SizedBox(width: 8),
+            const Expanded(
                 child: Text('حالة الطلب:',
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 12,
                         color: TrainingColors.textPrimary))),
-            SizedBox(width: 8),
-            _StatusPill(status: RequestStatus.pending, wide: true),
+            const SizedBox(width: 8),
+            _StatusPill(status: request.status, wide: true),
           ]),
         ),
-        const SizedBox(height: 14),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-              color: TrainingColors.surfaceAlt,
-              borderRadius: BorderRadius.circular(10)),
-          child: Row(children: [
-            const Icon(Icons.phone_iphone_rounded,
-                size: 18, color: TrainingColors.primary),
-            const SizedBox(width: 8),
-            const Expanded(
-                child: Text('+966 55 123 4567',
-                    textDirection: TextDirection.ltr,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: TrainingColors.textPrimary))),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-              decoration: BoxDecoration(
-                  color: TrainingColors.successSoft,
-                  borderRadius: BorderRadius.circular(20)),
-              child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.chat_bubble_outline_rounded,
-                    size: 14, color: TrainingColors.success),
-                SizedBox(width: 4),
-                Flexible(
-                    child: Text('واتساب مباشر',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: TrainingColors.success))),
-              ]),
+        if (request.rejectionReason != null) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                color: TrainingColors.dangerSoft,
+                borderRadius: BorderRadius.circular(10)),
+            child: Text(
+              'سبب الرفض: ${request.rejectionReason}',
+              style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 11,
+                  height: 1.6,
+                  color: TrainingColors.danger),
             ),
-          ]),
-        ),
-        const Divider(height: 18, color: TrainingColors.divider),
-        const Row(children: [
-          Icon(Icons.mail_outline_rounded,
-              size: 18, color: TrainingColors.textSecondary),
-          SizedBox(width: 8),
-          Expanded(
-              child: Text('abdullah.alshammari@example.com',
-                  textDirection: TextDirection.ltr,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 12,
-                      color: TrainingColors.textPrimary))),
-        ]),
+          ),
+        ],
       ]));
 }
 
 class _CourseCard extends StatelessWidget {
-  const _CourseCard();
+  const _CourseCard({required this.request});
+
+  final RegistrationRequest request;
 
   @override
   Widget build(BuildContext context) => _Card(
@@ -746,7 +1023,6 @@ class _CourseCard extends StatelessWidget {
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: TrainingColors.primary))),
-          _MiniBadge('كورس معتمد', TrainingColors.primary),
         ]),
         const SizedBox(height: 12),
         Container(
@@ -764,48 +1040,44 @@ class _CourseCard extends StatelessWidget {
                   child: const Icon(Icons.groups_rounded,
                       color: Colors.white, size: 32)),
               const SizedBox(width: 10),
-              const Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    Text('دورة إدارة المشاريع الاحترافية PMP®',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                            color: TrainingColors.primary)),
-                    SizedBox(height: 5),
-                    _MiniBadge('تدريب ميداني', TrainingColors.accent),
-                    SizedBox(height: 5),
-                    Row(children: [
-                      Icon(Icons.calendar_month_outlined,
-                          size: 14, color: TrainingColors.accent),
-                      SizedBox(width: 4),
-                      Text('يبدأ 15 يونيو 2025',
-                          style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 10,
-                              color: TrainingColors.textSecondary)),
-                    ]),
-                    SizedBox(height: 3),
-                    Row(children: [
-                      Icon(Icons.devices_outlined,
-                          size: 14, color: TrainingColors.accent),
-                      SizedBox(width: 4),
-                      Flexible(
-                          child: Text('تدريب هجين (الرياض / عن بُعد)',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 10,
-                                  color: TrainingColors.textSecondary))),
-                    ]),
-                  ]))
+              Expanded(
+                  child: Text(request.course,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontFamily: 'Cairo',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          height: 1.5,
+                          color: TrainingColors.primary))),
             ]))
       ]));
+}
+
+class _DemoDetailsNotice extends StatelessWidget {
+  const _DemoDetailsNotice();
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+            color: TrainingColors.accentSoft,
+            borderRadius: BorderRadius.circular(12)),
+        child: const Row(children: [
+          Icon(Icons.info_outline_rounded,
+              size: 18, color: TrainingColors.accentDark),
+          SizedBox(width: 8),
+          Expanded(
+              child: Text(
+                  'الأقسام التالية تعرض بيانات توضيحية غير مرتبطة بالطلب المحدد.',
+                  style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 11,
+                      height: 1.6,
+                      color: TrainingColors.textSecondary))),
+        ]),
+      );
 }
 
 class _InfoCard extends StatelessWidget {
@@ -813,28 +1085,27 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const _Card(
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-            _SectionTitle('البيانات الأكاديمية والمهنية', Icons.badge_outlined),
-            SizedBox(height: 14),
-            _InfoRow(
-                icon: Icons.school_outlined,
-                title: 'المؤهل العلمي',
-                value: 'بكالوريوس إدارة أعمال',
-                sub: 'جامعة الملك سعود — معدل 4.65 من 5.00'),
-            _InfoRow(
-                icon: Icons.domain_rounded,
-                title: 'جهة العمل الحالية',
-                value: 'شركة التقنية المتقدمة للحلول الرقمية',
-                sub: 'دوام كامل • قسم إدارة البرامج التقنية'),
-            _InfoRow(
-                icon: Icons.work_history_outlined,
-                title: 'سنوات الخبرة العملية',
-                value: '3 سنوات كمنسق مشاريع تقنية',
-                sub: 'إشراف وتنسيق مشاريع تطوير الأنظمة المؤسسية',
-                last: true)
-          ]));
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _SectionTitle('البيانات الأكاديمية والمهنية', Icons.badge_outlined),
+        SizedBox(height: 14),
+        _InfoRow(
+            icon: Icons.school_outlined,
+            title: 'المؤهل العلمي',
+            value: 'بكالوريوس إدارة أعمال',
+            sub: 'جامعة الملك سعود — معدل 4.65 من 5.00'),
+        _InfoRow(
+            icon: Icons.domain_rounded,
+            title: 'جهة العمل الحالية',
+            value: 'شركة التقنية المتقدمة للحلول الرقمية',
+            sub: 'دوام كامل • قسم إدارة البرامج التقنية'),
+        _InfoRow(
+            icon: Icons.work_history_outlined,
+            title: 'سنوات الخبرة العملية',
+            value: '3 سنوات كمنسق مشاريع تقنية',
+            sub: 'إشراف وتنسيق مشاريع تطوير الأنظمة المؤسسية',
+            last: true)
+      ]));
 }
 
 class _AttachmentsCard extends StatelessWidget {
@@ -964,7 +1235,8 @@ class _MessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _Card(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const _SectionTitle('رسالة ورغبة المتدرب', Icons.format_quote_rounded),
         const SizedBox(height: 10),
         Container(
@@ -997,22 +1269,19 @@ class _PaymentCard extends StatelessWidget {
           boxShadow: TrainingColors.cardShadow),
       child: Row(children: [
         const Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-              Text('رسوم التسجيل المعتمدة',
-                  style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 11,
-                      color: Colors.white70)),
-              SizedBox(height: 2),
-              Text('1,500 ريال سعودي',
-                  style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white)),
-            ])),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('رسوم التسجيل المعتمدة',
+              style: TextStyle(
+                  fontFamily: 'Cairo', fontSize: 11, color: Colors.white70)),
+          SizedBox(height: 2),
+          Text('1,500 ريال سعودي',
+              style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white)),
+        ])),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
@@ -1192,22 +1461,23 @@ class _CourseBox extends StatelessWidget {
               color: TrainingColors.primary, size: 19),
           const SizedBox(width: 8),
           Expanded(
-              child:
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('طلب التسجيل في:',
-                style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 10,
-                    color: TrainingColors.textSecondary)),
-            Text(course,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontFamily: 'Cairo',
-                    color: TrainingColors.primary,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700)),
-          ])),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                const Text('طلب التسجيل في:',
+                    style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 10,
+                        color: TrainingColors.textSecondary)),
+                Text(course,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontFamily: 'Cairo',
+                        color: TrainingColors.primary,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700)),
+              ])),
         ]),
       );
 }
@@ -1255,13 +1525,10 @@ class _StatusTabPill extends StatelessWidget {
                       fontFamily: 'Cairo',
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
-                      color: selected
-                          ? Colors.white
-                          : TrainingColors.primary)),
+                      color: selected ? Colors.white : TrainingColors.primary)),
               const SizedBox(width: 6),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 decoration: BoxDecoration(
                     color: selected
                         ? Colors.white.withValues(alpha: .22)
@@ -1272,9 +1539,8 @@ class _StatusTabPill extends StatelessWidget {
                         fontFamily: 'Cairo',
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: selected
-                            ? Colors.white
-                            : TrainingColors.primary)),
+                        color:
+                            selected ? Colors.white : TrainingColors.primary)),
               ),
             ]),
           ),
@@ -1479,26 +1745,6 @@ class _InfoRow extends StatelessWidget {
       ]));
 }
 
-class _MiniBadge extends StatelessWidget {
-  const _MiniBadge(this.text, this.color);
-
-  final String text;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-          color: color.withValues(alpha: .13),
-          borderRadius: BorderRadius.circular(20)),
-      child: Text(text,
-          style: TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 9.5,
-              fontWeight: FontWeight.w700,
-              color: color)));
-}
-
 class _PulseDot extends StatefulWidget {
   const _PulseDot();
 
@@ -1529,65 +1775,9 @@ class _PulseDotState extends State<_PulseDot>
       );
 }
 
-class _CompanyNav extends StatelessWidget {
-  const _CompanyNav();
-
-  @override
-  Widget build(BuildContext context) => Container(
-      height: 70,
-      decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          boxShadow: [
-            BoxShadow(
-                color: Color(0x12000000), blurRadius: 12, offset: Offset(0, -3))
-          ]),
-      child: const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _NavItem('الرئيسية', Icons.home_outlined),
-            _NavItem('الدورات', Icons.menu_book_outlined),
-            _NavItem('المحفظة', Icons.account_balance_wallet_outlined),
-            _NavItem('حسابي', Icons.person_outline_rounded, active: true)
-          ]));
-}
-
-class _NavItem extends StatelessWidget {
-  const _NavItem(this.label, this.icon, {this.active = false});
-
-  final String label;
-  final IconData icon;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) =>
-      Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(icon,
-            size: 21,
-            color:
-                active ? TrainingColors.primary : TrainingColors.textSecondary),
-        const SizedBox(height: 3),
-        if (active)
-          Container(
-              width: 5,
-              height: 5,
-              decoration: const BoxDecoration(
-                  color: TrainingColors.accent, shape: BoxShape.circle)),
-        if (active) const SizedBox(height: 2),
-        Text(label,
-            style: TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 10,
-                color: active
-                    ? TrainingColors.primary
-                    : TrainingColors.textSecondary,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w400))
-      ]);
-}
-
-void _showDecisionSheet(
+Future<bool?> _showDecisionSheet(
     BuildContext context, bool accept, RegistrationRequest request) {
-  showModalBottomSheet<void>(
+  return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -1606,9 +1796,6 @@ class _ConfirmSheet extends StatefulWidget {
 }
 
 class _ConfirmSheetState extends State<_ConfirmSheet> {
-  bool _welcome = true;
-  bool _telegram = true;
-
   @override
   Widget build(BuildContext context) {
     final accept = widget.accept;
@@ -1644,8 +1831,7 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
           if (accept) ...[
             const SizedBox(height: 10),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                   color: TrainingColors.surfaceMuted,
                   borderRadius: BorderRadius.circular(20)),
@@ -1654,13 +1840,15 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
                     size: 15, color: TrainingColors.accent),
                 const SizedBox(width: 6),
                 Flexible(
-                    child: Text.rich(TextSpan(children: [
-                  const TextSpan(text: 'الطالب: '),
-                  TextSpan(
-                      text: widget.request.name,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
-                  TextSpan(text: ' • ${widget.request.course}'),
-                ]),
+                    child: Text.rich(
+                        TextSpan(children: [
+                          const TextSpan(text: 'الطالب: '),
+                          TextSpan(
+                              text: widget.request.name,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w700)),
+                          TextSpan(text: ' • ${widget.request.course}'),
+                        ]),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
@@ -1674,78 +1862,20 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
           const SizedBox(height: 10),
           Text(
               accept
-                  ? 'سيتم إشعار الطالب فوراً برسالة نصية وتطبيق واتساب بقبول طلبه، وإصدار رابط سداد الفاتورة تلقائياً، وإضافته لكشف الحضور الرسمي الخاص بالدورة.'
-                  : 'هل أنت متأكد من رفض طلب ${widget.request.name}؟ سيتم إشعاره وتحديث حالة الطلب.',
+                  ? 'في النسخة التجريبية سيتم تحديث حالة الطلب محلياً فقط، دون إرسال إشعارات أو حجز مقعد فعلي.'
+                  : 'هل أنت متأكد من رفض طلب ${widget.request.name}؟ سيتم تحديث الحالة محلياً فقط.',
               textAlign: TextAlign.center,
               style: const TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 12,
                   height: 1.8,
                   color: TrainingColors.textSecondary)),
-          if (accept) ...[
-            const SizedBox(height: 16),
-            _SheetOption(
-                checked: _welcome,
-                onChanged: (value) => setState(() => _welcome = value),
-                title: 'إرسال رسالة ترحيبية وتفاصيل القاعة التدريبية',
-                subtitle: 'عبر البريد الإلكتروني والواتساب'),
-            const SizedBox(height: 10),
-            _SheetOption(
-                checked: _telegram,
-                onChanged: (value) => setState(() => _telegram = value),
-                title: 'تضمين رابط الانضمام لمجموعة تليجرام الخاصة بالدورة',
-                subtitle: 'للتواصل المباشر مع المدرب وزملائه المتدربين'),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                  color: TrainingColors.surfaceMuted,
-                  borderRadius: BorderRadius.circular(12)),
-              child: Row(children: [
-                const Icon(Icons.event_seat_rounded,
-                    color: TrainingColors.accent, size: 20),
-                const SizedBox(width: 8),
-                const Expanded(
-                    child: Text.rich(TextSpan(children: [
-                  TextSpan(text: 'سيتم حجز مقعد رسمي فوراً '),
-                  TextSpan(
-                      text: '(المتبقي: 4 مقاعد من 20)',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: TrainingColors.accentDark)),
-                ]),
-                        style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 11.5,
-                            color: TrainingColors.textPrimary))),
-                Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20)),
-                    child: const Text('20% شاغر',
-                        style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w700,
-                            color: TrainingColors.accent))),
-              ]),
-            ),
-          ],
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
             height: 50,
             child: FilledButton.icon(
-              onPressed: () {
-                final messenger = ScaffoldMessenger.of(context);
-                Navigator.pop(context);
-                messenger.showSnackBar(SnackBar(
-                    content: Text(accept
-                        ? 'تم قبول الطالب وإرسال الإشعار'
-                        : 'تم رفض طلب التسجيل')));
-              },
+              onPressed: () => Navigator.pop(context, true),
               style: FilledButton.styleFrom(
                   backgroundColor: color,
                   shape: RoundedRectangleBorder(
@@ -1768,69 +1898,4 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
       ),
     );
   }
-}
-
-class _SheetOption extends StatelessWidget {
-  const _SheetOption({
-    required this.checked,
-    required this.onChanged,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final bool checked;
-  final ValueChanged<bool> onChanged;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) => Material(
-        color: TrainingColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: () => onChanged(!checked),
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(children: [
-              Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                      color: checked
-                          ? TrainingColors.accent
-                          : Colors.transparent,
-                      border: Border.all(
-                          color: checked
-                              ? TrainingColors.accent
-                              : TrainingColors.divider,
-                          width: 1.6),
-                      borderRadius: BorderRadius.circular(6)),
-                  child: checked
-                      ? const Icon(Icons.check_rounded,
-                          size: 15, color: Colors.white)
-                      : null),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    Text(title,
-                        style: const TextStyle(
-                            fontFamily: 'Cairo',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 11.5,
-                            height: 1.5,
-                            color: TrainingColors.textPrimary)),
-                    Text(subtitle,
-                        style: const TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 10,
-                            height: 1.5,
-                            color: TrainingColors.textSecondary)),
-                  ])),
-            ]),
-          ),
-        ),
-      );
 }

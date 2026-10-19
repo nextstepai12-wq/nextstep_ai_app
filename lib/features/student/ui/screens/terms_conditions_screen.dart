@@ -47,7 +47,8 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
       final maxScroll = _scrollController.position.maxScrollExtent;
       final currentScroll = _scrollController.offset;
       setState(() {
-        _scrollProgress = maxScroll > 0 ? (currentScroll / maxScroll).clamp(0.0, 1.0) : 0.0;
+        _scrollProgress =
+            maxScroll > 0 ? (currentScroll / maxScroll).clamp(0.0, 1.0) : 0.0;
         _showBackToTop = currentScroll > 400;
       });
     }
@@ -103,8 +104,10 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
             borderRadius: BorderRadius.circular(14),
           ),
           backgroundColor: isSuccess
-              ? Theme.of(context).extension<AppColors>()?.success ?? const Color(0xFF10B981)
-              : Theme.of(context).extension<AppColors>()?.danger ?? const Color(0xFFBA1A1A),
+              ? Theme.of(context).extension<AppColors>()?.success ??
+                  const Color(0xFF10B981)
+              : Theme.of(context).extension<AppColors>()?.danger ??
+                  const Color(0xFFBA1A1A),
           content: Row(
             children: [
               Icon(
@@ -521,7 +524,8 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
       decoration: BoxDecoration(
         color: c.primarySoft,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: c.primaryContainer.withValues(alpha: 0.2), width: 1.2),
+        border: Border.all(
+            color: c.primaryContainer.withValues(alpha: 0.2), width: 1.2),
       ),
       child: Row(
         children: [

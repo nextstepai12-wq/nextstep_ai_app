@@ -83,7 +83,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
     if (!mounted) return;
 
     final newInstructor = InstructorModel(
-      id: widget.instructor?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id: widget.instructor?.id ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       name: _fullNameController.text.trim(),
       specialty: _jobTitleController.text.trim(),
       bio: _bioController.text.trim(),
@@ -97,7 +98,7 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
       rating: widget.instructor?.rating ?? 4.8,
       studentCount: widget.instructor?.studentCount ?? 0,
       coursesCount: widget.instructor?.coursesCount ?? 0,
-      isVerified: widget.instructor?.isVerified ?? true,
+      isVerified: widget.instructor?.isVerified ?? false,
       createdAt: widget.instructor?.createdAt ?? DateTime.now(),
     );
 
@@ -109,15 +110,16 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
             SizedBox(width: 8.w),
             Text(
               widget.isEditing
-                  ? 'تم تحديث بيانات المدرب بنجاح'
-                  : 'تم حفظ واعتماد المدرب بنجاح في المنظومة',
+                  ? 'تم تحديث بيانات المدرب محلياً'
+                  : 'تمت إضافة المدرب محلياً (نسخة تجريبية)',
               style: TextStyle(fontSize: 13.sp, fontFamily: 'Tajawal'),
             ),
           ],
         ),
         backgroundColor: TrainingColors.success,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
       ),
     );
 
@@ -129,10 +131,12 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
-            Icon(Icons.workspace_premium_rounded, color: TrainingColors.accent, size: 22.sp),
+            Icon(Icons.workspace_premium_rounded,
+                color: TrainingColors.accent, size: 22.sp),
             SizedBox(width: 8.w),
             Text(
               'إضافة شهادة أو اعتماد',
@@ -175,7 +179,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: TrainingColors.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r)),
             ),
             child: const Text('إضافة'),
           ),
@@ -241,13 +246,10 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
   }
 
   void _handleCvPick() {
-    setState(() {
-      _cvFileName = 'Curriculum_Vitae_Trainer.pdf';
-    });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('تم اختيار ملف السيرة الذاتية: $_cvFileName'),
-        duration: const Duration(seconds: 2),
+      const SnackBar(
+        content: Text('اختيار الملفات غير متاح في النسخة الحالية'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -294,7 +296,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
       elevation: 0,
       centerTitle: false,
       leading: IconButton(
-        icon: const Icon(Icons.chevron_right_rounded, color: TrainingColors.primary, size: 28),
+        icon: const Icon(Icons.chevron_right_rounded,
+            color: TrainingColors.primary, size: 28),
         onPressed: () => context.pop(),
       ),
       title: Row(
@@ -309,12 +312,13 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                 color: TrainingColors.primary,
                 borderRadius: BorderRadius.circular(6.r),
               ),
-              child: const Icon(Icons.school_rounded, color: Colors.white, size: 18),
+              child: const Icon(Icons.school_rounded,
+                  color: Colors.white, size: 18),
             ),
           ),
           SizedBox(width: 8.w),
           Text(
-            widget.isEditing ? 'تعديل بيانات المدرب' : 'Course Detail',
+            widget.isEditing ? 'تعديل بيانات المدرب' : 'إضافة مدرب جديد',
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
@@ -349,13 +353,16 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.badge_outlined, color: TrainingColors.accent, size: 24.sp),
+              Icon(Icons.badge_outlined,
+                  color: TrainingColors.accent, size: 24.sp),
               SizedBox(width: 10.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.isEditing ? 'تعديل بيانات المدرب' : 'إضافة مدرب جديد',
+                    widget.isEditing
+                        ? 'تعديل بيانات المدرب'
+                        : 'إضافة مدرب جديد',
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.bold,
@@ -397,7 +404,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
   }
 
   Widget _buildAvatarSection() {
-    final hasAvatar = _selectedAvatarUrl != null && _selectedAvatarUrl!.isNotEmpty;
+    final hasAvatar =
+        _selectedAvatarUrl != null && _selectedAvatarUrl!.isNotEmpty;
 
     return Container(
       padding: EdgeInsets.all(16.r),
@@ -419,7 +427,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: TrainingColors.surfaceAlt,
-                    border: Border.all(color: TrainingColors.surfaceMuted, width: 2.w),
+                    border: Border.all(
+                        color: TrainingColors.surfaceMuted, width: 2.w),
                     image: hasAvatar
                         ? DecorationImage(
                             image: NetworkImage(_selectedAvatarUrl!),
@@ -509,7 +518,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.person_outline_rounded, color: TrainingColors.accent, size: 20.sp),
+              Icon(Icons.person_outline_rounded,
+                  color: TrainingColors.accent, size: 20.sp),
               SizedBox(width: 6.w),
               Text(
                 'البيانات الأساسية للمدرب',
@@ -529,7 +539,9 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
             controller: _fullNameController,
             placeholder: 'مثال: د. خالد العتيبي',
             icon: Icons.person_rounded,
-            validator: (v) => v == null || v.trim().isEmpty ? 'يرجى إدخال الاسم الكامل' : null,
+            validator: (v) => v == null || v.trim().isEmpty
+                ? 'يرجى إدخال الاسم الكامل'
+                : null,
           ),
           SizedBox(height: 12.h),
           _buildFormField(
@@ -538,7 +550,9 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
             controller: _jobTitleController,
             placeholder: 'مثال: خبير ومستشار إدارة المشاريع PMP',
             icon: Icons.school_rounded,
-            validator: (v) => v == null || v.trim().isEmpty ? 'يرجى إدخال التخصص والمسمى المهني' : null,
+            validator: (v) => v == null || v.trim().isEmpty
+                ? 'يرجى إدخال التخصص والمسمى المهني'
+                : null,
           ),
           SizedBox(height: 12.h),
           Column(
@@ -558,7 +572,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                           fontFamily: 'Tajawal',
                         ),
                       ),
-                      Text(' *', style: TextStyle(color: Colors.red, fontSize: 14.sp)),
+                      Text(' *',
+                          style: TextStyle(color: Colors.red, fontSize: 14.sp)),
                     ],
                   ),
                   ValueListenableBuilder<TextEditingValue>(
@@ -583,8 +598,10 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                 style: TextStyle(fontSize: 13.sp, fontFamily: 'Tajawal'),
                 decoration: InputDecoration(
                   counterText: '',
-                  hintText: 'اكتب نبذة مهنية مختصرة تظهر في صفحة الدورة والمنشأة للمتدربين...',
-                  hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey.shade400),
+                  hintText:
+                      'اكتب نبذة مهنية مختصرة تظهر في صفحة الدورة والمنشأة للمتدربين...',
+                  hintStyle:
+                      TextStyle(fontSize: 12.sp, color: Colors.grey.shade400),
                   filled: true,
                   fillColor: TrainingColors.surfaceAlt,
                   border: OutlineInputBorder(
@@ -593,7 +610,9 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                   ),
                   contentPadding: EdgeInsets.all(12.r),
                 ),
-                validator: (v) => v == null || v.trim().isEmpty ? 'يرجى إدخال النبذة التعريفية' : null,
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? 'يرجى إدخال النبذة التعريفية'
+                    : null,
               ),
             ],
           ),
@@ -616,12 +635,15 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                 borderRadius: BorderRadius.circular(12.r),
                 child: Container(
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
+                  padding:
+                      EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
                   decoration: BoxDecoration(
                     color: TrainingColors.surfaceAlt,
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: _cvFileName != null ? TrainingColors.primary : Colors.transparent,
+                      color: _cvFileName != null
+                          ? TrainingColors.primary
+                          : Colors.transparent,
                     ),
                   ),
                   child: Column(
@@ -682,7 +704,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.contact_phone_rounded, color: TrainingColors.accent, size: 20.sp),
+              Icon(Icons.contact_phone_rounded,
+                  color: TrainingColors.accent, size: 20.sp),
               SizedBox(width: 6.w),
               Text(
                 'بيانات التواصل والاعتماد',
@@ -705,7 +728,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
             textDirection: TextDirection.ltr,
             keyboardType: TextInputType.emailAddress,
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'يرجى إدخال البريد الإلكتروني';
+              if (v == null || v.trim().isEmpty)
+                return 'يرجى إدخال البريد الإلكتروني';
               if (!v.contains('@')) return 'يرجى إدخال بريد إلكتروني صحيح';
               return null;
             },
@@ -725,7 +749,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                       fontFamily: 'Tajawal',
                     ),
                   ),
-                  Text(' *', style: TextStyle(color: Colors.red, fontSize: 14.sp)),
+                  Text(' *',
+                      style: TextStyle(color: Colors.red, fontSize: 14.sp)),
                 ],
               ),
               SizedBox(height: 6.h),
@@ -770,19 +795,25 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
                         textDirection: TextDirection.ltr,
-                        style: TextStyle(fontSize: 13.sp, fontFamily: 'Tajawal'),
+                        style:
+                            TextStyle(fontSize: 13.sp, fontFamily: 'Tajawal'),
                         decoration: InputDecoration(
                           hintText: '5X XXX XXXX',
-                          hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey.shade400),
+                          hintStyle: TextStyle(
+                              fontSize: 12.sp, color: Colors.grey.shade400),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12.w),
                         ),
-                        validator: (v) => v == null || v.trim().isEmpty ? 'يرجى إدخال رقم الجوال' : null,
+                        validator: (v) => v == null || v.trim().isEmpty
+                            ? 'يرجى إدخال رقم الجوال'
+                            : null,
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.only(left: 10.w),
-                      child: Icon(Icons.smartphone_rounded, color: Colors.grey.shade400, size: 20.sp),
+                      child: Icon(Icons.smartphone_rounded,
+                          color: Colors.grey.shade400, size: 20.sp),
                     ),
                   ],
                 ),
@@ -810,7 +841,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.verified_rounded, color: TrainingColors.accent, size: 20.sp),
+                  Icon(Icons.verified_rounded,
+                      color: TrainingColors.accent, size: 20.sp),
                   SizedBox(width: 6.w),
                   Text(
                     'البيانات المهنية والتراخيص',
@@ -831,7 +863,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                 ),
                 child: Text(
                   'اختياري',
-                  style: TextStyle(fontSize: 10.sp, color: TrainingColors.textMuted),
+                  style: TextStyle(
+                      fontSize: 10.sp, color: TrainingColors.textMuted),
                 ),
               ),
             ],
@@ -863,7 +896,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                 onTap: _addCertificationDialog,
                 borderRadius: BorderRadius.circular(12.r),
                 child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
+                  padding:
+                      EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
                   decoration: BoxDecoration(
                     color: TrainingColors.surfaceAlt,
                     borderRadius: BorderRadius.circular(12.r),
@@ -871,7 +905,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_circle_outline_rounded, color: TrainingColors.accent, size: 20.sp),
+                      Icon(Icons.add_circle_outline_rounded,
+                          color: TrainingColors.accent, size: 20.sp),
                       SizedBox(width: 6.w),
                       Text(
                         '+ إضافة شهادة أو رخصة معتمدة',
@@ -895,14 +930,17 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                     return Chip(
                       label: Text(
                         cert,
-                        style: TextStyle(fontSize: 11.sp, color: TrainingColors.primary),
+                        style: TextStyle(
+                            fontSize: 11.sp, color: TrainingColors.primary),
                       ),
                       backgroundColor: TrainingColors.surfaceMuted,
-                      deleteIcon: Icon(Icons.close, size: 14.sp, color: Colors.grey.shade600),
+                      deleteIcon: Icon(Icons.close,
+                          size: 14.sp, color: Colors.grey.shade600),
                       onDeleted: () {
                         setState(() => _certifications.remove(cert));
                       },
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r)),
                     );
                   }).toList(),
                 ),
@@ -940,10 +978,11 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.visibility_rounded, color: TrainingColors.accent, size: 20.sp),
+                  Icon(Icons.visibility_rounded,
+                      color: TrainingColors.accent, size: 20.sp),
                   SizedBox(width: 6.w),
                   Text(
-                    'حالة المدرب: نشط ومتاح',
+                    'حالة المدرب: نشط ومتاح (التوثيق يُدار منفصلاً)',
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
@@ -1001,15 +1040,19 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                   SizedBox(
                     width: 20.w,
                     height: 20.h,
-                    child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: const CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2),
                   ),
                   SizedBox(width: 10.w),
                 ] else ...[
-                  Icon(Icons.chevron_left_rounded, color: Colors.white, size: 22.sp),
+                  Icon(Icons.chevron_left_rounded,
+                      color: Colors.white, size: 22.sp),
                   SizedBox(width: 4.w),
                 ],
                 Text(
-                  widget.isEditing ? 'تحديث بيانات المدرب' : 'حفظ واعتماد المدرب',
+                  widget.isEditing
+                      ? 'تحديث بيانات المدرب'
+                      : 'حفظ بيانات المدرب',
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.bold,
@@ -1062,7 +1105,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
                 fontFamily: 'Tajawal',
               ),
             ),
-            if (required) Text(' *', style: TextStyle(color: Colors.red, fontSize: 14.sp)),
+            if (required)
+              Text(' *', style: TextStyle(color: Colors.red, fontSize: 14.sp)),
           ],
         ),
         SizedBox(height: 6.h),
@@ -1086,7 +1130,8 @@ class _AddInstructorScreenState extends State<AddInstructorScreen> {
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide.none,
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           ),
           validator: validator,
         ),

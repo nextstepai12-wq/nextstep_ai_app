@@ -18,6 +18,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
 
   String _searchQuery = '';
   String _selectedStatusFilter = 'all'; // 'all', 'active', 'inactive'
+  bool _onlyTopRated = false;
+  bool _onlyVerified = false;
 
   // Initial list of trainers matching the provided HTML mock data
   final List<InstructorModel> _instructors = [
@@ -107,14 +109,25 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     return _instructors.where((instructor) {
       final matchesQuery = _searchQuery.isEmpty ||
           instructor.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (instructor.specialty ?? '').toLowerCase().contains(_searchQuery.toLowerCase());
+          (instructor.specialty ?? '')
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase());
+
+      final matchesRating = !_onlyTopRated || (instructor.rating ?? 0) >= 4.8;
+      final matchesVerified = !_onlyVerified || instructor.isVerified;
 
       if (_selectedStatusFilter == 'active') {
-        return matchesQuery && instructor.isActive;
+        return matchesQuery &&
+            matchesRating &&
+            matchesVerified &&
+            instructor.isActive;
       } else if (_selectedStatusFilter == 'inactive') {
-        return matchesQuery && !instructor.isActive;
+        return matchesQuery &&
+            matchesRating &&
+            matchesVerified &&
+            !instructor.isActive;
       }
-      return matchesQuery;
+      return matchesQuery && matchesRating && matchesVerified;
     }).toList();
   }
 
@@ -228,21 +241,25 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               _buildModalOption(
                 icon: Icons.pause_circle_rounded,
                 iconColor: TrainingColors.accent,
-                title: instructor.isActive ? 'تعطيل مؤقت / تعيين كإجازة' : 'إعادة التفعيل والعمل',
+                title: instructor.isActive
+                    ? 'تعطيل مؤقت / تعيين كإجازة'
+                    : 'إعادة التفعيل والعمل',
                 onTap: () {
                   Navigator.pop(ctx);
                   setState(() {
-                    final index = _instructors.indexWhere((i) => i.id == instructor.id);
+                    final index =
+                        _instructors.indexWhere((i) => i.id == instructor.id);
                     if (index >= 0) {
-                      _instructors[index] = instructor.copyWith(isActive: !instructor.isActive);
+                      _instructors[index] =
+                          instructor.copyWith(isActive: !instructor.isActive);
                     }
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
                         instructor.isActive
-                            ? 'تم تعيين المدرب كإجازة / غير نشط'
-                            : 'تم إعادة تفعيل المدرب بنجاح',
+                            ? 'تم تعيين المدرب كإجازة على هذا الجهاز'
+                            : 'تم إعادة تفعيل المدرب على هذا الجهاز',
                       ),
                       backgroundColor: TrainingColors.primary,
                       duration: const Duration(seconds: 2),
@@ -285,7 +302,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(ctx),
                   style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
                     side: BorderSide(color: Colors.grey.shade300),
                   ),
                   child: Text(
@@ -347,7 +365,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(
           'تأكيد حذف المدرب',
           style: TextStyle(
@@ -374,7 +393,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('تم حذف المدرب (${instructor.name}) بنجاح'),
+                  content: Text(
+                      'تم حذف المدرب (${instructor.name}) من القائمة على هذا الجهاز'),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -382,7 +402,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r)),
             ),
             child: const Text('حذف'),
           ),
@@ -395,10 +416,12 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
-            Icon(Icons.calendar_month_rounded, color: TrainingColors.primary, size: 22.sp),
+            Icon(Icons.calendar_month_rounded,
+                color: TrainingColors.primary, size: 22.sp),
             SizedBox(width: 8.w),
             Text(
               'جدول المحاضرات — ${instructor.name}',
@@ -415,9 +438,11 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildScheduleRow('الأحد والثلاثاء', '05:00 م - 08:00 م', 'دورة PMP المتقدمة'),
+            _buildScheduleRow(
+                'الأحد والثلاثاء', '05:00 م - 08:00 م', 'دورة PMP المتقدمة'),
             SizedBox(height: 8.h),
-            _buildScheduleRow('الاثنين والأربعاء', '06:30 م - 09:30 م', 'ورشة عمل تحليل البيانات'),
+            _buildScheduleRow('الاثنين والأربعاء', '06:30 م - 09:30 م',
+                'ورشة عمل تحليل البيانات'),
           ],
         ),
         actions: [
@@ -444,13 +469,23 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(course, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold, color: TrainingColors.primary)),
+          Text(course,
+              style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.bold,
+                  color: TrainingColors.primary)),
           SizedBox(height: 2.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(days, style: TextStyle(fontSize: 11.sp, color: TrainingColors.textSecondary)),
-              Text(time, style: TextStyle(fontSize: 11.sp, color: TrainingColors.accent, fontWeight: FontWeight.bold)),
+              Text(days,
+                  style: TextStyle(
+                      fontSize: 11.sp, color: TrainingColors.textSecondary)),
+              Text(time,
+                  style: TextStyle(
+                      fontSize: 11.sp,
+                      color: TrainingColors.accent,
+                      fontWeight: FontWeight.bold)),
             ],
           ),
         ],
@@ -461,7 +496,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
   void _openFilterBottomSheet() {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
       builder: (ctx) => Padding(
         padding: EdgeInsets.all(20.r),
         child: Column(
@@ -479,23 +515,45 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
             ),
             SizedBox(height: 14.h),
             ListTile(
-              leading: const Icon(Icons.star_rounded, color: TrainingColors.rating),
+              leading:
+                  const Icon(Icons.star_rounded, color: TrainingColors.rating),
               title: const Text('الأعلى تقييماً (4.8+)'),
+              trailing: _onlyTopRated
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
               onTap: () {
+                setState(() => _onlyTopRated = !_onlyTopRated);
                 Navigator.pop(ctx);
-                setState(() {
-                  _searchQuery = '';
-                  _selectedStatusFilter = 'all';
-                });
               },
             ),
             ListTile(
               leading: const Icon(Icons.verified_rounded, color: Colors.blue),
-              title: const Text('المدربين المعتمدين والموثقين فقط'),
+              title: const Text('المدربون الموثقون فقط'),
+              trailing: _onlyVerified
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
               onTap: () {
+                setState(() => _onlyVerified = !_onlyVerified);
                 Navigator.pop(ctx);
               },
             ),
+            if (_onlyTopRated || _onlyVerified)
+              Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _onlyTopRated = false;
+                      _onlyVerified = false;
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  icon: const Icon(Icons.filter_alt_off_rounded, size: 18),
+                  label: const Text('إزالة الفلاتر'),
+                ),
+              ),
           ],
         ),
       ),
@@ -534,13 +592,15 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: filteredList.length,
-                          separatorBuilder: (context, index) => SizedBox(height: 12.h),
+                          separatorBuilder: (context, index) =>
+                              SizedBox(height: 12.h),
                           itemBuilder: (context, index) {
                             final trainer = filteredList[index];
                             return _buildTrainerCard(trainer);
                           },
                         ),
-                      SizedBox(height: 80.h), // Space for floating bottom button
+                      SizedBox(
+                          height: 80.h), // Space for floating bottom button
                     ],
                   ),
                 ),
@@ -572,7 +632,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.person_add_rounded, color: Colors.white, size: 22.sp),
+                      Icon(Icons.person_add_rounded,
+                          color: Colors.white, size: 22.sp),
                       SizedBox(width: 8.w),
                       Text(
                         '+ إضافة مدرب جديد',
@@ -609,7 +670,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 shape: BoxShape.circle,
                 boxShadow: TrainingColors.softShadow,
               ),
-              child: const Icon(Icons.chevron_right_rounded, color: TrainingColors.primary, size: 24),
+              child: const Icon(Icons.chevron_right_rounded,
+                  color: TrainingColors.primary, size: 24),
             ),
           ),
           SizedBox(width: 10.w),
@@ -654,7 +716,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.person_add_rounded, color: TrainingColors.accent, size: 16.sp),
+                  Icon(Icons.person_add_rounded,
+                      color: TrainingColors.accent, size: 16.sp),
                   SizedBox(width: 4.w),
                   Text(
                     '+ إضافة مدرب',
@@ -680,7 +743,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 shape: BoxShape.circle,
                 boxShadow: TrainingColors.softShadow,
               ),
-              child: const Icon(Icons.menu_rounded, color: TrainingColors.primary, size: 22),
+              child: const Icon(Icons.menu_rounded,
+                  color: TrainingColors.primary, size: 22),
             ),
           ),
         ],
@@ -723,10 +787,13 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               style: TextStyle(fontSize: 13.sp, fontFamily: 'Tajawal'),
               decoration: InputDecoration(
                 hintText: 'ابحث عن مدرب بالاسم أو التخصص...',
-                hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey.shade400),
-                prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400, size: 20.sp),
+                hintStyle:
+                    TextStyle(fontSize: 12.sp, color: Colors.grey.shade400),
+                prefixIcon: Icon(Icons.search_rounded,
+                    color: Colors.grey.shade400, size: 20.sp),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
               ),
             ),
           ),
@@ -741,7 +808,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               color: TrainingColors.surfaceMuted,
               borderRadius: BorderRadius.circular(14.r),
             ),
-            child: Icon(Icons.tune_rounded, color: TrainingColors.primary, size: 22.sp),
+            child: Icon(Icons.tune_rounded,
+                color: TrainingColors.primary, size: 22.sp),
           ),
         ),
       ],
@@ -795,9 +863,11 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               ),
               Row(
                 children: [
-                  _buildStatusDotCount(TrainingColors.success, '$_activeCount نشط'),
+                  _buildStatusDotCount(
+                      TrainingColors.success, '$_activeCount نشط'),
                   SizedBox(width: 8.w),
-                  _buildStatusDotCount(Colors.grey.shade400, '$_inactiveCount غير نشط'),
+                  _buildStatusDotCount(
+                      Colors.grey.shade400, '$_inactiveCount غير نشط'),
                 ],
               ),
             ],
@@ -832,7 +902,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
         SizedBox(width: 4.w),
         Text(
           label,
-          style: TextStyle(fontSize: 11.sp, color: TrainingColors.textSecondary),
+          style:
+              TextStyle(fontSize: 11.sp, color: TrainingColors.textSecondary),
         ),
       ],
     );
@@ -871,7 +942,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
       decoration: BoxDecoration(
         color: isActive ? Colors.white : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: isActive ? TrainingColors.cardShadow : TrainingColors.softShadow,
+        boxShadow:
+            isActive ? TrainingColors.cardShadow : TrainingColors.softShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -909,7 +981,9 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                       width: 14.w,
                       height: 14.h,
                       decoration: BoxDecoration(
-                        color: isActive ? TrainingColors.success : Colors.grey.shade400,
+                        color: isActive
+                            ? TrainingColors.success
+                            : Colors.grey.shade400,
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2.w),
                       ),
@@ -930,7 +1004,9 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                             style: TextStyle(
                               fontSize: 15.sp,
                               fontWeight: FontWeight.bold,
-                              color: isActive ? TrainingColors.primary : Colors.grey.shade700,
+                              color: isActive
+                                  ? TrainingColors.primary
+                                  : Colors.grey.shade700,
                               fontFamily: 'Cairo',
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -951,7 +1027,9 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                       instructor.specialty ?? 'مدرب معتمد',
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: isActive ? TrainingColors.textSecondary : Colors.grey.shade500,
+                        color: isActive
+                            ? TrainingColors.textSecondary
+                            : Colors.grey.shade500,
                         fontFamily: 'Tajawal',
                       ),
                       maxLines: 1,
@@ -961,7 +1039,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.more_vert_rounded, color: TrainingColors.textMuted),
+                icon: const Icon(Icons.more_vert_rounded,
+                    color: TrainingColors.textMuted),
                 onPressed: () => _openTrainerOptionsModal(instructor),
               ),
             ],
@@ -974,13 +1053,16 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
             children: [
               Row(
                 children: [
-                  _buildMetricItem(Icons.menu_book_rounded, '${instructor.coursesCount ?? 3} دورات'),
+                  _buildMetricItem(Icons.menu_book_rounded,
+                      '${instructor.coursesCount ?? 3} دورات'),
                   SizedBox(width: 12.w),
-                  _buildMetricItem(Icons.group_rounded, '${instructor.studentCount ?? 150} طالب'),
+                  _buildMetricItem(Icons.group_rounded,
+                      '${instructor.studentCount ?? 150} طالب'),
                   SizedBox(width: 12.w),
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded, color: TrainingColors.rating, size: 16),
+                      const Icon(Icons.star_rounded,
+                          color: TrainingColors.rating, size: 16),
                       SizedBox(width: 2.w),
                       Text(
                         '${instructor.rating ?? 4.8}',
@@ -997,7 +1079,9 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: isActive ? TrainingColors.successSoft : Colors.grey.shade200,
+                  color: isActive
+                      ? TrainingColors.successSoft
+                      : Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
@@ -1005,7 +1089,9 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                   style: TextStyle(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.bold,
-                    color: isActive ? TrainingColors.success : Colors.grey.shade600,
+                    color: isActive
+                        ? TrainingColors.success
+                        : Colors.grey.shade600,
                     fontFamily: 'Tajawal',
                   ),
                 ),
@@ -1081,7 +1167,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               });
             },
             style: OutlinedButton.styleFrom(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
             ),
             child: const Text('إعادة ضبط الفلاتر'),
           ),
