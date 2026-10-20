@@ -1,10 +1,10 @@
-﻿
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 import 'package:nextstep_ai_app/features/student/ui/screens/student_main_screen.dart';
-import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
+import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -13,605 +13,1018 @@ class StudentHomeScreen extends StatefulWidget {
   State<StudentHomeScreen> createState() => _StudentHomeScreenState();
 }
 
-class _StudentHomeScreenState extends State<StudentHomeScreen> {
-  final SupabaseService _supabase = SupabaseService();
-
+class _StudentHomeScreenState extends State<StudentHomeScreen>
+    with TickerProviderStateMixin {
   String _userName = 'طالب';
-  String _userEmail = '';
   Map<String, dynamic>? _profileData;
   bool _isLoading = true;
   String? _errorMessage;
+  int _answeredQuestions = 0;
+  int _totalQuestions = 6;
+  int _assessmentPercent = 0;
+  bool _assessmentCompleted = false;
 
-  final List<Map<String, dynamic>> _recommendations = [
-    {
-      'title': 'هندسة الحاسوب',
-      'university': 'الجامعة الإسلامية',
-      'matchScore': 92,
-      'color': const Color(0xFF3B82F6),
-    },
-    {
-      'title': 'الذكاء الاصطناعي',
-      'university': 'جامعة الأزهر',
-      'matchScore': 85,
-      'color': const Color(0xFFA855F7),
-    },
-    {
-      'title': 'علوم البيانات',
-      'university': 'جامعة الأقصى',
-      'matchScore': 78,
-      'color': const Color(0xFF22C55E),
-    },
-  ];
+  late AnimationController _staggerController;
+  late List<Animation<double>> _fadeAnimations;
+  late List<Animation<Offset>> _slideAnimations;
+
+  static const int _itemCount = 7;
+
+  @override
+  void initState() {
+    super.initState();
+    _initStaggeredAnimations();
+    _loadUserData();
+  }
+
+  void _initStaggeredAnimations() {
+    _staggerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _fadeAnimations = [];
+    _slideAnimations = [];
+    for (int i = 0; i < _itemCount; i++) {
+      final start = (i * 0.08).clamp(0.0, 1.0);
+      final end = (start + 0.4).clamp(0.0, 1.0);
+      _fadeAnimations.add(
+        Tween<double>(begin: 0, end: 1).animate(
+          CurvedAnimation(
+            parent: _staggerController,
+            curve: Interval(start, end, curve: Curves.easeOut),
+          ),
+        ),
+      );
+      _slideAnimations.add(
+        Tween<Offset>(
+          begin: const Offset(0, 0.15),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: _staggerController,
+            curve: Interval(start, end, curve: Curves.easeOutCubic),
+          ),
+        ),
+      );
+    }
+    _staggerController.forward();
+  }
+
+  @override
+  void dispose() {
+    _staggerController.dispose();
+    super.dispose();
+  }
 
   void _changeTab(int index) {
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context);
-    }
     StudentMainScreen.tabNotifier.value = index;
   }
 
-Future<void> _loadUserData() async {
-  if (!mounted) return;
-
-  setState(() {
-    _isLoading = true;
-    _errorMessage = null;
-  });
-
-  try {
-    final cachedData = await TokenManager.getUserData();
-    if (cachedData['name'] != null && cachedData['name']!.isNotEmpty) {
-      if (!mounted) return;
-      setState(() {
-        _userName = cachedData['name'] ?? 'طالب';
-        _userEmail = cachedData['email'] ?? '';
-      });
-    }
-
-    final user = _supabase.currentUser;
-    if (user != null) {
-      final userData = await _supabase.getUser(user.id);
-      if (userData != null) {
-        if (!mounted) return;
-        setState(() {
-          _userName = userData.displayName;
-          _userEmail = user.email ?? '';
-        });
-      }
-
-      try {
-        final profile = await _supabase.getStudentProfileByUuid(user.id);
-        if (profile != null) {
-          if (!mounted) return;
-          setState(() {
-            _profileData = {
-              'student_type': profile.studentType,
-              'phone': profile.phone,
-              'city': profile.city,
-              'high_school_score': profile.highSchoolScore,
-              'gpa': profile.gpa,
-            };
-          });
-        }
-      } catch (e) {
-      }
-    }
-  } catch (e) {
+  Future<void> _loadUserData() async {
     if (!mounted) return;
     setState(() {
-      _errorMessage = 'تعذّر تحميل البيانات';
+      _isLoading = true;
+      _errorMessage = null;
     });
-  } finally {
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-}
-  Future<void> _logout() async {
-    await TokenManager.clearAll();
-    await _supabase.signOut();
-    if (mounted) {
-      context.pushReplacement('/login');
+    try {
+      final cachedData = await TokenManager.getUserData();
+      final savedAnswers =
+          await HiveStorage.getData('assessment_cache', 'answers');
+      final completed =
+          await HiveStorage.getData('assessment_cache', 'completed');
+      final answerCount = savedAnswers is Map ? savedAnswers.length : 0;
+      final answered = answerCount.clamp(0, _totalQuestions).toInt();
+      if (mounted) {
+        setState(() {
+          _userName = cachedData['name'] ?? 'طالب';
+          _profileData = <String, dynamic>{};
+          _answeredQuestions = answered;
+          _assessmentPercent = ((answered / _totalQuestions) * 100).round();
+          _assessmentCompleted =
+              completed == true || answered >= _totalQuestions;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _errorMessage = 'تعذّر تحميل البيانات');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final c = Theme.of(context).extension<AppColors>() ?? AppColors.light;
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
-        appBar: _buildAppBar(),
-        drawer: _buildDrawer(),
-        body: _buildBody(),
+        backgroundColor: c.background,
+        extendBodyBehindAppBar: true,
+        body: _isLoading
+            ? _buildSkeleton(c)
+            : _errorMessage != null
+                ? _buildErrorState(c)
+                : _buildContent(c),
       ),
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: const Color(0xFFF6F7FB),
-      elevation: 0,
-      leading: Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(
-            Icons.menu_rounded,
-            color: AppTheme.primaryContainer,
+  
+
+  Widget _buildSkeleton(AppColors c) {
+    return Stack(
+      children: [
+        _buildGradientBg(c),
+        SafeArea(
+          child: Column(
+            children: [
+              _buildShimmerHeader(c),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  child: Column(
+                    children: List.generate(
+                      5,
+                      (_) => Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _shimmerBox(c, height: 80, radius: 20),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
-      ),
-      title: const Center(
-        child: Text(
-          'NextStep AI',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: AppTheme.primaryContainer,
-            letterSpacing: -0.3,
-          ),
-        ),
-      ),
-      centerTitle: true,
-      actions: [
-        IconButton(
-          icon: const Icon(
-            Icons.notifications_outlined,
-            color: AppTheme.primaryContainer,
-          ),
-          onPressed: () => context.push('/student/notifications'),
         ),
       ],
     );
   }
 
-  Widget _buildDrawer() {
-    return Drawer(
-      child: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppTheme.primary, AppTheme.primaryContainer],
+  Widget _shimmerBox(AppColors c, {double height = 80, double radius = 20}) {
+    return Container(
+      height: height,
+      decoration: BoxDecoration(
+        color: c.surfaceAlt.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
+  }
+
+  Widget _buildShimmerHeader(AppColors c) {
+    return Container(
+      height: 140,
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            c.primary.withValues(alpha: 0.15),
+            c.primaryContainer.withValues(alpha: 0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+    );
+  }
+
+  
+
+  Widget _buildGradientBg(AppColors c) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 220,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              c.primarySoft.withValues(alpha: 0.45),
+              c.surfaceAlt.withValues(alpha: 0.2),
+              c.background,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  
+
+  Widget _buildErrorState(AppColors c) {
+    return Stack(
+      children: [
+        _buildGradientBg(c),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline_rounded,
+                    size: 56, color: c.textSecondary),
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: c.textSecondary, fontSize: 14),
                 ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(24),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _loadUserData,
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('إعادة المحاولة'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: c.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  
+
+  Widget _buildContent(AppColors c) {
+    return Stack(
+      children: [
+        _buildGradientBg(c),
+        SafeArea(
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _animatedItem(0, _buildAppBar(c)),
+                      const SizedBox(height: 8),
+                      _animatedItem(1, _buildWelcomeSection(c)),
+                      const SizedBox(height: 16),
+                      _animatedItem(2, _buildSearchBar(c)),
+                      const SizedBox(height: 16),
+                      _animatedItem(3, _buildProgressCard(c)),
+                      const SizedBox(height: 16),
+                      _animatedItem(4, _buildStatsSection(c)),
+                      const SizedBox(height: 24),
+                      _animatedItem(5, _buildQuickServices(c)),
+                      const SizedBox(height: 24),
+                      _animatedItem(6, _buildRecommendations(c)),
+                    ],
+                  ),
                 ),
               ),
+            ],
+          ),
+        ),
+        Positioned(
+          bottom: 88,
+          left: 16,
+          child: _buildFAB(c),
+        ),
+      ],
+    );
+  }
+
+  Widget _animatedItem(int index, Widget child) {
+    if (index >= _fadeAnimations.length) return child;
+    return FadeTransition(
+      opacity: _fadeAnimations[index],
+      child: SlideTransition(
+        position: _slideAnimations[index],
+        child: child,
+      ),
+    );
+  }
+
+  
+
+  Widget _buildAppBar(AppColors c) {
+    return Row(
+      children: [
+        _iconButton(
+          c: c,
+          icon: Icons.menu_rounded,
+          tooltip: 'القائمة',
+          onTap: () => Scaffold.of(context).openDrawer(),
+        ),
+        const SizedBox(width: 8),
+        _iconButton(
+          c: c,
+          icon: Icons.notifications_outlined,
+          tooltip: 'الإشعارات',
+          badge: '3',
+          onTap: () => context.push('/student/notifications'),
+        ),
+        const Spacer(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: c.primary,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: c.primary.withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.school_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                'NextStep AI',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _iconButton({
+    required AppColors c,
+    required IconData icon,
+    String? tooltip,
+    String? badge,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip ?? '',
+      child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: c.surface.withValues(alpha: 0.8),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: c.primary.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(icon, color: c.primary, size: 22),
+            if (badge != null)
+              Positioned(
+                top: 6,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFBA1A1A),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    badge,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      height: 1,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+      ),
+    );
+  }
+
+  
+
+  Widget _buildWelcomeSection(AppColors c) {
+    final studentType =
+        _profileData?['student_type'] == 'university' ? 'طالب جامعي' : 'طالب';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.person, size: 32, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _userName.isNotEmpty ? _userName : 'طالب',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        'مرحباً بك',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: c.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Text('👋', style: TextStyle(fontSize: 18)),
+                    ],
                   ),
                   const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _userName,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: c.primary,
+                            letterSpacing: -0.3,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: c.primarySoft,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.verified, color: c.primary, size: 12),
+                            const SizedBox(width: 3),
+                            Text(
+                              studentType,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: c.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
                   Text(
-                    _userEmail.isNotEmpty ? _userEmail : '',
+                    'اكتشف التخصص الأنسب لشغفك ومستقبلك الأكاديمي 🚀',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: c.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  colors: [c.primary, c.primaryContainer],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: c.primary.withValues(alpha: 0.2),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(
+                    Icons.stairs_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Icon(
+                      Icons.star,
+                      color: c.accent,
+                      size: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  
+
+  Widget _buildSearchBar(AppColors c) {
+    return GestureDetector(
+      onTap: () => context.push('/chat'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: c.surface.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: c.primary.withValues(alpha: 0.06),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.auto_awesome, color: c.primary, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'اسأل NextStep AI عن أي تخصص أو مهارة...',
+                style: TextStyle(fontSize: 13, color: c.textSecondary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: c.primarySoft,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: c.success,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'مستعد',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: c.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  
+
+  Widget _buildProgressCard(AppColors c) {
+    final remaining =
+        (_totalQuestions - _answeredQuestions).clamp(0, _totalQuestions);
+    final isComplete = _assessmentCompleted;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.centerRight,
+          end: Alignment.centerLeft,
+          colors: [c.primary, c.primaryContainer, c.purple],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: c.primary.withValues(alpha: 0.2),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: -20,
+            bottom: -20,
+            width: 100,
+            height: 100,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            width: 80,
+            height: 80,
+            child: Container(
+              decoration: BoxDecoration(
+                color: c.success.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
-                      'طالب',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.flag_rounded, color: Colors.white, size: 12),
+                        SizedBox(width: 4),
+                        Text(
+                          'محور المهارات التحليلية',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    isComplete ? 'مكتمل' : 'باقي $remaining',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                isComplete
+                    ? 'اكتمل تقييم الميول الأكاديمي 🎯'
+                    : 'استكمل تقييم الميول الأكاديمي 🎯',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                isComplete
+                    ? 'يمكنك الآن مراجعة نتيجتك والتوصيات المبنية على إجاباتك.'
+                    : 'أكمل الأسئلة المتبقية لعرض توصيات مبنية على ميولك.',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _changeTab(1),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: c.surface.withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            isComplete
+                                ? 'عرض نتيجة التقييم'
+                                : 'متابعة التقييم الآن',
+                            style: TextStyle(
+                              color: c.primary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: c.primary,
+                            size: 14,
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  _buildDrawerItem(
-                    icon: Icons.home_rounded,
-                    title: 'الرئيسية',
-                    onTap: () => _changeTab(0),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.assessment_rounded,
-                    title: 'الاستبيان الذكي',
-                    onTap: () => _changeTab(1),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.recommend_rounded,
-                    title: 'التوصيات',
-                    onTap: () => _changeTab(2),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.chat_rounded,
-                    title: 'المساعد الأكاديمي',
-                    onTap: () => _changeTab(3),
-                  ),
-                  const Divider(),
-                  _buildDrawerItem(
-                    icon: Icons.person_rounded,
-                    title: 'الملف الشخصي',
-                    onTap: () => _changeTab(4),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.settings_rounded,
-                    title: 'الإعدادات',
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/settings');
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            const Divider(height: 1),
-            _buildDrawerItem(
-              icon: Icons.logout_rounded,
-              title: 'تسجيل الخروج',
-              color: Colors.red,
-              onTap: _logout,
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    Color? color,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: color ?? AppTheme.primary, size: 24),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: color ?? AppTheme.primaryContainer,
-        ),
-      ),
-      onTap: onTap,
-      trailing: Icon(
-        Icons.arrow_forward_ios_rounded,
-        size: 16,
-        color: Colors.grey.shade400,
-      ),
-    );
-  }
-
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: AppTheme.primary,
-        ),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return _buildErrorState();
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadUserData,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildWelcomeSection(),
-            const SizedBox(height: 24),
-            _buildStatsSection(),
-            const SizedBox(height: 28),
-            _buildQuickActionsSection(),
-            const SizedBox(height: 28),
-            _buildRecommendationSection(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 56,
-              color: Colors.grey.shade400,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _loadUserData,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('إعادة المحاولة'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWelcomeSection() {
-    final isUniversityStudent = _profileData?['student_type'] == 'university';
-
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppTheme.primary, AppTheme.primaryContainer],
-        ),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.25),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'مرحباً بك 👋',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withValues(alpha: 0.85),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _userName.isNotEmpty ? _userName : 'طالب',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    isUniversityStudent ? 'طالب جامعي' : 'طالب توجيهي',
-                    style: TextStyle(
+                  const Spacer(),
+                  Text(
+                    '$_answeredQuestions من $_totalQuestions مكتملة',
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white.withValues(alpha: 0.95),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.asset(
-                'assets/images/logo.png',
-                width: 60,
-                height: 60,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.school_rounded,
-                  size: 36,
-                  color: AppTheme.primary,
-                ),
+                ],
               ),
-            ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatsSection() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            title: 'المعدل',
-            value: _profileData?['high_school_score']?.toString() ?? '--',
-            suffix: _profileData?['high_school_score'] != null ? '%' : '',
-            icon: Icons.analytics_rounded,
-            color: const Color(0xFF3B82F6),
-          ),
+  
+
+  Widget _buildStatsSection(AppColors c) {
+    return AppAdaptiveGrid(
+      minItemWidth: 104,
+      maxColumns: 3,
+      spacing: 10,
+      children: <Widget>[
+        _statCard(
+          c: c,
+          icon: Icons.school_rounded,
+          iconBg: c.primarySoft,
+          iconColor: c.primary,
+          value: '--',
+          label: 'المعدل التراكمي',
+          badge: 'غير محدد',
+          badgeColor: c.textSecondary,
+          badgeBg: c.surfaceAlt,
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            title: 'التخصصات',
-            value: '0',
-            suffix: '',
-            icon: Icons.book_rounded,
-            color: const Color(0xFF22C55E),
-          ),
+        _statCard(
+          c: c,
+          icon: Icons.insights_rounded,
+          iconBg: c.surfaceAlt,
+          iconColor: c.purple,
+          value: '$_assessmentPercent%',
+          label: 'اكتمال التقييم',
+          progress: _assessmentPercent / 100,
+          progressColor: c.purple,
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            title: 'التوصيات',
-            value: '0',
-            suffix: '',
-            icon: Icons.recommend_rounded,
-            color: const Color(0xFFF97316),
-          ),
+        _statCard(
+          c: c,
+          icon: Icons.auto_graph_rounded,
+          iconBg: c.primarySoft,
+          iconColor: c.primary,
+          value: '4',
+          label: 'تخصص ملائم',
+          dot: c.purple,
         ),
       ],
     );
   }
 
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required String suffix,
+  Widget _statCard({
+    required AppColors c,
     required IconData icon,
-    required Color color,
+    required Color iconBg,
+    required Color iconColor,
+    required String value,
+    required String label,
+    String? badge,
+    Color? badgeColor,
+    Color? badgeBg,
+    double? progress,
+    Color? progressColor,
+    Color? dot,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        color: c.surface,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
+            color: c.primary.withValues(alpha: 0.05),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 20),
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const Spacer(),
+              if (badge != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: badgeBg,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    badge,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: badgeColor,
+                    ),
+                  ),
+                )
+              else if (progress != null)
+                _miniProgress(progress, progressColor ?? c.purple, c)
+              else if (dot != null)
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: dot,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
-            '$value$suffix',
-            style: const TextStyle(
-              fontSize: 18,
+            value,
+            style: TextStyle(
+              fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: AppTheme.primaryContainer,
+              color: c.textPrimary,
+              letterSpacing: -0.3,
             ),
           ),
           const SizedBox(height: 2),
           Text(
-            title,
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: c.textSecondary,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickActionsSection() {
+  Widget _miniProgress(double value, Color color, AppColors c) {
+    return SizedBox(
+      width: 22,
+      height: 22,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CircularProgressIndicator(
+            value: 1.0,
+            strokeWidth: 3,
+            color: c.surfaceAlt,
+            strokeCap: StrokeCap.round,
+          ),
+          CircularProgressIndicator(
+            value: value,
+            strokeWidth: 3,
+            color: color,
+            strokeCap: StrokeCap.round,
+          ),
+        ],
+      ),
+    );
+  }
+
+  
+
+  Widget _buildQuickServices(AppColors c) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'خدمات سريعة',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: AppTheme.primaryContainer,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'الخدمات السريعة',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: c.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'أدوات التوجيه الذكية المدعومة بالذكاء الاصطناعي',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: c.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: c.primarySoft,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '4 خدمات',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: c.primary,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 14),
         Row(
           children: [
             Expanded(
-              child: _buildQuickActionCard(
-                icon: Icons.assessment_rounded,
-                title: 'الاستبيان',
-                subtitle: 'اكتشف مسارك',
-                color: const Color(0xFF3B82F6),
+              child: _serviceCard(
+                c: c,
+                icon: Icons.psychology_rounded,
+                gradient: [c.primarySoft, c.surfaceAlt],
+                iconColor: c.primary,
+                title: 'التقييم الذكي',
+                subtitle: 'تحليل الميول والقدرات عبر 6 أسئلة قصيرة',
+                badge: 'نشط الآن',
+                badgeColor: c.primary,
+                badgeBg: c.primarySoft,
                 onTap: () => _changeTab(1),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildQuickActionCard(
-                icon: Icons.recommend_rounded,
-                title: 'التوصيات',
-                subtitle: 'شوف الخيارات',
-                color: const Color(0xFF22C55E),
+              child: _serviceCard(
+                c: c,
+                icon: Icons.dashboard_customize_rounded,
+                gradient: [c.successSoft, c.surfaceAlt],
+                iconColor: c.success,
+                title: 'التوصيات الأكاديمية',
+                subtitle: 'استكشف الجامعات والمسارات المطابقة لمعدلك',
+                dotColor: c.success,
                 onTap: () => _changeTab(2),
               ),
             ),
@@ -621,22 +1034,31 @@ Future<void> _loadUserData() async {
         Row(
           children: [
             Expanded(
-              child: _buildQuickActionCard(
-                icon: Icons.chat_rounded,
-                title: 'المساعد',
-                subtitle: 'اسأل الذكاء',
-                color: const Color(0xFFA855F7),
-                onTap: () => _changeTab(3),
+              child: _serviceCard(
+                c: c,
+                icon: Icons.smart_toy_rounded,
+                gradient: [c.surfaceAlt, c.surface],
+                iconColor: c.purple,
+                title: 'المستشار الفوري',
+                subtitle: 'محادثة تفاعلية فورية لإجابة استفساراتك',
+                badge: 'مستشار 24/7',
+                badgeColor: c.purple,
+                badgeBg: c.surfaceAlt,
+                onTap: () => context.push('/chat'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildQuickActionCard(
-                icon: Icons.person_rounded,
-                title: 'الملف الشخصي',
-                subtitle: 'عرض بياناتي',
-                color: const Color(0xFFF97316),
-                onTap: () => _changeTab(4),
+              child: _serviceCard(
+                c: c,
+                icon: Icons.badge_rounded,
+                gradient: [c.purpleSoft, c.surfaceAlt],
+                iconColor: c.primary,
+                title: 'الملف الأكاديمي',
+                subtitle: 'سجل المهارات والشهادات والنتائج',
+                trailingIcon: Icons.verified_user_rounded,
+                trailingColor: c.textSecondary,
+                onTap: () => _changeTab(3),
               ),
             ),
           ],
@@ -645,64 +1067,106 @@ Future<void> _loadUserData() async {
     );
   }
 
-  Widget _buildQuickActionCard({
+  Widget _serviceCard({
+    required AppColors c,
     required IconData icon,
+    required List<Color> gradient,
+    required Color iconColor,
     required String title,
     required String subtitle,
-    required Color color,
+    String? badge,
+    Color? badgeColor,
+    Color? badgeBg,
+    Color? dotColor,
+    IconData? trailingIcon,
+    Color? trailingColor,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.grey.shade200, width: 1.2),
+          color: c.surface,
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 12,
+              color: c.primary.withValues(alpha: 0.04),
+              blurRadius: 20,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.primaryContainer,
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topRight,
+                      end: Alignment.bottomLeft,
+                      colors: gradient,
                     ),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                  ),
-                ],
+                  child: Icon(icon, color: iconColor, size: 24),
+                ),
+                const Spacer(),
+                if (badge != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeBg,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      badge,
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        color: badgeColor,
+                      ),
+                    ),
+                  )
+                else if (dotColor != null)
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: dotColor,
+                      shape: BoxShape.circle,
+                    ),
+                  )
+                else if (trailingIcon != null)
+                  Icon(trailingIcon, color: trailingColor, size: 18),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: c.textPrimary,
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 14,
-              color: Colors.grey.shade400,
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 11,
+                color: c.textSecondary,
+                height: 1.4,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -710,132 +1174,307 @@ Future<void> _loadUserData() async {
     );
   }
 
-  Widget _buildRecommendationSection() {
+  
+
+  Widget _buildRecommendations(AppColors c) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'التوصيات المقترحة',
+            Text(
+              'توصيات مقترحة لك',
               style: TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.primaryContainer,
+                fontWeight: FontWeight.w700,
+                color: c.textPrimary,
               ),
             ),
-            TextButton(
-              onPressed: () => _changeTab(2),
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.secondary,
-                textStyle: const TextStyle(
+            const SizedBox(width: 6),
+            Icon(Icons.arrow_back_ios_new_rounded, color: c.primary, size: 18),
+            const SizedBox(width: 8),
+            const SampleDataBadge(),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => _changeTab(2),
+              child: Text(
+                'عرض الكل',
+                style: TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
+                  color: c.primary,
                 ),
               ),
-              child: const Text('عرض الكل'),
             ),
           ],
         ),
+        const SizedBox(height: 14),
+        _recommendationItem(
+          c: c,
+          icon: Icons.memory_rounded,
+          iconBg: c.surfaceAlt,
+          iconColor: c.primary,
+          title: 'هندسة الذكاء الاصطناعي',
+          subtitle: 'كلية علوم الحاسب والمعلومات',
+          matchPercent: 98,
+          badgeText: '🔥 عالي الطلب في سوق العمل',
+          badgeColor: c.primary,
+          badgeBg: c.primarySoft,
+          tags: ['4 سنوات', 'جامعة الملك سعود'],
+          tagIcons: [Icons.schedule_rounded, Icons.location_on_rounded],
+        ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 180,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: _recommendations.length,
-            itemBuilder: (context, index) {
-              final rec = _recommendations[index];
-              return Padding(
-                padding: EdgeInsets.only(right: index == 0 ? 0 : 12),
-                child: _RecommendationCard(
-                  title: rec['title'] as String,
-                  university: rec['university'] as String,
-                  matchScore: rec['matchScore'] as int,
-                  color: rec['color'] as Color,
-                ),
-              );
-            },
-          ),
+        _recommendationItem(
+          c: c,
+          icon: Icons.shield_rounded,
+          iconBg: c.surfaceAlt,
+          iconColor: c.purple,
+          title: 'الأمن السيبراني والشبكات',
+          subtitle: 'كلية تقنية المعلومات',
+          matchPercent: 94,
+          badgeText: '🛡️ مسار مستقبلي واعد',
+          badgeColor: c.purple,
+          badgeBg: c.surfaceAlt,
+          tags: ['4 سنوات', 'جامعة الملك عبدالعزيز'],
+          tagIcons: [Icons.schedule_rounded, Icons.location_on_rounded],
+        ),
+        const SizedBox(height: 12),
+        _recommendationItem(
+          c: c,
+          icon: Icons.query_stats_rounded,
+          iconBg: c.surfaceAlt,
+          iconColor: c.success,
+          title: 'علم البيانات وتحليل النظم',
+          subtitle: 'كلية العلوم وهندسة الحاسب',
+          matchPercent: 89,
+          badgeText: '📈 متزايد في قطاع الأعمال',
+          badgeColor: c.success,
+          badgeBg: c.successSoft,
+          tags: ['4 سنوات'],
+          tagIcons: [Icons.schedule_rounded],
         ),
       ],
     );
   }
-}
 
-class _RecommendationCard extends StatelessWidget {
-  final String title;
-  final String university;
-  final int matchScore;
-  final Color color;
+  Widget _recommendationItem({
+    required AppColors c,
+    required IconData icon,
+    required Color iconBg,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required int matchPercent,
+    required String badgeText,
+    required Color badgeColor,
+    required Color badgeBg,
+    required List<String> tags,
+    required List<IconData> tagIcons,
+  }) {
+    return GestureDetector(
+      onTap: () => context.push(
+        '/student/major-detail',
+        extra: <String, dynamic>{
+          'id': title,
+          'name': title,
+          'university': subtitle,
+          'category': 'تخصص أكاديمي',
+          'match': matchPercent,
+          'duration': tags.isNotEmpty ? tags.first : '4 سنوات',
+          'description': badgeText,
+        },
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: c.primary.withValues(alpha: 0.06),
+              blurRadius: 24,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: c.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: c.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _matchBadge(c: c, percent: matchPercent, color: iconColor),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                _tag(c: c, text: badgeText, color: badgeColor, bg: badgeBg),
+                for (int i = 0; i < tags.length; i++)
+                  _tag(
+                    c: c,
+                    text: tags[i],
+                    color: c.textSecondary,
+                    bg: c.surfaceAlt,
+                    icon: tagIcons[i],
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-  const _RecommendationCard({
-    required this.title,
-    required this.university,
-    required this.matchScore,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _matchBadge({
+    required AppColors c,
+    required int percent,
+    required Color color,
+  }) {
     return Container(
-      width: 200,
-      padding: const EdgeInsets.all(16),
+      width: 52,
+      height: 52,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        color: color,
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: color.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '$matchScore% توافق',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: color,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
           Text(
-            title,
+            '$percent%',
             style: const TextStyle(
+              color: Colors.white,
               fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.primaryContainer,
+              fontWeight: FontWeight.w800,
+              height: 1.1,
             ),
           ),
-          const SizedBox(height: 4),
           Text(
-            university,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-          ),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(
-            value: matchScore / 100,
-            backgroundColor: Colors.grey.shade200,
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 4,
-            borderRadius: BorderRadius.circular(4),
+            'توافق',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.75),
+              fontSize: 8,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _tag({
+    required AppColors c,
+    required String text,
+    required Color color,
+    required Color bg,
+    IconData? icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  
+
+  Widget _buildFAB(AppColors c) {
+    return GestureDetector(
+      onTap: () => _changeTab(1),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [c.primary, c.primaryContainer, c.purple],
+          ),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: c.primary.withValues(alpha: 0.4),
+              blurRadius: 28,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.psychology_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'ابدأ التقييم الذكي',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

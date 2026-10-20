@@ -1,4 +1,3 @@
-
 part of 'training_application_bloc.dart';
 
 abstract class TrainingApplicationState extends Equatable {

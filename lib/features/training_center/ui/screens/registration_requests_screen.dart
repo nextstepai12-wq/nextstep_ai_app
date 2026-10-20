@@ -1,0 +1,1901 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+
+import '../theme/training_colors.dart';
+
+enum RequestStatus { pending, accepted, rejected }
+
+class RegistrationRequest {
+  const RegistrationRequest({
+    required this.id,
+    required this.name,
+    required this.initials,
+    required this.course,
+    required this.time,
+    required this.status,
+    this.job = 'متدرب',
+    this.attachment = false,
+    this.verified = false,
+    this.meta,
+    this.rejectionReason,
+  });
+
+  final String id;
+  final String name;
+  final String initials;
+  final String course;
+  final String time;
+  final String job;
+  final RequestStatus status;
+  final bool attachment;
+  final bool verified;
+  final String? meta;
+  final String? rejectionReason;
+
+  RegistrationRequest copyWith({RequestStatus? status}) {
+    return RegistrationRequest(
+      id: id,
+      name: name,
+      initials: initials,
+      course: course,
+      time: time,
+      job: job,
+      status: status ?? this.status,
+      attachment: attachment,
+      verified: verified,
+      meta: meta,
+      rejectionReason: rejectionReason,
+    );
+  }
+}
+
+const _mockRequests = <RegistrationRequest>[
+  RegistrationRequest(
+    id: 'REQ-2025-884',
+    name: 'عبدالله الشمري',
+    initials: 'ع ش',
+    course: 'دورة إدارة المشاريع الاحترافية PMP®',
+    time: 'قبل ساعتين',
+    status: RequestStatus.pending,
+    job: 'طالب جامعي • الرياض',
+    meta: '25 سنة',
+    verified: true,
+  ),
+  RegistrationRequest(
+    id: 'REQ-2025-881',
+    name: 'سارة ناصر الدوسري',
+    initials: 'س ن',
+    course: 'دبلوم الأمن السيبراني واختبار الاختراق',
+    time: 'قبل 4 ساعات',
+    status: RequestStatus.pending,
+    job: 'خريجة تقنية معلومات • الرياض',
+    attachment: true,
+  ),
+  RegistrationRequest(
+    id: 'REQ-2025-877',
+    name: 'م. فيصل الخالدي',
+    initials: 'ف خ',
+    course: 'تدريب ميداني — صيانة خطوط الإنتاج',
+    time: 'أمس، 03:30 م',
+    status: RequestStatus.accepted,
+    job: 'مهندس ميكانيكي',
+  ),
+  RegistrationRequest(
+    id: 'REQ-2025-869',
+    name: 'فهد تركي القحطاني',
+    initials: 'ف ت',
+    course: 'دورة إدارة المشاريع الاحترافية PMP®',
+    time: 'منذ يومين',
+    status: RequestStatus.rejected,
+    job: 'موظف إداري',
+    rejectionReason: 'عدم استيفاء شروط سنوات الخبرة العملية المطلوبة للدورة.',
+  ),
+  RegistrationRequest(
+    id: 'REQ-2025-885',
+    name: 'عمر عبدالعزيز الحربي',
+    initials: 'ع ع',
+    course: 'تدريب ميداني — إدارة وضبط جودة المشاريع',
+    time: 'قبل 5 ساعات',
+    status: RequestStatus.pending,
+    job: 'بكالوريوس إدارة أعمال',
+  ),
+];
+
+class RegistrationRequestsScreen extends StatefulWidget {
+  const RegistrationRequestsScreen({super.key});
+
+  @override
+  State<RegistrationRequestsScreen> createState() =>
+      _RegistrationRequestsScreenState();
+}
+
+class _RegistrationRequestsScreenState
+    extends State<RegistrationRequestsScreen> {
+  final List<RegistrationRequest> _requests = List.of(_mockRequests);
+  String _tab = 'الكل';
+  String? _courseFilter;
+  bool _newestFirst = true;
+
+  int _countOf(RequestStatus status) =>
+      _requests.where((request) => request.status == status).length;
+
+  List<RegistrationRequest> get _visible {
+    final list = _requests.where((request) {
+      final matchesTab = switch (_tab) {
+        'جديد' => request.status == RequestStatus.pending,
+        'مقبول' => request.status == RequestStatus.accepted,
+        'مرفوض' => request.status == RequestStatus.rejected,
+        _ => true,
+      };
+      final matchesCourse =
+          _courseFilter == null || request.course == _courseFilter;
+      return matchesTab && matchesCourse;
+    }).toList();
+    return _newestFirst ? list : list.reversed.toList();
+  }
+
+  Future<void> _handleDecision(
+    RegistrationRequest request,
+    bool accept,
+  ) async {
+    final confirmed = await _showDecisionSheet(context, accept, request);
+    if (confirmed != true || !mounted) return;
+    _applyStatus(
+      request,
+      accept ? RequestStatus.accepted : RequestStatus.rejected,
+    );
+  }
+
+  Future<void> _openDetails(RegistrationRequest request) async {
+    final status = await context.push<RequestStatus>(
+      '/training-center/registration-requests/details',
+      extra: request,
+    );
+    if (!mounted || status == null) return;
+    _applyStatus(request, status);
+  }
+
+  void _applyStatus(
+    RegistrationRequest request,
+    RequestStatus status,
+  ) {
+    setState(() {
+      final index = _requests.indexWhere((item) => item.id == request.id);
+      if (index != -1) {
+        _requests[index] = _requests[index].copyWith(status: status);
+      }
+    });
+    final accepted = status == RequestStatus.accepted;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            accepted
+                ? 'تم تحديث حالة ${request.name} إلى مقبول (محلياً)'
+                : 'تم تحديث حالة ${request.name} إلى مرفوض (محلياً)',
+            style: const TextStyle(fontFamily: 'Cairo'),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          backgroundColor: TrainingColors.background,
+          appBar: _appBar(context),
+          body: Column(
+            children: [
+              _tabs(),
+              _filters(),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                  children: [
+                    for (int i = 0; i < _visible.length; i++) ...[
+                      _RequestCard(
+                        request: _visible[i],
+                        swipeHint: i == 0 &&
+                            _visible[i].status == RequestStatus.pending,
+                        onTap: () => _openDetails(_visible[i]),
+                        onDecision: (accept) =>
+                            _handleDecision(_visible[i], accept),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    const _ListFooter(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  PreferredSizeWidget _appBar(BuildContext context) => AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_forward_ios_rounded,
+              size: 19, color: TrainingColors.primary),
+          onPressed: () {
+            if (context.canPop()) context.pop();
+          },
+        ),
+        titleSpacing: 0,
+        title: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('طلبات التسجيل',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 19,
+                    height: 1.25,
+                    color: TrainingColors.primary)),
+            Text('مراجعة واعتماد المتقدمين للبرامج المهنية',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 10,
+                    height: 1.3,
+                    color: TrainingColors.textSecondary)),
+          ],
+        ),
+        actions: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+                color: TrainingColors.accentSoft,
+                borderRadius: BorderRadius.circular(20)),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const _PulseDot(),
+              const SizedBox(width: 5),
+              Text('${_countOf(RequestStatus.pending)} طلبات',
+                  style: const TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: TrainingColors.accentDark)),
+            ]),
+          ),
+          Stack(clipBehavior: Clip.none, children: [
+            IconButton(
+                onPressed: () => context.push('/training-center/notifications'),
+                icon: const Icon(Icons.notifications_none_rounded,
+                    color: TrainingColors.textPrimary)),
+            const Positioned(
+                top: 9,
+                left: 11,
+                child: CircleAvatar(
+                    radius: 4, backgroundColor: TrainingColors.danger)),
+          ]),
+          const Padding(
+            padding: EdgeInsets.only(left: 16, right: 6),
+            child: CircleAvatar(
+                radius: 16,
+                backgroundColor: TrainingColors.navySoft,
+                child: Icon(Icons.person_rounded,
+                    color: TrainingColors.primary, size: 18)),
+          ),
+        ],
+      );
+
+  Widget _tabs() {
+    final tabs = [
+      ('الكل', _requests.length),
+      ('جديد', _countOf(RequestStatus.pending)),
+      ('مقبول', _countOf(RequestStatus.accepted)),
+      ('مرفوض', _countOf(RequestStatus.rejected)),
+    ];
+    return SizedBox(
+      height: 60,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        itemCount: tabs.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (_, index) {
+          final tab = tabs[index];
+          return _StatusTabPill(
+            label: tab.$1,
+            count: tab.$2,
+            selected: _tab == tab.$1,
+            showDot: tab.$1 == 'جديد',
+            onTap: () => setState(() => _tab = tab.$1),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _filters() => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: Row(children: [
+          Expanded(
+            child: _filterButton(
+              Icons.filter_list_rounded,
+              _courseFilter ?? 'كل الدورات',
+              _showCourseFilter,
+              active: _courseFilter != null,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _filterButton(
+              Icons.schedule_rounded,
+              _newestFirst ? 'الأحدث' : 'الأقدم',
+              _showSortFilter,
+              active: !_newestFirst,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text('${_visible.length} من أصل ${_requests.length}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 10,
+                  color: TrainingColors.textSecondary)),
+        ]),
+      );
+
+  void _showCourseFilter() {
+    final courses = _requests.map((request) => request.course).toSet().toList();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: TrainingColors.surface,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Text(
+                'تصفية حسب الدورة',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: TrainingColors.primary,
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text('كل الدورات'),
+              trailing: _courseFilter == null
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
+              onTap: () {
+                setState(() => _courseFilter = null);
+                Navigator.pop(ctx);
+              },
+            ),
+            for (final course in courses)
+              ListTile(
+                title: Text(course),
+                trailing: _courseFilter == course
+                    ? const Icon(Icons.check_rounded,
+                        color: TrainingColors.primary)
+                    : null,
+                onTap: () {
+                  setState(() => _courseFilter = course);
+                  Navigator.pop(ctx);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSortFilter() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: TrainingColors.surface,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  'ترتيب الطلبات',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: TrainingColors.primary,
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text('الأحدث أولاً'),
+              trailing: _newestFirst
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
+              onTap: () {
+                setState(() => _newestFirst = true);
+                Navigator.pop(ctx);
+              },
+            ),
+            ListTile(
+              title: const Text('الأقدم أولاً'),
+              trailing: !_newestFirst
+                  ? const Icon(Icons.check_rounded,
+                      color: TrainingColors.primary)
+                  : null,
+              onTap: () {
+                setState(() => _newestFirst = false);
+                Navigator.pop(ctx);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _filterButton(
+    IconData icon,
+    String text,
+    VoidCallback onTap, {
+    bool active = false,
+  }) =>
+      InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 11),
+          decoration: BoxDecoration(
+              color: active ? TrainingColors.accentSoft : Colors.white,
+              border: Border.all(
+                color: active ? TrainingColors.accent : TrainingColors.divider,
+              ),
+              borderRadius: BorderRadius.circular(10)),
+          child: Row(children: [
+            Icon(icon,
+                size: 17,
+                color: active
+                    ? TrainingColors.accentDark
+                    : TrainingColors.primary),
+            const SizedBox(width: 7),
+            Expanded(
+                child: Text(text,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 11,
+                        fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                        color: active
+                            ? TrainingColors.accentDark
+                            : TrainingColors.textPrimary))),
+            const Icon(Icons.keyboard_arrow_down_rounded,
+                size: 18, color: TrainingColors.textSecondary),
+          ]),
+        ),
+      );
+}
+
+class RegistrationRequestDetailsScreen extends StatelessWidget {
+  const RegistrationRequestDetailsScreen({super.key, this.request});
+
+  final RegistrationRequest? request;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = request;
+    if (selected == null) {
+      return Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          backgroundColor: TrainingColors.background,
+          appBar: AppBar(
+            title: const Text('تفاصيل الطلب'),
+            backgroundColor: TrainingColors.surface,
+          ),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.assignment_outlined,
+                      size: 48, color: TrainingColors.textMuted),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'لم يتم تحديد طلب',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: TrainingColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'افتح التفاصيل من قائمة طلبات التسجيل.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 12,
+                      color: TrainingColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.pop(),
+                    child: const Text('رجوع'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: TrainingColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
+          elevation: 0,
+          scrolledUnderElevation: 1,
+          leading: IconButton(
+              icon: const Icon(Icons.arrow_forward_ios_rounded,
+                  size: 19, color: TrainingColors.primary),
+              onPressed: () => context.pop()),
+          title: const Text('تفاصيل الطلب',
+              style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: TrainingColors.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20)),
+          actions: [
+            IconButton(
+              tooltip: 'نسخ ملخص الطلب',
+              onPressed: () async {
+                await Clipboard.setData(
+                  ClipboardData(
+                    text: '${selected.name}\n${selected.course}\n'
+                        'الحالة: ${selected.status.name}\n'
+                        'رقم الطلب: ${selected.id}',
+                  ),
+                );
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text('تم نسخ ملخص الطلب'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+              },
+              icon: const Icon(Icons.copy_all_rounded,
+                  color: TrainingColors.primary),
+            ),
+          ],
+        ),
+        body: Stack(children: [
+          ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 140),
+              children: [
+                _RequestIdRow(request: selected),
+                const SizedBox(height: 12),
+                _StudentHeader(request: selected),
+                _CourseCard(request: selected),
+                const SizedBox(height: 16),
+                const _DemoDetailsNotice(),
+                const SizedBox(height: 16),
+                const _InfoCard(),
+                const SizedBox(height: 16),
+                const _AttachmentsCard(),
+                const SizedBox(height: 16),
+                const _MessageCard(),
+                const SizedBox(height: 16),
+                const _PaymentCard(),
+              ]),
+          _DetailActions(onDecision: (accept) async {
+            final confirmed =
+                await _showDecisionSheet(context, accept, selected);
+            if (confirmed == true && context.mounted) {
+              Navigator.pop(
+                context,
+                accept ? RequestStatus.accepted : RequestStatus.rejected,
+              );
+            }
+          }),
+        ]),
+      ),
+    );
+  }
+}
+
+class _RequestCard extends StatelessWidget {
+  const _RequestCard(
+      {required this.request,
+      required this.onTap,
+      required this.onDecision,
+      this.swipeHint = false});
+
+  final RegistrationRequest request;
+  final VoidCallback onTap;
+  final ValueChanged<bool> onDecision;
+  final bool swipeHint;
+
+  @override
+  Widget build(BuildContext context) {
+    final pending = request.status == RequestStatus.pending;
+    final stripe = switch (request.status) {
+      RequestStatus.accepted => TrainingColors.primary,
+      RequestStatus.rejected => TrainingColors.danger,
+      RequestStatus.pending => null,
+    };
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: TrainingColors.cardShadow),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(children: [
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _Avatar(initials: request.initials),
+                            const SizedBox(width: 11),
+                            Expanded(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                  Row(children: [
+                                    Flexible(
+                                        child: Text(request.name,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 14.5,
+                                                fontWeight: FontWeight.w700,
+                                                color:
+                                                    TrainingColors.primary))),
+                                    if (request.verified) ...[
+                                      const SizedBox(width: 4),
+                                      const Icon(Icons.verified_rounded,
+                                          size: 16,
+                                          color: TrainingColors.primary)
+                                    ],
+                                  ]),
+                                  const SizedBox(height: 2),
+                                  Row(children: [
+                                    const Icon(Icons.history_rounded,
+                                        size: 13,
+                                        color: TrainingColors.textMuted),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                        child: Text(request.time,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 10.5,
+                                                color: TrainingColors
+                                                    .textSecondary))),
+                                    const SizedBox(width: 6),
+                                    const Text('•',
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: TrainingColors.textMuted)),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                        child: Text(request.job,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 10.5,
+                                                color: TrainingColors
+                                                    .textSecondary))),
+                                  ]),
+                                ])),
+                            const SizedBox(width: 6),
+                            _StatusPill(status: request.status),
+                          ]),
+                      const SizedBox(height: 10),
+                      _CourseBox(course: request.course),
+                      if (request.attachment) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 7),
+                          decoration: BoxDecoration(
+                              color: TrainingColors.surfaceMuted,
+                              borderRadius: BorderRadius.circular(8)),
+                          child: const Row(children: [
+                            Icon(Icons.attach_file_rounded,
+                                size: 15, color: TrainingColors.accent),
+                            SizedBox(width: 6),
+                            Expanded(
+                                child: Text(
+                                    'مرفق شهادة البكالوريوس والسيرة الذاتية (PDF)',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: TrainingColors.primary))),
+                          ]),
+                        ),
+                      ],
+                      if (request.rejectionReason != null) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                              color: TrainingColors.dangerSoft,
+                              borderRadius: BorderRadius.circular(8)),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.info_outline_rounded,
+                                    size: 16, color: TrainingColors.danger),
+                                const SizedBox(width: 7),
+                                Expanded(
+                                    child: Text.rich(
+                                        TextSpan(children: [
+                                          const TextSpan(
+                                              text: 'سبب الرفض: ',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w700)),
+                                          TextSpan(
+                                              text: request.rejectionReason!),
+                                        ]),
+                                        style: const TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 10.5,
+                                            height: 1.6,
+                                            color: TrainingColors.danger))),
+                              ]),
+                        ),
+                      ],
+                      if (request.status == RequestStatus.accepted) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 9),
+                          decoration: BoxDecoration(
+                              color: TrainingColors.surfaceAlt,
+                              borderRadius: BorderRadius.circular(8)),
+                          child: const Row(children: [
+                            Icon(Icons.receipt_long_outlined,
+                                size: 16, color: TrainingColors.primary),
+                            SizedBox(width: 7),
+                            Expanded(
+                                child: Text(
+                                    'تم اعتماد القبول وإرسال الفاتورة آلياً',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 10.5,
+                                        color: TrainingColors.textSecondary))),
+                            Text('السجل',
+                                style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: TrainingColors.accentDark)),
+                          ]),
+                        ),
+                      ],
+                      if (swipeHint) ...[
+                        const SizedBox(height: 8),
+                        const Row(children: [
+                          Icon(Icons.touch_app_rounded,
+                              size: 14, color: TrainingColors.accent),
+                          SizedBox(width: 4),
+                          Expanded(
+                              child: Text('اسحب لليسار للقبول السريع',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 10,
+                                      color: TrainingColors.accent))),
+                          Text('عرض الملف',
+                              style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: TrainingColors.primary)),
+                        ]),
+                      ],
+                      if (pending) ...[
+                        const SizedBox(height: 12),
+                        Row(children: [
+                          Expanded(
+                              child: _SoftActionButton(
+                                  label: 'قبول الطلب',
+                                  icon: Icons.check_circle_outline_rounded,
+                                  color: TrainingColors.success,
+                                  onTap: () => onDecision(true))),
+                          const SizedBox(width: 8),
+                          Expanded(
+                              child: _SoftActionButton(
+                                  label: 'رفض',
+                                  icon: Icons.cancel_outlined,
+                                  color: TrainingColors.danger,
+                                  onTap: () => onDecision(false))),
+                        ]),
+                      ],
+                    ]),
+              ),
+              if (stripe != null)
+                Positioned(
+                    top: 0,
+                    bottom: 0,
+                    right: 0,
+                    width: 4,
+                    child: ColoredBox(color: stripe)),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RequestIdRow extends StatelessWidget {
+  const _RequestIdRow({required this.request});
+
+  final RegistrationRequest request;
+
+  @override
+  Widget build(BuildContext context) => Row(children: [
+        const _PulseDot(),
+        const SizedBox(width: 8),
+        Expanded(
+            child: Text('طلب رقم #${request.id}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 12,
+                    color: TrainingColors.textSecondary))),
+      ]);
+}
+
+class _StudentHeader extends StatelessWidget {
+  const _StudentHeader({required this.request});
+
+  final RegistrationRequest request;
+
+  @override
+  Widget build(BuildContext context) => _Card(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _Avatar(
+              initials: request.initials, size: 72, verified: request.verified),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(request.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: TrainingColors.primary)),
+                const SizedBox(height: 3),
+                Text(
+                    request.meta == null
+                        ? request.job
+                        : '${request.meta} • ${request.job}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 11,
+                        color: TrainingColors.textSecondary)),
+                const SizedBox(height: 7),
+                Row(children: [
+                  Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                          color: request.verified
+                              ? TrainingColors.success
+                              : TrainingColors.rating,
+                          shape: BoxShape.circle)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                      child: Text(
+                          request.verified
+                              ? 'تم تدقيق الهوية الوطنية'
+                              : 'بانتظار تدقيق الهوية',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 10,
+                              color: TrainingColors.textSecondary))),
+                ]),
+              ])),
+        ]),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+              color: TrainingColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(10)),
+          child: Row(children: [
+            const Icon(Icons.hourglass_top_rounded,
+                size: 18, color: TrainingColors.rating),
+            const SizedBox(width: 8),
+            const Expanded(
+                child: Text('حالة الطلب:',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 12,
+                        color: TrainingColors.textPrimary))),
+            const SizedBox(width: 8),
+            _StatusPill(status: request.status, wide: true),
+          ]),
+        ),
+        if (request.rejectionReason != null) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                color: TrainingColors.dangerSoft,
+                borderRadius: BorderRadius.circular(10)),
+            child: Text(
+              'سبب الرفض: ${request.rejectionReason}',
+              style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 11,
+                  height: 1.6,
+                  color: TrainingColors.danger),
+            ),
+          ),
+        ],
+      ]));
+}
+
+class _CourseCard extends StatelessWidget {
+  const _CourseCard({required this.request});
+
+  final RegistrationRequest request;
+
+  @override
+  Widget build(BuildContext context) => _Card(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Row(children: [
+          Icon(Icons.auto_stories_outlined,
+              color: TrainingColors.primary, size: 20),
+          SizedBox(width: 7),
+          Expanded(
+              child: Text('الدورة المطلوبة',
+                  style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: TrainingColors.primary))),
+        ]),
+        const SizedBox(height: 12),
+        Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+                color: TrainingColors.surfaceAlt,
+                borderRadius: BorderRadius.circular(12)),
+            child: Row(children: [
+              Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                      color: TrainingColors.primary,
+                      borderRadius: BorderRadius.circular(12)),
+                  child: const Icon(Icons.groups_rounded,
+                      color: Colors.white, size: 32)),
+              const SizedBox(width: 10),
+              Expanded(
+                  child: Text(request.course,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontFamily: 'Cairo',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          height: 1.5,
+                          color: TrainingColors.primary))),
+            ]))
+      ]));
+}
+
+class _DemoDetailsNotice extends StatelessWidget {
+  const _DemoDetailsNotice();
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+            color: TrainingColors.accentSoft,
+            borderRadius: BorderRadius.circular(12)),
+        child: const Row(children: [
+          Icon(Icons.info_outline_rounded,
+              size: 18, color: TrainingColors.accentDark),
+          SizedBox(width: 8),
+          Expanded(
+              child: Text(
+                  'الأقسام التالية تعرض بيانات توضيحية غير مرتبطة بالطلب المحدد.',
+                  style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 11,
+                      height: 1.6,
+                      color: TrainingColors.textSecondary))),
+        ]),
+      );
+}
+
+class _InfoCard extends StatelessWidget {
+  const _InfoCard();
+
+  @override
+  Widget build(BuildContext context) => const _Card(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _SectionTitle('البيانات الأكاديمية والمهنية', Icons.badge_outlined),
+        SizedBox(height: 14),
+        _InfoRow(
+            icon: Icons.school_outlined,
+            title: 'المؤهل العلمي',
+            value: 'بكالوريوس إدارة أعمال',
+            sub: 'جامعة الملك سعود — معدل 4.65 من 5.00'),
+        _InfoRow(
+            icon: Icons.domain_rounded,
+            title: 'جهة العمل الحالية',
+            value: 'شركة التقنية المتقدمة للحلول الرقمية',
+            sub: 'دوام كامل • قسم إدارة البرامج التقنية'),
+        _InfoRow(
+            icon: Icons.work_history_outlined,
+            title: 'سنوات الخبرة العملية',
+            value: '3 سنوات كمنسق مشاريع تقنية',
+            sub: 'إشراف وتنسيق مشاريع تطوير الأنظمة المؤسسية',
+            last: true)
+      ]));
+}
+
+class _AttachmentsCard extends StatelessWidget {
+  const _AttachmentsCard();
+
+  @override
+  Widget build(BuildContext context) => const _Card(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Icons.attach_file_rounded,
+              color: TrainingColors.primary, size: 20),
+          SizedBox(width: 7),
+          Expanded(
+              child: Text('المرفقات والمستندات',
+                  style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: TrainingColors.primary))),
+          Text('مستندان مرفقان',
+              style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 10,
+                  color: TrainingColors.textMuted)),
+        ]),
+        SizedBox(height: 12),
+        _FileRow(
+            title: 'سيرة_عبدالله_الشمري.pdf',
+            sub: '240 كيلوبايت • السيرة الذاتية',
+            icon: Icons.picture_as_pdf_outlined,
+            color: TrainingColors.danger),
+        SizedBox(height: 8),
+        _FileRow(
+            title: 'وثيقة_البكالوريوس.jpg',
+            sub: '1.2 ميجابايت • شهادة التخرج',
+            icon: Icons.image_outlined,
+            color: TrainingColors.primary,
+            status: 'معتمدة'),
+      ]));
+}
+
+class _FileRow extends StatelessWidget {
+  const _FileRow(
+      {required this.title,
+      required this.sub,
+      required this.icon,
+      required this.color,
+      this.status});
+
+  final String title;
+  final String sub;
+  final IconData icon;
+  final Color color;
+  final String? status;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+            color: TrainingColors.surfaceAlt,
+            borderRadius: BorderRadius.circular(10)),
+        child: Row(children: [
+          Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                  color: color.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(9)),
+              child: Icon(icon, color: color, size: 21)),
+          const SizedBox(width: 10),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Row(children: [
+                  Flexible(
+                      child: Text(title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontFamily: 'Cairo',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                              color: TrainingColors.textPrimary))),
+                  if (status != null) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                            color: TrainingColors.successSoft,
+                            borderRadius: BorderRadius.circular(5)),
+                        child: Text(status!,
+                            style: const TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: TrainingColors.success))),
+                  ],
+                ]),
+                const SizedBox(height: 2),
+                Text(sub,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 10,
+                        color: TrainingColors.textSecondary)),
+              ])),
+          IconButton(
+              onPressed: () {},
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.visibility_outlined,
+                  size: 19, color: TrainingColors.primary)),
+          IconButton(
+              onPressed: () {},
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.download_rounded,
+                  size: 19, color: TrainingColors.primary)),
+        ]),
+      );
+}
+
+class _MessageCard extends StatelessWidget {
+  const _MessageCard();
+
+  @override
+  Widget build(BuildContext context) => _Card(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const _SectionTitle('رسالة ورغبة المتدرب', Icons.format_quote_rounded),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+              color: TrainingColors.surfaceAlt,
+              borderRadius: BorderRadius.circular(12)),
+          child: const Text(
+              'أرغب بتطوير مهاراتي العملية في تخطيط وجدولة المشاريع وفق أحدث معايير PMI للحصول على شهادة PMP والتأهل لقيادة مشاريع التحول الرقمي بالمنشأة.',
+              style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 12,
+                  height: 1.9,
+                  fontStyle: FontStyle.italic,
+                  color: TrainingColors.textPrimary)),
+        ),
+      ]));
+}
+
+class _PaymentCard extends StatelessWidget {
+  const _PaymentCard();
+
+  @override
+  Widget build(BuildContext context) => Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+          color: TrainingColors.primary,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: TrainingColors.cardShadow),
+      child: Row(children: [
+        const Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('رسوم التسجيل المعتمدة',
+              style: TextStyle(
+                  fontFamily: 'Cairo', fontSize: 11, color: Colors.white70)),
+          SizedBox(height: 2),
+          Text('1,500 ريال سعودي',
+              style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white)),
+        ])),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .15),
+              borderRadius: BorderRadius.circular(20)),
+          child: const Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.credit_score_outlined,
+                size: 15, color: TrainingColors.accent),
+            SizedBox(width: 5),
+            Text('بانتظار موافقة المنشأة',
+                style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 10,
+                    color: TrainingColors.accent)),
+          ]),
+        ),
+      ]));
+}
+
+class _DetailActions extends StatelessWidget {
+  const _DetailActions({required this.onDecision});
+
+  final ValueChanged<bool> onDecision;
+
+  @override
+  Widget build(BuildContext context) => Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          decoration: const BoxDecoration(color: Colors.white, boxShadow: [
+            BoxShadow(
+                color: Color(0x16000000), blurRadius: 12, offset: Offset(0, -3))
+          ]),
+          child: SafeArea(
+            top: false,
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Row(children: [
+                Expanded(
+                    child: _DecisionButton(
+                        label: 'قبول الطالب',
+                        icon: Icons.check_circle_rounded,
+                        color: TrainingColors.success,
+                        solid: true,
+                        onTap: () => onDecision(true))),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: _DecisionButton(
+                        label: 'رفض الطلب',
+                        icon: Icons.close_rounded,
+                        color: TrainingColors.danger,
+                        outlined: true,
+                        onTap: () => onDecision(false))),
+              ]),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () {},
+                child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.chat_bubble_outline_rounded,
+                          size: 15, color: TrainingColors.success),
+                      SizedBox(width: 5),
+                      Flexible(
+                          child: Text('تواصل مع الطالب مباشرة عبر واتساب',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 11,
+                                  color: TrainingColors.textSecondary))),
+                    ]),
+              ),
+            ]),
+          ),
+        ),
+      );
+}
+
+class _DecisionButton extends StatelessWidget {
+  const _DecisionButton(
+      {required this.label,
+      required this.icon,
+      required this.color,
+      required this.onTap,
+      this.solid = false,
+      this.outlined = false});
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  final bool solid;
+  final bool outlined;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        height: 48,
+        child: Material(
+          color: outlined
+              ? Colors.white
+              : (solid ? color : color.withValues(alpha: .10)),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: outlined ? Border.all(color: color) : null),
+              child:
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Icon(icon, size: 18, color: solid ? Colors.white : color),
+                const SizedBox(width: 6),
+                Text(label,
+                    style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: solid ? Colors.white : color)),
+              ]),
+            ),
+          ),
+        ),
+      );
+}
+
+class _SoftActionButton extends StatelessWidget {
+  const _SoftActionButton(
+      {required this.label,
+      required this.icon,
+      required this.color,
+      required this.onTap});
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        height: 40,
+        child: Material(
+          color: color.withValues(alpha: .10),
+          borderRadius: BorderRadius.circular(10),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(10),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(icon, size: 18, color: color),
+              const SizedBox(width: 6),
+              Text(label,
+                  style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: color)),
+            ]),
+          ),
+        ),
+      );
+}
+
+class _CourseBox extends StatelessWidget {
+  const _CourseBox({required this.course});
+
+  final String course;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        decoration: BoxDecoration(
+            color: TrainingColors.surfaceAlt,
+            borderRadius: BorderRadius.circular(10)),
+        child: Row(children: [
+          const Icon(Icons.menu_book_outlined,
+              color: TrainingColors.primary, size: 19),
+          const SizedBox(width: 8),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                const Text('طلب التسجيل في:',
+                    style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 10,
+                        color: TrainingColors.textSecondary)),
+                Text(course,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontFamily: 'Cairo',
+                        color: TrainingColors.primary,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700)),
+              ])),
+        ]),
+      );
+}
+
+class _StatusTabPill extends StatelessWidget {
+  const _StatusTabPill(
+      {required this.label,
+      required this.count,
+      required this.selected,
+      required this.onTap,
+      this.showDot = false});
+
+  final String label;
+  final int count;
+  final bool selected;
+  final bool showDot;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+        color: selected ? TrainingColors.primary : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                    color: selected
+                        ? TrainingColors.primary
+                        : TrainingColors.divider)),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              if (showDot) ...[
+                Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                        color: TrainingColors.danger, shape: BoxShape.circle)),
+                const SizedBox(width: 6),
+              ],
+              Text(label,
+                  style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      color: selected ? Colors.white : TrainingColors.primary)),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                    color: selected
+                        ? Colors.white.withValues(alpha: .22)
+                        : TrainingColors.surfaceAlt,
+                    borderRadius: BorderRadius.circular(10)),
+                child: Text('$count',
+                    style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color:
+                            selected ? Colors.white : TrainingColors.primary)),
+              ),
+            ]),
+          ),
+        ),
+      );
+}
+
+class _ListFooter extends StatelessWidget {
+  const _ListFooter();
+
+  @override
+  Widget build(BuildContext context) => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Column(children: [
+          CircleAvatar(
+              radius: 20,
+              backgroundColor: TrainingColors.surfaceMuted,
+              child: Icon(Icons.checklist_rtl_rounded,
+                  color: TrainingColors.accent, size: 22)),
+          SizedBox(height: 10),
+          Text('تمت معاينة جميع الطلبات المتبقية اليوم',
+              style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: TrainingColors.primary)),
+          SizedBox(height: 3),
+          Text('سيتم تحديث القائمة تلقائياً عند وصول تسجيل جديد',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 10.5,
+                  color: TrainingColors.textSecondary)),
+        ]),
+      );
+}
+
+class _Card extends StatelessWidget {
+  const _Card({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: TrainingColors.cardShadow),
+      child: child);
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar(
+      {required this.initials, this.size = 48, this.verified = false});
+
+  final String initials;
+  final double size;
+  final bool verified;
+
+  @override
+  Widget build(BuildContext context) =>
+      Stack(clipBehavior: Clip.none, children: [
+        CircleAvatar(
+            radius: size / 2,
+            backgroundColor: TrainingColors.navySoft,
+            child: Text(initials,
+                style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontWeight: FontWeight.w700,
+                    color: TrainingColors.primary,
+                    fontSize: size * .28))),
+        if (verified)
+          Positioned(
+              bottom: -2,
+              left: -2,
+              child: CircleAvatar(
+                  radius: size * .21,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.verified_rounded,
+                      size: size * .34, color: TrainingColors.success)))
+      ]);
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.status, this.wide = false});
+
+  final RequestStatus status;
+  final bool wide;
+
+  @override
+  Widget build(BuildContext context) {
+    final data = switch (status) {
+      RequestStatus.pending => (
+          'جديد',
+          'بانتظار القرار',
+          TrainingColors.rating,
+          Icons.hourglass_top_rounded
+        ),
+      RequestStatus.accepted => (
+          'مقبول',
+          null,
+          TrainingColors.success,
+          Icons.task_alt_rounded
+        ),
+      RequestStatus.rejected => (
+          'مرفوض',
+          null,
+          TrainingColors.danger,
+          Icons.block_rounded
+        ),
+    };
+    final label = wide && data.$2 != null ? '${data.$1} - ${data.$2}' : data.$1;
+    return Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: wide ? 10 : 9, vertical: wide ? 5 : 5),
+        decoration: BoxDecoration(
+            color: data.$3.withValues(alpha: .12),
+            borderRadius: BorderRadius.circular(20)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(data.$4, size: 13, color: data.$3),
+          const SizedBox(width: 4),
+          Flexible(
+              child: Text(label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: data.$3)))
+        ]));
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.title, this.icon);
+
+  final String title;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => Row(children: [
+        Icon(icon, color: TrainingColors.primary, size: 20),
+        const SizedBox(width: 7),
+        Expanded(
+            child: Text(title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: TrainingColors.primary)))
+      ]);
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow(
+      {required this.icon,
+      required this.title,
+      required this.value,
+      required this.sub,
+      this.last = false});
+
+  final IconData icon;
+  final String title;
+  final String value;
+  final String sub;
+  final bool last;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+      padding: EdgeInsets.only(bottom: last ? 0 : 14),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        CircleAvatar(
+            radius: 18,
+            backgroundColor: TrainingColors.surfaceAlt,
+            child: Icon(icon, color: TrainingColors.primary, size: 19)),
+        const SizedBox(width: 10),
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title,
+              style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 10,
+                  color: TrainingColors.textSecondary)),
+          const SizedBox(height: 1),
+          Text(value,
+              style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: TrainingColors.textPrimary)),
+          Text(sub,
+              style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 10,
+                  color: TrainingColors.textSecondary))
+        ]))
+      ]));
+}
+
+class _PulseDot extends StatefulWidget {
+  const _PulseDot();
+
+  @override
+  State<_PulseDot> createState() => _PulseDotState();
+}
+
+class _PulseDotState extends State<_PulseDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 1200))
+    ..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(
+        opacity: Tween<double>(begin: .35, end: 1).animate(_controller),
+        child: Container(
+            width: 7,
+            height: 7,
+            decoration: const BoxDecoration(
+                color: TrainingColors.accent, shape: BoxShape.circle)),
+      );
+}
+
+Future<bool?> _showDecisionSheet(
+    BuildContext context, bool accept, RegistrationRequest request) {
+  return showModalBottomSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _ConfirmSheet(accept: accept, request: request),
+  );
+}
+
+class _ConfirmSheet extends StatefulWidget {
+  const _ConfirmSheet({required this.accept, required this.request});
+
+  final bool accept;
+  final RegistrationRequest request;
+
+  @override
+  State<_ConfirmSheet> createState() => _ConfirmSheetState();
+}
+
+class _ConfirmSheetState extends State<_ConfirmSheet> {
+  @override
+  Widget build(BuildContext context) {
+    final accept = widget.accept;
+    final color = accept ? TrainingColors.success : TrainingColors.danger;
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Container(
+        decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        padding: EdgeInsets.fromLTRB(
+            24, 10, 24, 18 + MediaQuery.of(context).viewPadding.bottom),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+              width: 42,
+              height: 4,
+              decoration: BoxDecoration(
+                  color: TrainingColors.divider,
+                  borderRadius: BorderRadius.circular(8))),
+          const SizedBox(height: 18),
+          CircleAvatar(
+              radius: 27,
+              backgroundColor: color.withValues(alpha: .12),
+              child: Icon(accept ? Icons.check_rounded : Icons.close_rounded,
+                  size: 31, color: color)),
+          const SizedBox(height: 12),
+          Text(accept ? 'تأكيد قبول الطالب' : 'تأكيد رفض الطلب',
+              style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: TrainingColors.primary)),
+          if (accept) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                  color: TrainingColors.surfaceMuted,
+                  borderRadius: BorderRadius.circular(20)),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.school_rounded,
+                    size: 15, color: TrainingColors.accent),
+                const SizedBox(width: 6),
+                Flexible(
+                    child: Text.rich(
+                        TextSpan(children: [
+                          const TextSpan(text: 'الطالب: '),
+                          TextSpan(
+                              text: widget.request.name,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w700)),
+                          TextSpan(text: ' • ${widget.request.course}'),
+                        ]),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 11,
+                            color: TrainingColors.primary))),
+              ]),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Text(
+              accept
+                  ? 'في النسخة التجريبية سيتم تحديث حالة الطلب محلياً فقط، دون إرسال إشعارات أو حجز مقعد فعلي.'
+                  : 'هل أنت متأكد من رفض طلب ${widget.request.name}؟ سيتم تحديث الحالة محلياً فقط.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 12,
+                  height: 1.8,
+                  color: TrainingColors.textSecondary)),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: FilledButton.icon(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(
+                  backgroundColor: color,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12))),
+              icon: Icon(accept ? Icons.check_rounded : Icons.close_rounded),
+              label: Text(accept ? 'تأكيد القبول' : 'تأكيد الرفض',
+                  style: const TextStyle(
+                      fontFamily: 'Cairo',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14)),
+            ),
+          ),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('رجوع',
+                  style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: TrainingColors.textSecondary))),
+        ]),
+      ),
+    );
+  }
+}

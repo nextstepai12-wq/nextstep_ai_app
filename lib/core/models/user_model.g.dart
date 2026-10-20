@@ -1,4 +1,3 @@
-
 part of 'user_model.dart';
 
 UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
@@ -22,4 +21,3 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };
-

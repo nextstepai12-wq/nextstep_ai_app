@@ -102,9 +102,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     }
 
     if (_selectedFilter != 'الكل') {
-      filtered = filtered
-          .where((prog) => prog['status'] == _selectedFilter)
-          .toList();
+      filtered =
+          filtered.where((prog) => prog['status'] == _selectedFilter).toList();
     }
 
     return filtered;
@@ -189,7 +188,7 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
@@ -213,8 +212,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
                               padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                               sliver: SliverList(
                                 delegate: SliverChildBuilderDelegate(
-                                  (context, index) =>
-                                      _buildProgramCard(_filteredPrograms[index]),
+                                  (context, index) => _buildProgramCard(
+                                      _filteredPrograms[index]),
                                   childCount: _filteredPrograms.length,
                                 ),
                               ),
@@ -347,7 +346,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
           ],
         ),
         const SizedBox(height: 2),
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+        Text(label,
+            style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
       ],
     );
   }
@@ -377,9 +377,11 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 1.8),
+                borderSide:
+                    const BorderSide(color: Color(0xFF8B5CF6), width: 1.8),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
           ),
           const SizedBox(height: 10),
@@ -402,13 +404,18 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
                   labelStyle: TextStyle(
                     fontSize: 13,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade700,
+                    color: isSelected
+                        ? const Color(0xFF8B5CF6)
+                        : Colors.grey.shade700,
                   ),
                   side: BorderSide(
-                    color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade300,
+                    color: isSelected
+                        ? const Color(0xFF8B5CF6)
+                        : Colors.grey.shade300,
                     width: 1.4,
                   ),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                 );
               },
@@ -462,7 +469,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
                         shape: BoxShape.circle,
                       ),
                       child: const Center(
-                        child: Icon(Icons.school_rounded, size: 22, color: Color(0xFF8B5CF6)),
+                        child: Icon(Icons.school_rounded,
+                            size: 22, color: Color(0xFF8B5CF6)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -485,13 +493,16 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
                             children: [
                               Text(
                                 program['university'],
-                                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey.shade500),
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF97316).withValues(alpha: 0.1),
+                                  color: const Color(0xFFF97316)
+                                      .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -514,7 +525,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: statusColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
@@ -531,12 +543,14 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
                         const SizedBox(height: 4),
                         Text(
                           '${program['students_count']} طالب',
-                          style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                          style: TextStyle(
+                              fontSize: 10, color: Colors.grey.shade500),
                         ),
                       ],
                     ),
                     IconButton(
-                      icon: Icon(Icons.more_vert_rounded, color: Colors.grey.shade400),
+                      icon: Icon(Icons.more_vert_rounded,
+                          color: Colors.grey.shade400),
                       onPressed: () => _showProgramOptions(program),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -599,7 +613,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
             constraints: const BoxConstraints(maxWidth: 140),
             child: Text(
               label,
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: color),
+              style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w500, color: color),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -703,7 +718,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85),
         padding: EdgeInsets.only(
           left: 24,
           right: 24,
@@ -739,7 +755,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
                       shape: BoxShape.circle,
                     ),
                     child: const Center(
-                      child: Icon(Icons.school_rounded, size: 28, color: Color(0xFF8B5CF6)),
+                      child: Icon(Icons.school_rounded,
+                          size: 28, color: Color(0xFF8B5CF6)),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -757,7 +774,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
                         ),
                         Text(
                           program['university'],
-                          style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.grey.shade500),
                         ),
                       ],
                     ),
@@ -767,7 +785,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
               const SizedBox(height: 16),
               _buildDetailRow('النوع', program['type']),
               _buildDetailRow('الكلية', program['faculty']),
-              _buildDetailRow('عدد الطلاب', program['students_count'].toString()),
+              _buildDetailRow(
+                  'عدد الطلاب', program['students_count'].toString()),
               _buildDetailRow('الحالة', program['status']),
               _buildDetailRow('تاريخ الإنشاء', program['created_at']),
               _buildDetailRow('الوصف', program['description']),
@@ -780,7 +799,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.primaryContainer,
                         side: BorderSide(color: Colors.grey.shade300),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('إغلاق'),
@@ -797,7 +817,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
                         backgroundColor: const Color(0xFF8B5CF6),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('تعديل'),
@@ -826,7 +847,9 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
             ),
           ),
           Expanded(
-            child: Text(value, style: TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant)),
+            child: Text(value,
+                style:
+                    TextStyle(fontSize: 14, color: AppTheme.onSurfaceVariant)),
           ),
         ],
       ),
@@ -872,7 +895,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('حذف'),
           ),
@@ -890,7 +914,8 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
   }) {
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+      title: Text(title,
+          style: TextStyle(color: color, fontWeight: FontWeight.w600)),
       onTap: onTap,
     );
   }
@@ -902,14 +927,17 @@ class _AdminProgramsScreenState extends State<AdminProgramsScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: const Color(0xFF22C55E),
           content: Row(
             children: [
-              const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
+              const Icon(Icons.check_circle_outline_rounded,
+                  color: Colors.white, size: 20),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(message, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                child: Text(message,
+                    style: const TextStyle(color: Colors.white, fontSize: 13)),
               ),
             ],
           ),

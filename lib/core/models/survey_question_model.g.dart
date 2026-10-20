@@ -1,4 +1,3 @@
-
 part of 'survey_question_model.dart';
 
 SurveyQuestionModel _$SurveyQuestionModelFromJson(Map<String, dynamic> json) =>
@@ -31,4 +30,3 @@ Map<String, dynamic> _$SurveyQuestionModelToJson(
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };
-

@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 
 class TrainingProgramModel extends Equatable {
@@ -72,9 +71,8 @@ class TrainingProgramModel extends Equatable {
       startDate: json['start_date'] != null
           ? DateTime.parse(json['start_date'])
           : null,
-      endDate: json['end_date'] != null
-          ? DateTime.parse(json['end_date'])
-          : null,
+      endDate:
+          json['end_date'] != null ? DateTime.parse(json['end_date']) : null,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : null,

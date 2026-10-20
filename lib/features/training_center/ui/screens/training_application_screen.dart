@@ -1,7 +1,11 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_buttons.dart';
+import 'package:nextstep_ai_app/core/widgets/app_card.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
+import 'package:nextstep_ai_app/core/widgets/app_snack.dart';
 
 import '../../logic/training_application_bloc/training_application_bloc.dart';
 
@@ -42,128 +46,106 @@ class _TrainingApplicationScreenState
       body: BlocListener<TrainingApplicationBloc, TrainingApplicationState>(
         listener: (context, state) {
           if (state is TrainingApplicationSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('✅ تم تقديم الطلب بنجاح!'),
-                backgroundColor: Colors.green,
-              ),
+            AppSnack.info(
+              context,
+              'التقديم الإلكتروني غير متاح حالياً ولم يُرسل الطلب.',
             );
             Navigator.pop(context);
           }
           if (state is TrainingApplicationError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('❌ فشل تقديم الطلب: ${state.message}'),
-                backgroundColor: Colors.red,
-              ),
-            );
+            AppSnack.error(context, 'تعذّر تقديم الطلب: ${state.message}');
           }
         },
-        child: Padding(
-          padding: EdgeInsets.all(16.r),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'الاسم الكامل',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
-                  ),
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return 'الرجاء إدخال الاسم';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16.h),
-
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'البريد الإلكتروني',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return 'الرجاء إدخال البريد الإلكتروني';
-                    }
-                    if (!value!.contains('@')) {
-                      return 'الرجاء إدخال بريد إلكتروني صحيح';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16.h),
-
-                TextFormField(
-                  controller: _phoneController,
-                  decoration: const InputDecoration(
-                    labelText: 'رقم الهاتف',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.phone),
-                  ),
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return 'الرجاء إدخال رقم الهاتف';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16.h),
-
-                TextFormField(
-                  controller: _notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'ملاحظات إضافية (اختياري)',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.note),
-                  ),
-                  maxLines: 3,
-                ),
-                SizedBox(height: 24.h),
-
-                BlocBuilder<TrainingApplicationBloc, TrainingApplicationState>(
-                  builder: (context, state) {
-                    if (state is TrainingApplicationLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                    return ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          context.read<TrainingApplicationBloc>().add(
-                                SubmitTrainingApplication(
-                                  programId: widget.programId,
-                                  name: _nameController.text,
-                                  email: _emailController.text,
-                                  phone: _phoneController.text,
-                                  additionalNotes: _notesController.text,
-                                ),
-                              );
+        child: SingleChildScrollView(
+          padding: context.pagePadding,
+          child: Center(
+            child: ConstrainedBox(
+              constraints:
+                  const BoxConstraints(maxWidth: AppLayout.maxFormWidth),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    const Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: SampleDataBadge(),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const AppNoticeCard(
+                      title: 'التقديم غير متاح',
+                      message: 'وضع تجريبي: لن يتم إرسال الطلب إلى المركز. '
+                          'يمكنك استعراض النموذج فقط.',
+                      tone: AppNoticeTone.warning,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _nameController,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'الاسم الكامل',
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'الرجاء إدخال الاسم';
                         }
+                        return null;
                       },
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(double.infinity, 50.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'البريد الإلكتروني',
+                        prefixIcon: Icon(Icons.email),
                       ),
-                      child: const Text(
-                        'إرسال الطلب',
-                        style: TextStyle(fontSize: 16),
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'الرجاء إدخال البريد الإلكتروني';
+                        }
+                        if (!value!.contains('@')) {
+                          return 'الرجاء إدخال بريد إلكتروني صحيح';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'رقم الهاتف',
+                        prefixIcon: Icon(Icons.phone),
                       ),
-                    );
-                  },
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'الرجاء إدخال رقم الهاتف';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _notesController,
+                      decoration: const InputDecoration(
+                        labelText: 'ملاحظات إضافية (اختياري)',
+                        prefixIcon: Icon(Icons.note),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    AppPrimaryButton(
+                      label: 'التقديم غير متاح حالياً',
+                      icon: Icons.lock_outline_rounded,
+                      onPressed: null,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

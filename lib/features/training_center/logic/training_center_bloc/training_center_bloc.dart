@@ -1,4 +1,3 @@
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -8,7 +7,8 @@ import '../../data/repos/training_center_repository.dart';
 part 'training_center_event.dart';
 part 'training_center_state.dart';
 
-class TrainingCenterBloc extends Bloc<TrainingCenterEvent, TrainingCenterState> {
+class TrainingCenterBloc
+    extends Bloc<TrainingCenterEvent, TrainingCenterState> {
   final TrainingCenterRepository repository;
 
   TrainingCenterBloc({required this.repository})

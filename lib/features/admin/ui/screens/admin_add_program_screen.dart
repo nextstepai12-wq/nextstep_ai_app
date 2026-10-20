@@ -62,59 +62,60 @@ class _AdminAddProgramScreenState extends State<AdminAddProgramScreen>
     super.dispose();
   }
 
-Future<void> _loadUniversities() async {
-  try {
-    if (!mounted) return;
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final cached = await HiveStorage.getData('universities_cache', 'universities');
-
-    if (cached != null && (cached as List).isNotEmpty) {
-      if (mounted) {
-        setState(() {
-          _universities = List<Map<String, dynamic>>.from(cached);
-          _isLoading = false;
-        });
-      }
-      return;
-    }
-
-    final supabase = SupabaseService();
-    final response = await supabase.client
-        .from('universities')
-        .select('id, name, status')
-        .eq('status', 'active');
-
-    if (response != null && response.isNotEmpty) {
-      final data = List<Map<String, dynamic>>.from(response);
-      await HiveStorage.saveData('universities_cache', 'universities', data);
-
-      if (mounted) {
-        setState(() {
-          _universities = data;
-          _isLoading = false;
-        });
-      }
-    } else {
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'لا توجد جامعات نشطة';
-          _isLoading = false;
-        });
-      }
-    }
-  } catch (e) {
-    if (mounted) {
+  Future<void> _loadUniversities() async {
+    try {
+      if (!mounted) return;
       setState(() {
-        _errorMessage = 'فشل تحميل الجامعات: ${e.toString()}';
-        _isLoading = false;
+        _isLoading = true;
+        _errorMessage = null;
       });
+
+      final cached =
+          await HiveStorage.getData('universities_cache', 'universities');
+
+      if (cached != null && (cached as List).isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _universities = List<Map<String, dynamic>>.from(cached);
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      final supabase = SupabaseService();
+      final response = await supabase.client
+          .from('universities')
+          .select('id, name, status')
+          .eq('status', 'active');
+
+      if (response != null && response.isNotEmpty) {
+        final data = List<Map<String, dynamic>>.from(response);
+        await HiveStorage.saveData('universities_cache', 'universities', data);
+
+        if (mounted) {
+          setState(() {
+            _universities = data;
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _errorMessage = 'لا توجد جامعات نشطة';
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'فشل تحميل الجامعات: ${e.toString()}';
+          _isLoading = false;
+        });
+      }
     }
   }
-}
 
   void _populateFields(ProgramModel program) {
     _nameController.text = program.name;
@@ -127,7 +128,8 @@ Future<void> _loadUniversities() async {
     if (program.dimensions != null) {
       _dimensions['programming'] = program.dimensions!['programming'] ?? 50.0;
       _dimensions['math'] = program.dimensions!['math'] ?? 50.0;
-      _dimensions['communication'] = program.dimensions!['communication'] ?? 50.0;
+      _dimensions['communication'] =
+          program.dimensions!['communication'] ?? 50.0;
       _dimensions['research'] = program.dimensions!['research'] ?? 50.0;
       _dimensions['practical'] = program.dimensions!['practical'] ?? 50.0;
       _dimensions['management'] = program.dimensions!['management'] ?? 50.0;
@@ -193,7 +195,7 @@ Future<void> _loadUniversities() async {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
@@ -423,13 +425,14 @@ Future<void> _loadUniversities() async {
           maxLines: maxLines,
           textDirection: TextDirection.rtl,
           textAlign: TextAlign.right,
-          style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
+          style:
+              const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
           validator: validator,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
             filled: true,
-            fillColor: const Color(0xFFF7F8FB),
+            fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
             prefixIcon: Icon(icon, color: AppTheme.onSurfaceVariant, size: 20),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -437,17 +440,21 @@ Future<void> _loadUniversities() async {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFECEDF3), width: 1.4),
+              borderSide:
+                  const BorderSide(color: Color(0xFFECEDF3), width: 1.4),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 1.8),
+              borderSide:
+                  const BorderSide(color: Color(0xFF8B5CF6), width: 1.8),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.6),
+              borderSide:
+                  const BorderSide(color: Color(0xFFDC2626), width: 1.6),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           ),
         ),
       ],
@@ -475,7 +482,7 @@ Future<void> _loadUniversities() async {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFF7F8FB),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFECEDF3), width: 1.4),
           ),
@@ -517,7 +524,7 @@ Future<void> _loadUniversities() async {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFF7F8FB),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
                 color: _selectedUniversityId == null
@@ -563,7 +570,8 @@ Future<void> _loadUniversities() async {
                   );
                 }),
               ],
-              onChanged: (value) => setState(() => _selectedUniversityId = value),
+              onChanged: (value) =>
+                  setState(() => _selectedUniversityId = value),
             ),
           ),
         ),
@@ -644,9 +652,11 @@ Future<void> _loadUniversities() async {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF8B5CF6),
           foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFF8B5CF6).withValues(alpha: 0.6),
+          disabledBackgroundColor:
+              const Color(0xFF8B5CF6).withValues(alpha: 0.6),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
         child: _isSubmitting
             ? const SizedBox(
@@ -664,7 +674,8 @@ Future<void> _loadUniversities() async {
                   const SizedBox(width: 8),
                   Text(
                     widget.isEditing ? 'حفظ التعديلات' : 'إضافة التخصص',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ],
               ),
@@ -679,7 +690,8 @@ Future<void> _loadUniversities() async {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.error_outline_rounded,
+                size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
@@ -713,7 +725,8 @@ Future<void> _loadUniversities() async {
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: color,
           content: Text(message,
               style: const TextStyle(color: Colors.white, fontSize: 13)),

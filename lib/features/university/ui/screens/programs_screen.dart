@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class ProgramsScreen extends StatelessWidget {
   const ProgramsScreen({super.key});
@@ -12,4 +12,3 @@ class ProgramsScreen extends StatelessWidget {
     );
   }
 }
-

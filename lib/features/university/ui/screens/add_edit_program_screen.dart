@@ -73,7 +73,7 @@ class _AddEditProgramScreenState extends State<AddEditProgramScreen>
       _minScoreController.text = data['minScore']?.toString() ?? '';
       _feeController.text = data['fee']?.toString() ?? '';
       _creditHoursController.text = data['creditHours']?.toString() ?? '';
-      _selectedFaculty = data['facultyId']?.toString();
+      _selectedFaculty = (data['faculty'] ?? data['facultyName'])?.toString();
       _selectedType = data['type'];
       _isActive = data['isActive'] ?? true;
     }
@@ -96,57 +96,55 @@ class _AddEditProgramScreenState extends State<AddEditProgramScreen>
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (!mounted) return;
 
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (mounted) {
-        _showSnackBar(
-          widget.isEditing
-              ? 'تم تعديل التخصص بنجاح ✅'
-              : 'تم إضافة التخصص بنجاح ✅',
-        );
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      _showSnackBar('حدث خطأ أثناء الحفظ', isSuccess: false);
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    final Map<String, dynamic> updated = <String, dynamic>{
+      'id': widget.programData?['id'],
+      'name': _nameController.text.trim(),
+      'faculty': _selectedFaculty,
+      'type': _selectedType,
+      'description': _descriptionController.text.trim(),
+      'minScore': double.tryParse(_minScoreController.text.trim()),
+      'fee': double.tryParse(_feeController.text.trim()),
+      'creditHours': int.tryParse(_creditHoursController.text.trim()),
+      'isActive': _isActive,
+    };
+    setState(() => _isLoading = false);
+    Navigator.pop(context, updated);
   }
 
-  void _showSnackBar(String message, {bool isSuccess = true}) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+  Widget _buildPrototypeNotice() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            size: 18,
+            color: Color(0xFFB45309),
           ),
-          backgroundColor:
-              isSuccess ? const Color(0xFF22C55E) : const Color(0xFFDC2626),
-          content: Row(
-            children: [
-              Icon(
-                isSuccess
-                    ? Icons.check_circle_outline_rounded
-                    : Icons.error_outline_rounded,
-                color: Colors.white,
-                size: 20,
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'يتم حفظ التعديلات على هذا الجهاز فقط، ولا تُرسل إلى الخادم.',
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.5,
+                color: Color(0xFF92400E),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  message,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      );
+        ],
+      ),
+    );
   }
 
   @override
@@ -154,7 +152,7 @@ class _AddEditProgramScreenState extends State<AddEditProgramScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
         body: FadeTransition(
           opacity: _fadeAnimation,
@@ -168,7 +166,9 @@ class _AddEditProgramScreenState extends State<AddEditProgramScreen>
                 child: Column(
                   children: [
                     _buildHeader(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+                    _buildPrototypeNotice(),
+                    const SizedBox(height: 16),
                     _buildBasicInfo(),
                     const SizedBox(height: 16),
                     _buildAcademicInfo(),
@@ -403,40 +403,42 @@ class _AddEditProgramScreenState extends State<AddEditProgramScreen>
       ],
     );
   }
-Widget _buildAdditionalInfo() {
-  return _buildCard(
-    title: 'معلومات إضافية',
-    icon: Icons.settings_rounded,
-    color: const Color(0xFFA855F7),
-    children: [
-      SwitchListTile(
-        contentPadding: EdgeInsets.zero,
-        title: const Text(
-          'التخصص نشط',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.primaryContainer,
+
+  Widget _buildAdditionalInfo() {
+    return _buildCard(
+      title: 'معلومات إضافية',
+      icon: Icons.settings_rounded,
+      color: const Color(0xFFA855F7),
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text(
+            'التخصص نشط',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.primaryContainer,
+            ),
           ),
-        ),
-        subtitle: Text(
-          'عرض التخصص للطلاب',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade500,
+          subtitle: Text(
+            'عرض التخصص للطلاب',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade500,
+            ),
           ),
+          value: _isActive,
+          onChanged: (value) {
+            setState(() {
+              _isActive = value;
+            });
+          },
+          activeColor: AppTheme.primary,
         ),
-        value: _isActive,
-        onChanged: (value) {
-          setState(() {
-            _isActive = value;
-          });
-        },
-        activeColor: AppTheme.primary,
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
+
   Widget _buildCard({
     required String title,
     required IconData icon,
@@ -457,7 +459,9 @@ Widget _buildAdditionalInfo() {
           ),
         ],
       ),
-      child: Column(
+      child: Material(
+        color: Colors.transparent,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -484,6 +488,7 @@ Widget _buildAdditionalInfo() {
           const SizedBox(height: 12),
           ...children,
         ],
+      ),
       ),
     );
   }
@@ -635,9 +640,7 @@ Widget _buildAdditionalInfo() {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    widget.isEditing
-                        ? Icons.save_rounded
-                        : Icons.add_rounded,
+                    widget.isEditing ? Icons.save_rounded : Icons.add_rounded,
                     size: 20,
                   ),
                   const SizedBox(width: 10),

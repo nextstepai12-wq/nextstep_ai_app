@@ -1,4 +1,3 @@
-
 part of 'major_model.dart';
 
 MajorModel _$MajorModelFromJson(Map<String, dynamic> json) => MajorModel(
@@ -39,4 +38,3 @@ Map<String, dynamic> _$MajorModelToJson(MajorModel instance) =>
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };
-

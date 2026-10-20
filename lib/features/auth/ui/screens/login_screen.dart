@@ -75,7 +75,8 @@ class _LoginScreenState extends State<LoginScreen>
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.06),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
+    ).animate(
+        CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
     _animController.forward();
   }
 
@@ -101,7 +102,8 @@ class _LoginScreenState extends State<LoginScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(Icons.wifi_off_rounded, color: Colors.orange.shade700, size: 28),
+            Icon(Icons.wifi_off_rounded,
+                color: Colors.orange.shade700, size: 28),
             const SizedBox(width: 12),
             const Text(
               'لا يوجد اتصال بالإنترنت',
@@ -126,7 +128,8 @@ class _LoginScreenState extends State<LoginScreen>
               ),
               child: Row(
                 children: [
-                  Icon(Icons.lightbulb_outline, color: Colors.orange.shade700, size: 20),
+                  Icon(Icons.lightbulb_outline,
+                      color: Colors.orange.shade700, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -229,19 +232,24 @@ class _LoginScreenState extends State<LoginScreen>
                                 gradient: const LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
-                                  colors: [Color(0xFFDC2626), Color(0xFFEF4444)],
+                                  colors: [
+                                    Color(0xFFDC2626),
+                                    Color(0xFFEF4444)
+                                  ],
                                 ),
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFDC2626).withValues(alpha: 0.25),
+                                    color: const Color(0xFFDC2626)
+                                        .withValues(alpha: 0.25),
                                     blurRadius: 40,
                                     spreadRadius: 15,
                                   ),
                                 ],
                               ),
                               child: const Center(
-                                child: Icon(Icons.close_rounded, size: 48, color: Colors.white),
+                                child: Icon(Icons.close_rounded,
+                                    size: 48, color: Colors.white),
                               ),
                             ),
                           );
@@ -261,25 +269,34 @@ class _LoginScreenState extends State<LoginScreen>
                       const SizedBox(height: 6),
                       Text(
                         'نعتذر، حدث خطأ أثناء محاولة تسجيل الدخول',
-                        style: TextStyle(fontSize: 13, color: Colors.grey.shade500, height: 1.4),
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade500,
+                            height: 1.4),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 20),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 14),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [Colors.red.shade50, Colors.red.shade100.withValues(alpha: 0.5)],
+                            colors: [
+                              Colors.red.shade50,
+                              Colors.red.shade100.withValues(alpha: 0.5)
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.red.shade200, width: 1.5),
+                          border: Border.all(
+                              color: Colors.red.shade200, width: 1.5),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline_rounded, size: 22, color: Colors.red.shade700),
+                            Icon(Icons.error_outline_rounded,
+                                size: 22, color: Colors.red.shade700),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
@@ -303,10 +320,14 @@ class _LoginScreenState extends State<LoginScreen>
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [Colors.amber.shade50, Colors.orange.shade50],
+                            colors: [
+                              Colors.amber.shade50,
+                              Colors.orange.shade50
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.amber.shade200, width: 1.2),
+                          border: Border.all(
+                              color: Colors.amber.shade200, width: 1.2),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,10 +382,15 @@ class _LoginScreenState extends State<LoginScreen>
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppTheme.primaryContainer,
                                 side: BorderSide(color: Colors.grey.shade300),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                               ),
-                              child: const Text('إلغاء', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                              child: const Text('إلغاء',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600)),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -377,8 +403,10 @@ class _LoginScreenState extends State<LoginScreen>
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primary,
                                 foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 elevation: 0,
                               ),
                               child: const Row(
@@ -386,7 +414,10 @@ class _LoginScreenState extends State<LoginScreen>
                                 children: [
                                   Icon(Icons.refresh_rounded, size: 20),
                                   SizedBox(width: 8),
-                                  Text('إعادة المحاولة', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                                  Text('إعادة المحاولة',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700)),
                                 ],
                               ),
                             ),
@@ -397,7 +428,9 @@ class _LoginScreenState extends State<LoginScreen>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('لا تزال تواجه مشكلة؟', style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                          Text('لا تزال تواجه مشكلة؟',
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.grey.shade500)),
                           TextButton(
                             onPressed: () {
                               Navigator.pop(context);
@@ -405,8 +438,10 @@ class _LoginScreenState extends State<LoginScreen>
                             },
                             style: TextButton.styleFrom(
                               foregroundColor: AppTheme.secondary,
-                              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              textStyle: const TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w700),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4),
                               minimumSize: Size.zero,
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
@@ -428,7 +463,8 @@ class _LoginScreenState extends State<LoginScreen>
   String _getSuggestion(String errorMessage) {
     if (errorMessage.contains('Invalid login credentials')) {
       return 'تأكد من صحة البريد الإلكتروني وكلمة المرور. يمكنك استخدام "نسيت كلمة المرور" لإعادة تعيينها.';
-    } else if (errorMessage.contains('network') || errorMessage.contains('connection')) {
+    } else if (errorMessage.contains('network') ||
+        errorMessage.contains('connection')) {
       return 'يبدو أن هناك مشكلة في الاتصال بالإنترنت. تأكد من تشغيل الواي فاي أو بيانات الجوال.';
     } else if (errorMessage.contains('email')) {
       return 'تأكد من إدخال البريد الإلكتروني بشكل صحيح (مثال: user@domain.com)';
@@ -500,7 +536,8 @@ class _LoginScreenState extends State<LoginScreen>
       final errorMsg = e.toString().replaceFirst('Exception: ', '');
       if (errorMsg.contains('Invalid login credentials')) {
         _showErrorDialog('البريد الإلكتروني أو كلمة المرور غير صحيحة');
-      } else if (errorMsg.contains('network') || errorMsg.contains('connection')) {
+      } else if (errorMsg.contains('network') ||
+          errorMsg.contains('connection')) {
         _showNoInternetDialog();
       } else {
         _showErrorDialog(errorMsg);
@@ -526,7 +563,7 @@ class _LoginScreenState extends State<LoginScreen>
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Directionality(
         textDirection: TextDirection.rtl,
         child: Stack(
@@ -535,7 +572,8 @@ class _LoginScreenState extends State<LoginScreen>
             SafeArea(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                 child: FadeTransition(
                   opacity: _fadeAnim,
                   child: SlideTransition(
@@ -681,7 +719,8 @@ class _LoginScreenState extends State<LoginScreen>
         children: [
           Row(
             children: [
-              const Icon(Icons.bug_report_rounded, size: 16, color: Color(0xFFB45309)),
+              const Icon(Icons.bug_report_rounded,
+                  size: 16, color: Color(0xFFB45309)),
               const SizedBox(width: 6),
               Text(
                 'دخول سريع (وضع التطوير فقط)',
@@ -747,8 +786,7 @@ class _LoginScreenState extends State<LoginScreen>
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () =>
-                    context.push('/forget-password'),
+                onPressed: () => context.push('/forget-password'),
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.secondary,
                   padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -791,7 +829,7 @@ class _LoginScreenState extends State<LoginScreen>
       hintText: hint,
       hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
       filled: true,
-      fillColor: const Color(0xFFF7F8FB),
+      fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
       prefixIcon: Icon(icon, color: AppTheme.onSurfaceVariant, size: 21),
       suffixIcon: suffix,
       border: OutlineInputBorder(
@@ -859,8 +897,7 @@ class _LoginScreenState extends State<LoginScreen>
             color: AppTheme.onSurfaceVariant,
             size: 20,
           ),
-          onPressed: () =>
-              setState(() => _obscurePassword = !_obscurePassword),
+          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
       ),
       validator: (value) {
@@ -951,8 +988,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           const SizedBox(width: 4),
           InkWell(
-            onTap: () =>
-                context.pushReplacement('/register'),
+            onTap: () => context.pushReplacement('/register'),
             borderRadius: BorderRadius.circular(8),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
@@ -964,8 +1000,7 @@ class _LoginScreenState extends State<LoginScreen>
                   height: 1.5,
                   color: AppTheme.secondary,
                   decoration: TextDecoration.underline,
-                  decorationColor:
-                      AppTheme.secondary.withValues(alpha: 0.3),
+                  decorationColor: AppTheme.secondary.withValues(alpha: 0.3),
                 ),
               ),
             ),
@@ -1012,7 +1047,8 @@ class _DevAccountButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: account.color.withValues(alpha: 0.3), width: 1.2),
+            border: Border.all(
+                color: account.color.withValues(alpha: 0.3), width: 1.2),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

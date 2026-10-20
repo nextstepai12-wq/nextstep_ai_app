@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Models & dummy data — swap with API responses later.
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 enum MetricTone { primary, success, purple, accent, danger }
 
@@ -248,9 +249,9 @@ Color _toneSoft(AppColors c, MetricTone tone) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Screen
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class UniversityAnalyticsScreen extends StatefulWidget {
   const UniversityAnalyticsScreen({super.key});
@@ -421,10 +422,13 @@ class _UniversityAnalyticsScreenState extends State<UniversityAnalyticsScreen> {
     );
 
     if (!mounted || type == null) return;
-    _showSnack('تم بدء تصدير $type بنجاح، سيتم إشعارك فور اكتماله');
+    _showSnack(
+      'تصدير $type غير متاح في النسخة الحالية',
+      isSuccess: false,
+    );
   }
 
-  void _showSnack(String message) {
+  void _showSnack(String message, {bool isSuccess = true}) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -434,11 +438,14 @@ class _UniversityAnalyticsScreenState extends State<UniversityAnalyticsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          backgroundColor: context.appColors.success,
+          backgroundColor:
+              isSuccess ? context.appColors.success : context.appColors.accent,
           content: Row(
             children: <Widget>[
-              const Icon(
-                Icons.check_circle_outline_rounded,
+              Icon(
+                isSuccess
+                    ? Icons.check_circle_outline_rounded
+                    : Icons.info_outline_rounded,
                 color: Colors.white,
                 size: 20,
               ),
@@ -479,6 +486,8 @@ class _UniversityAnalyticsScreenState extends State<UniversityAnalyticsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   _buildHeader(c),
+                  const SizedBox(height: 8),
+                  const SampleDataBadge(),
                   const SizedBox(height: 20),
                   _RangeSelector(
                     selected: _range,
@@ -496,7 +505,8 @@ class _UniversityAnalyticsScreenState extends State<UniversityAnalyticsScreen> {
                   const SizedBox(height: 28),
                   _InsightCard(
                     onContact: () => _showSnack(
-                      'جاري تجهيز قائمة الطلاب المتوافقين للتواصل...',
+                      'التواصل مع الطلاب غير متاح في النسخة الحالية',
+                      isSuccess: false,
                     ),
                   ),
                   const SizedBox(height: 100),
@@ -631,9 +641,9 @@ class _UniversityAnalyticsScreenState extends State<UniversityAnalyticsScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (1) Export / header button
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _IconCircleButton extends StatelessWidget {
   const _IconCircleButton({required this.icon, required this.onTap});
@@ -675,9 +685,9 @@ class _IconCircleButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (2) Time range selector
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _RangeSelector extends StatelessWidget {
   const _RangeSelector({required this.selected, required this.onChanged});
@@ -767,9 +777,9 @@ class _RangeSegment extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (3) KPI cards
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _KpiCard extends StatelessWidget {
   const _KpiCard({required this.metric});
@@ -881,9 +891,9 @@ class _TrendPill extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (4) Interest trend line chart
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _InterestChartCard extends StatelessWidget {
   const _InterestChartCard({required this.data});
@@ -1143,9 +1153,9 @@ class _LegendDot extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared progress bar
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _ProgressBar extends StatelessWidget {
   const _ProgressBar({
@@ -1199,9 +1209,9 @@ class _ProgressBar extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (5) Ranked programs
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _RankRow extends StatelessWidget {
   const _RankRow({required this.program});
@@ -1290,9 +1300,9 @@ class _RankRow extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (6) Student funnel
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _FunnelStep extends StatelessWidget {
   const _FunnelStep({required this.stage});
@@ -1376,9 +1386,9 @@ class _FunnelStep extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (7) AI insights card
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _InsightCard extends StatelessWidget {
   const _InsightCard({required this.onContact});
@@ -1557,9 +1567,9 @@ class _WhitePillButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (8) Export bottom sheet
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _ExportSheet extends StatelessWidget {
   const _ExportSheet();

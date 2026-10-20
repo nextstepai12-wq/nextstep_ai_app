@@ -185,7 +185,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
         drawer: _buildDrawer(),
         body: _isLoading
@@ -232,7 +232,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
 
   AppBar _buildAppBar() {
     return AppBar(
-      backgroundColor: const Color(0xFFF6F7FB),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       title: const Center(
         child: Text(

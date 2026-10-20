@@ -1,4 +1,3 @@
-
 part of 'instructor_bloc.dart';
 
 abstract class InstructorState extends Equatable {

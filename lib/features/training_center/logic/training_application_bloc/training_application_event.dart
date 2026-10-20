@@ -1,4 +1,3 @@
-
 part of 'training_application_bloc.dart';
 
 abstract class TrainingApplicationEvent extends Equatable {
@@ -25,12 +24,12 @@ class SubmitTrainingApplication extends TrainingApplicationEvent {
 
   @override
   List<Object?> get props => [
-    programId,
-    name,
-    email,
-    phone,
-    additionalNotes,
-  ];
+        programId,
+        name,
+        email,
+        phone,
+        additionalNotes,
+      ];
 }
 
 class ResetApplicationState extends TrainingApplicationEvent {}

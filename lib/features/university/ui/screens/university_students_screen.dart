@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Dummy data — replace with API models later.
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 enum StudentStatus {
   interested('مهتم'),
@@ -35,7 +35,7 @@ class Student {
   final String time;
   final String location;
 
-  /// Two-letter Arabic initials derived from the first and last name.
+  
   String get initials {
     final List<String> parts =
         name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
@@ -115,9 +115,9 @@ const List<String> _majorFilters = <String>[
   'الذكاء الاصطناعي',
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Screen
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class UniversityStudentsScreen extends StatefulWidget {
   const UniversityStudentsScreen({super.key});
@@ -216,7 +216,7 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen> {
         student: student,
         onAction: (String action) {
           Navigator.of(context).pop();
-          _showMessage('$action: ${student.name}');
+          _showMessage('$action غير متاح في النسخة الحالية');
         },
       ),
     );
@@ -261,7 +261,9 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen> {
                   child: _StudentsHeader(
                     studentCount: students.length,
                     onFilter: _openFilterSheet,
-                    onExport: () => _showMessage('جاري تصدير قائمة الطلاب...'),
+                    onExport: () => _showMessage(
+                      'تصدير القائمة غير متاح في النسخة الحالية',
+                    ),
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -300,8 +302,9 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen> {
                           padding: const EdgeInsets.only(bottom: 12),
                           child: _StudentCard(
                             student: student,
-                            onContact: () =>
-                                _showMessage('تواصل مع ${student.name}'),
+                            onContact: () => _showMessage(
+                              'التواصل المباشر غير متاح في النسخة الحالية',
+                            ),
                             onOptions: () => _openStudentOptions(student),
                           ),
                         );
@@ -341,9 +344,9 @@ class _UniversityStudentsScreenState extends State<UniversityStudentsScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (1) Header
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _StudentsHeader extends StatelessWidget {
   const _StudentsHeader({
@@ -442,9 +445,9 @@ class _HeaderIconButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (2) Search bar
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _SearchBar extends StatelessWidget {
   const _SearchBar({
@@ -523,9 +526,9 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (3) Filter chips
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _FilterChips extends StatelessWidget {
   const _FilterChips({
@@ -637,9 +640,9 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (4) Student card
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _StudentCard extends StatelessWidget {
   const _StudentCard({
@@ -897,9 +900,9 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (5) Student options bottom sheet
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _StudentOptionsSheet extends StatelessWidget {
   const _StudentOptionsSheet({
@@ -1079,9 +1082,9 @@ class _SheetOptionTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Filter bottom sheet (opened from the header)
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _FilterSelection {
   const _FilterSelection({required this.status, required this.major});
@@ -1262,9 +1265,9 @@ class _FilterSheetState extends State<_FilterSheet> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (6) Empty state
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.onReset});
@@ -1336,9 +1339,9 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (7) Floating count pill
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _FloatingCountPill extends StatelessWidget {
   const _FloatingCountPill({required this.count, required this.visible});
@@ -1383,9 +1386,9 @@ class _FloatingCountPill extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared pieces
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 BoxDecoration _surfaceDecoration(AppColors c, {required double radius}) {
   return BoxDecoration(
@@ -1404,7 +1407,7 @@ BoxDecoration _surfaceDecoration(AppColors c, {required double radius}) {
   );
 }
 
-/// Converts Western digits to Arabic-Indic digits for display.
+
 String _arabicNumber(int value) {
   const String western = '0123456789';
   const String eastern = '٠١٢٣٤٥٦٧٨٩';

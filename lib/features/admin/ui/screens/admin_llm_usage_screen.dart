@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 
 class AdminLlmUsageScreen extends StatefulWidget {
   const AdminLlmUsageScreen({super.key});
@@ -123,7 +124,9 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
         setState(() {
           _totalCalls = usageData['total_calls'] as int? ?? 0;
           final costValue = usageData['estimated_cost'];
-          _estimatedCost = costValue is double ? costValue : (costValue as num?)?.toDouble() ?? 0.0;
+          _estimatedCost = costValue is double
+              ? costValue
+              : (costValue as num?)?.toDouble() ?? 0.0;
           _callsToday = usageData['calls_today'] as int? ?? 0;
           _callsThisMonth = usageData['calls_this_month'] as int? ?? 0;
           _dailyLimit = usageData['daily_limit'] as int? ?? 1000;
@@ -152,7 +155,7 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
         body: _isLoading
             ? const Center(
@@ -200,7 +203,8 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
       backgroundColor: Colors.white,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.primaryContainer),
+        icon: const Icon(Icons.arrow_back_rounded,
+            color: AppTheme.primaryContainer),
         onPressed: () => Navigator.pop(context),
       ),
       title: const Text(
@@ -214,7 +218,8 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
       centerTitle: true,
       actions: [
         IconButton(
-          icon: const Icon(Icons.refresh_rounded, color: AppTheme.primaryContainer),
+          icon: const Icon(Icons.refresh_rounded,
+              color: AppTheme.primaryContainer),
           onPressed: _loadData,
         ),
       ],
@@ -261,6 +266,8 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
                     color: Colors.white,
                   ),
                 ),
+                const SizedBox(height: 8),
+                const SampleDataBadge(),
               ],
             ),
           ),
@@ -327,10 +334,14 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
                 labelStyle: TextStyle(
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade700,
+                  color: isSelected
+                      ? const Color(0xFF8B5CF6)
+                      : Colors.grey.shade700,
                 ),
                 side: BorderSide(
-                  color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey.shade300,
+                  color: isSelected
+                      ? const Color(0xFF8B5CF6)
+                      : Colors.grey.shade300,
                   width: 1.5,
                 ),
                 shape: RoundedRectangleBorder(
@@ -456,7 +467,8 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
   Widget _buildChartSection() {
     final maxCalls = _chartData.fold<int>(
       0,
-      (max, item) => (item['calls'] as int) > max ? (item['calls'] as int) : max,
+      (max, item) =>
+          (item['calls'] as int) > max ? (item['calls'] as int) : max,
     );
 
     return Container(
@@ -569,60 +581,60 @@ class _AdminLlmUsageScreenState extends State<AdminLlmUsageScreen>
     );
   }
 
-Widget _buildUsageProgress() {
-  final dailyPercentage = _dailyLimit > 0
-      ? ((_callsToday / _dailyLimit) * 100).clamp(0, 100).toDouble()
-      : 0.0;
+  Widget _buildUsageProgress() {
+    final dailyPercentage = _dailyLimit > 0
+        ? ((_callsToday / _dailyLimit) * 100).clamp(0, 100).toDouble()
+        : 0.0;
 
-  final monthlyPercentage = _monthlyLimit > 0
-      ? ((_callsThisMonth / _monthlyLimit) * 100).clamp(0, 100).toDouble()
-      : 0.0;
+    final monthlyPercentage = _monthlyLimit > 0
+        ? ((_callsThisMonth / _monthlyLimit) * 100).clamp(0, 100).toDouble()
+        : 0.0;
 
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: Colors.grey.shade200, width: 1.2),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.02),
-          blurRadius: 8,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'نسبة الاستخدام',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.primaryContainer,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
-        ),
-        const SizedBox(height: 12),
-        _buildProgressItem(
-          label: 'الاستخدام اليومي',
-          percentage: dailyPercentage,
-          color: dailyPercentage > 80 ? Colors.red : Colors.green,
-          current: _callsToday,
-          total: _dailyLimit,
-        ),
-        const SizedBox(height: 12),
-        _buildProgressItem(
-          label: 'الاستخدام الشهري',
-          percentage: monthlyPercentage,
-          color: monthlyPercentage > 80 ? Colors.red : Colors.green,
-          current: _callsThisMonth,
-          total: _monthlyLimit,
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'نسبة الاستخدام',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.primaryContainer,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildProgressItem(
+            label: 'الاستخدام اليومي',
+            percentage: dailyPercentage,
+            color: dailyPercentage > 80 ? Colors.red : Colors.green,
+            current: _callsToday,
+            total: _dailyLimit,
+          ),
+          const SizedBox(height: 12),
+          _buildProgressItem(
+            label: 'الاستخدام الشهري',
+            percentage: monthlyPercentage,
+            color: monthlyPercentage > 80 ? Colors.red : Colors.green,
+            current: _callsThisMonth,
+            total: _monthlyLimit,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildProgressItem({
     required String label,
@@ -639,7 +651,8 @@ Widget _buildUsageProgress() {
           children: [
             Text(
               label,
-              style: const TextStyle(fontSize: 12, color: AppTheme.primaryContainer),
+              style: const TextStyle(
+                  fontSize: 12, color: AppTheme.primaryContainer),
             ),
             Text(
               '${percentage.toStringAsFixed(0)}%',
@@ -718,13 +731,15 @@ Widget _buildUsageProgress() {
 
   Widget _buildQueryItem(Map<String, dynamic> query) {
     final costValue = query['cost'];
-    final cost = costValue is double ? costValue : (costValue as num?)?.toDouble() ?? 0.0;
+    final cost = costValue is double
+        ? costValue
+        : (costValue as num?)?.toDouble() ?? 0.0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FB),
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -839,7 +854,8 @@ Widget _buildUsageProgress() {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.error_outline_rounded,
+                size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,

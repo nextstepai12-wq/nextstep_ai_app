@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
 enum ProgramStatus { active, draft, paused }
@@ -220,12 +221,74 @@ class _UniversityProgramsScreenState extends State<UniversityProgramsScreen> {
         filtered.sort((Program a, Program b) => b.rating.compareTo(a.rating));
         break;
       default:
-        filtered.sort((Program a, Program b) => a.id.compareTo(b.id));
+        filtered.sort((Program a, Program b) => b.id.compareTo(a.id));
     }
     return filtered;
   }
 
-  bool get _hasActiveFilters => _facultyFilter != 'all' || _sort != 'latest';
+  bool get _hasActiveFilters =>
+      _facultyFilter != 'all' || _sort != 'latest' || _statusFilter != null;
+
+  void _resetFilters() {
+    _searchController.clear();
+    setState(() {
+      _searchQuery = '';
+      _isSearchOpen = false;
+      _statusFilter = null;
+      _facultyFilter = 'all';
+      _sort = 'latest';
+    });
+  }
+
+  Map<String, dynamic> _formDataFor(Program program) {
+    const Map<String, String> facultyIds = <String, String>{
+      'computing': '1',
+      'engineering': '1',
+      'medicine': '4',
+      'business': '2',
+    };
+
+    return <String, dynamic>{
+      'id': program.id,
+      'name': program.name,
+      'faculty': program.faculty,
+      'facultyId': facultyIds[program.facultyKey],
+      'type': 'بكالوريوس',
+      'description': '',
+      'fee': '',
+      'minScore': '',
+      'creditHours': '',
+      'isActive': program.status == ProgramStatus.active,
+    };
+  }
+
+  Program _programFromForm(
+    Map<String, dynamic> data, {
+    required int id,
+    Program? original,
+  }) {
+    final bool isActive = data['isActive'] as bool? ?? true;
+    final ProgramStatus status;
+    if (isActive) {
+      status = ProgramStatus.active;
+    } else if (original != null && original.status == ProgramStatus.draft) {
+      status = ProgramStatus.draft;
+    } else {
+      status = ProgramStatus.paused;
+    }
+    return Program(
+      id: id,
+      name: (data['name'] ?? original?.name ?? 'تخصص جديد').toString(),
+      faculty:
+          (data['faculty'] ?? original?.faculty ?? 'كلية غير محددة').toString(),
+      facultyKey: original?.facultyKey ?? 'computing',
+      students: original?.students ?? 0,
+      views: original?.views ?? '0',
+      rating: original?.rating ?? 0,
+      status: status,
+      imageUrl: original?.imageUrl ?? '',
+    );
+  }
 
   void _toggleSearch() {
     setState(() => _isSearchOpen = !_isSearchOpen);
@@ -257,8 +320,39 @@ class _UniversityProgramsScreenState extends State<UniversityProgramsScreen> {
     }
   }
 
-  void _openDetails(Program program) {
-    context.push('/university/edit-program');
+  Future<void> _openDetails(Program program) async {
+    final result = await context.push<Map<String, dynamic>>(
+      '/university/edit-program',
+      extra: _formDataFor(program),
+    );
+    if (!mounted || result == null) return;
+    final index = _programs.indexWhere((p) => p.id == program.id);
+    if (index == -1) return;
+    setState(() {
+      _programs[index] = _programFromForm(
+        result,
+        id: program.id,
+        original: program,
+      );
+    });
+    _showSnack('تم حفظ تعديلات التخصص على هذا الجهاز');
+  }
+
+  Future<void> _openCreate() async {
+    final result = await context.push<Map<String, dynamic>>(
+      '/university/add-program',
+    );
+    if (!mounted || result == null) return;
+    final nextId = _programs.isEmpty
+        ? 1
+        : _programs.map((p) => p.id).reduce((a, b) => a > b ? a : b) + 1;
+    setState(() {
+      _programs.insert(
+        0,
+        _programFromForm(result, id: nextId),
+      );
+    });
+    _showSnack('تمت إضافة التخصص على هذا الجهاز');
   }
 
   void _onMenuAction(Program program, _ProgramAction action) {
@@ -279,8 +373,8 @@ class _UniversityProgramsScreenState extends State<UniversityProgramsScreen> {
         });
         _showSnack(
           next == ProgramStatus.paused
-              ? 'تم إيقاف "${program.name}" مؤقتاً'
-              : 'تم تنشيط "${program.name}"',
+              ? 'تم إيقاف "${program.name}" مؤقتاً على هذا الجهاز'
+              : 'تم تنشيط "${program.name}" على هذا الجهاز',
         );
         break;
       case _ProgramAction.delete:
@@ -355,7 +449,7 @@ class _UniversityProgramsScreenState extends State<UniversityProgramsScreen> {
     if (index == -1) return;
     final String name = program.name;
     setState(() => _programs.removeAt(index));
-    _showSnack('تم حذف "$name" بنجاح');
+    _showSnack('تم حذف "$name" من القائمة على هذا الجهاز');
   }
 
   Future<void> _openFilterSheet() async {
@@ -446,6 +540,10 @@ class _UniversityProgramsScreenState extends State<UniversityProgramsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 _buildHeader(c),
+                const Padding(
+                  padding: EdgeInsetsDirectional.only(start: 20, top: 8),
+                  child: SampleDataBadge(),
+                ),
                 _buildSearch(c),
                 const SizedBox(height: 12),
                 _buildStatusChips(c),
@@ -456,7 +554,10 @@ class _UniversityProgramsScreenState extends State<UniversityProgramsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: programs.isEmpty
                       ? _EmptyState(
-                          onAdd: () => context.push('/university/add-program'))
+                          isFiltered: _programs.isNotEmpty,
+                          onAdd: _openCreate,
+                          onReset: _resetFilters,
+                        )
                       : _buildList(c, programs),
                 ),
                 const SizedBox(height: 120),
@@ -469,13 +570,16 @@ class _UniversityProgramsScreenState extends State<UniversityProgramsScreen> {
           onChanged: _onNavChanged,
         ),
         floatingActionButton: _ExtendedFab(
-          onTap: () => context.push('/university/add-program'),
+          onTap: _openCreate,
         ),
       ),
     );
   }
 
   Widget _buildHeader(AppColors c) {
+    final int activeCount =
+        _programs.where((Program p) => p.status == ProgramStatus.active).length;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
@@ -496,7 +600,7 @@ class _UniversityProgramsScreenState extends State<UniversityProgramsScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '24 تخصص نشط',
+                  '$activeCount نشط من أصل ${_programs.length} تخصص',
                   style: TextStyle(
                     fontFamily: AppTheme.fontFamily,
                     fontSize: 12,
@@ -853,7 +957,10 @@ class _ProgramCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: <Widget>[
-                          _MenuButton(onAction: onAction),
+                          _MenuButton(
+                            onAction: onAction,
+                            isPaused: program.status == ProgramStatus.paused,
+                          ),
                         ],
                       ),
                     ),
@@ -1056,9 +1163,10 @@ class _Stat extends StatelessWidget {
 }
 
 class _MenuButton extends StatelessWidget {
-  const _MenuButton({required this.onAction});
+  const _MenuButton({required this.onAction, required this.isPaused});
 
   final ValueChanged<_ProgramAction> onAction;
+  final bool isPaused;
 
   @override
   Widget build(BuildContext context) {
@@ -1083,8 +1191,10 @@ class _MenuButton extends StatelessWidget {
         _menuItem(
           c,
           _ProgramAction.pause,
-          Icons.pause_circle_outline_rounded,
-          'إيقاف مؤقت',
+          isPaused
+              ? Icons.play_circle_outline_rounded
+              : Icons.pause_circle_outline_rounded,
+          isPaused ? 'تنشيط' : 'إيقاف مؤقت',
           c.accent,
         ),
         const PopupMenuDivider(),
@@ -1458,9 +1568,15 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.onAdd});
+  const _EmptyState({
+    required this.isFiltered,
+    required this.onAdd,
+    required this.onReset,
+  });
 
+  final bool isFiltered;
   final VoidCallback onAdd;
+  final VoidCallback onReset;
 
   @override
   Widget build(BuildContext context) {
@@ -1485,7 +1601,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'لا توجد تخصصات',
+            isFiltered ? 'لا توجد نتائج مطابقة' : 'لا توجد تخصصات',
             style: TextStyle(
               fontFamily: AppTheme.fontFamily,
               fontSize: 16,
@@ -1495,7 +1611,9 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'جرب تغيير البحث أو الفلتر، أو أضف تخصصاً جديداً للجامعة',
+            isFiltered
+                ? 'جرّب تغيير كلمة البحث أو الفلتر لعرض تخصصات أخرى'
+                : 'أضف أول تخصص لهذه الجامعة لعرضه في القائمة',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: AppTheme.fontFamily,
@@ -1506,11 +1624,14 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           ElevatedButton.icon(
-            onPressed: onAdd,
-            icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text(
-              'إضافة تخصص',
-              style: TextStyle(
+            onPressed: isFiltered ? onReset : onAdd,
+            icon: Icon(
+              isFiltered ? Icons.filter_alt_off_rounded : Icons.add_rounded,
+              size: 18,
+            ),
+            label: Text(
+              isFiltered ? 'إعادة تعيين الفلاتر' : 'إضافة تخصص',
+              style: const TextStyle(
                 fontFamily: AppTheme.fontFamily,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

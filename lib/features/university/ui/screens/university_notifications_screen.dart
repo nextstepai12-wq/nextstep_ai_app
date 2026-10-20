@@ -12,8 +12,7 @@ class UniversityNotificationsScreen extends StatefulWidget {
 }
 
 class _UniversityNotificationsScreenState
-    extends State<UniversityNotificationsScreen>
-    with TickerProviderStateMixin {
+    extends State<UniversityNotificationsScreen> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _pulseController;
   late Animation<double> _fadeAnimation;
@@ -284,7 +283,7 @@ class _UniversityNotificationsScreenState
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
         body: _isLoading
             ? _buildLoadingState()
@@ -322,9 +321,8 @@ class _UniversityNotificationsScreenState
                   ),
                 ),
               ),
-        floatingActionButton: _unreadCount > 0 && !_selectMode
-            ? _buildFAB()
-            : null,
+        floatingActionButton:
+            _unreadCount > 0 && !_selectMode ? _buildFAB() : null,
       ),
     );
   }
@@ -440,7 +438,8 @@ class _UniversityNotificationsScreenState
                 value: 'delete_all',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline_rounded, size: 20, color: Colors.red),
+                    Icon(Icons.delete_outline_rounded,
+                        size: 20, color: Colors.red),
                     SizedBox(width: 8),
                     Text('حذف الكل', style: TextStyle(color: Colors.red)),
                   ],
@@ -686,7 +685,9 @@ class _UniversityNotificationsScreenState
                                 notification['title'],
                                 style: TextStyle(
                                   fontSize: 14,
-                                  fontWeight: isRead ? FontWeight.w600 : FontWeight.w700,
+                                  fontWeight: isRead
+                                      ? FontWeight.w600
+                                      : FontWeight.w700,
                                   color: AppTheme.primaryContainer,
                                 ),
                               ),
@@ -711,7 +712,9 @@ class _UniversityNotificationsScreenState
                           notification['body'],
                           style: TextStyle(
                             fontSize: 13,
-                            color: isRead ? Colors.grey.shade600 : AppTheme.onSurfaceVariant,
+                            color: isRead
+                                ? Colors.grey.shade600
+                                : AppTheme.onSurfaceVariant,
                             height: 1.5,
                           ),
                           maxLines: 2,
@@ -778,9 +781,13 @@ class _UniversityNotificationsScreenState
                       height: 24,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isSelected ? AppTheme.primary : Colors.grey.shade200,
+                        color: isSelected
+                            ? AppTheme.primary
+                            : Colors.grey.shade200,
                         border: Border.all(
-                          color: isSelected ? AppTheme.primary : Colors.grey.shade400,
+                          color: isSelected
+                              ? AppTheme.primary
+                              : Colors.grey.shade400,
                           width: 2,
                         ),
                       ),
@@ -1097,7 +1104,9 @@ class _UniversityNotificationsScreenState
             ),
             _buildMenuItem(
               icon: Icons.star_border_rounded,
-              title: notification['isImportant'] ? 'إزالة من المهمة' : 'تحديد كمهم',
+              title: notification['isImportant']
+                  ? 'إزالة من المهمة'
+                  : 'تحديد كمهم',
               onTap: () {
                 Navigator.pop(context);
                 setState(() {

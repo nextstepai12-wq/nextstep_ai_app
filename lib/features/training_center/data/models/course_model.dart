@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 
 class CourseModel extends Equatable {

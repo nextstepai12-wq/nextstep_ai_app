@@ -1,4 +1,3 @@
-﻿
 import 'package:flutter/material.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
@@ -77,7 +76,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
   String _extractEmail(String? contactInfo) {
     if (contactInfo == null || contactInfo.isEmpty) return '-';
     try {
-      final emailRegex = RegExp(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}');
+      final emailRegex =
+          RegExp(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}');
       final match = emailRegex.firstMatch(contactInfo);
       return match?.group(0) ?? contactInfo;
     } catch (_) {
@@ -88,7 +88,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
   String _extractPhone(String? contactInfo) {
     if (contactInfo == null || contactInfo.isEmpty) return '-';
     try {
-      final phoneRegex = RegExp(r'(\+?[0-9]{1,3}[- ]?)?\(?[0-9]{1,4}\)?[- ]?[0-9]{1,4}[- ]?[0-9]{1,4}');
+      final phoneRegex = RegExp(
+          r'(\+?[0-9]{1,3}[- ]?)?\(?[0-9]{1,4}\)?[- ]?[0-9]{1,4}[- ]?[0-9]{1,4}');
       final match = phoneRegex.firstMatch(contactInfo);
       return match?.group(0) ?? contactInfo;
     } catch (_) {
@@ -131,21 +132,18 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     });
 
     try {
-
       final supabase = SupabaseService();
 
-      final response = await supabase.client
-          .from('universities')
-          .select('*')
-          .order('name');
+      final response =
+          await supabase.client.from('universities').select('*').order('name');
 
       if (response != null && response.isNotEmpty) {
         final universities = List<Map<String, dynamic>>.from(response);
 
         try {
-          await HiveStorage.saveData('universities_cache', 'universities', universities);
-        } catch (e) {
-        }
+          await HiveStorage.saveData(
+              'universities_cache', 'universities', universities);
+        } catch (e) {}
 
         if (mounted) {
           setState(() {
@@ -156,13 +154,15 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
         }
       } else {
         try {
-          final cached = await HiveStorage.getData('universities_cache', 'universities');
+          final cached =
+              await HiveStorage.getData('universities_cache', 'universities');
           if (cached != null && (cached as List).isNotEmpty) {
             if (mounted) {
               setState(() {
                 _universities = List<Map<String, dynamic>>.from(cached);
                 _isLoading = false;
-                _errorMessage = 'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
+                _errorMessage =
+                    'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
               });
             }
             return;
@@ -178,15 +178,16 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
         }
       }
     } catch (e) {
-
       try {
-        final cached = await HiveStorage.getData('universities_cache', 'universities');
+        final cached =
+            await HiveStorage.getData('universities_cache', 'universities');
         if (cached != null && (cached as List).isNotEmpty) {
           if (mounted) {
             setState(() {
               _universities = List<Map<String, dynamic>>.from(cached);
               _isLoading = false;
-              _errorMessage = 'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
+              _errorMessage =
+                  'غير متصل بالإنترنت - عرض البيانات المخزنة محلياً';
             });
           }
           return;
@@ -247,16 +248,20 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
           .delete()
           .eq('id', university['id']);
 
-      final cached = await HiveStorage.getData('universities_cache', 'universities');
+      final cached =
+          await HiveStorage.getData('universities_cache', 'universities');
       if (cached != null) {
         final List<Map<String, dynamic>> updatedUniversities =
             List<Map<String, dynamic>>.from(cached);
-        updatedUniversities.removeWhere((u) => u['id'].toString() == university['id'].toString());
-        await HiveStorage.saveData('universities_cache', 'universities', updatedUniversities);
+        updatedUniversities.removeWhere(
+            (u) => u['id'].toString() == university['id'].toString());
+        await HiveStorage.saveData(
+            'universities_cache', 'universities', updatedUniversities);
       }
 
       setState(() {
-        _universities.removeWhere((u) => u['id'].toString() == university['id'].toString());
+        _universities.removeWhere(
+            (u) => u['id'].toString() == university['id'].toString());
       });
 
       _showSnackBar('✅ تم حذف الجامعة بنجاح', Colors.green);
@@ -297,7 +302,7 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(color: Color(0xFF22C55E)),
@@ -317,7 +322,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                         if (_errorMessage != null)
                           SliverToBoxAdapter(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
                               child: Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
@@ -346,7 +352,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                                       child: Text(
                                         _errorMessage!,
                                         style: TextStyle(
-                                          color: _errorMessage!.contains('غير متصل')
+                                          color: _errorMessage!
+                                                  .contains('غير متصل')
                                               ? Colors.orange.shade700
                                               : Colors.red.shade700,
                                           fontSize: 13,
@@ -366,11 +373,12 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                                 child: _buildEmptyState(),
                               )
                             : SliverPadding(
-                                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 4, 16, 24),
                                 sliver: SliverList(
                                   delegate: SliverChildBuilderDelegate(
-                                    (context, index) =>
-                                        _buildUniversityCard(_filteredUniversities[index]),
+                                    (context, index) => _buildUniversityCard(
+                                        _filteredUniversities[index]),
                                     childCount: _filteredUniversities.length,
                                   ),
                                 ),
@@ -515,7 +523,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
           ],
         ),
         const SizedBox(height: 2),
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+        Text(label,
+            style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
       ],
     );
   }
@@ -545,9 +554,11 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: Color(0xFF22C55E), width: 1.8),
+                borderSide:
+                    const BorderSide(color: Color(0xFF22C55E), width: 1.8),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
           ),
           const SizedBox(height: 10),
@@ -570,13 +581,18 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                   labelStyle: TextStyle(
                     fontSize: 13,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected ? const Color(0xFF22C55E) : Colors.grey.shade700,
+                    color: isSelected
+                        ? const Color(0xFF22C55E)
+                        : Colors.grey.shade700,
                   ),
                   side: BorderSide(
-                    color: isSelected ? const Color(0xFF22C55E) : Colors.grey.shade300,
+                    color: isSelected
+                        ? const Color(0xFF22C55E)
+                        : Colors.grey.shade300,
                     width: 1.4,
                   ),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                 );
               },
@@ -633,7 +649,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                         shape: BoxShape.circle,
                       ),
                       child: const Center(
-                        child: Icon(Icons.business_rounded, size: 22, color: Color(0xFF22C55E)),
+                        child: Icon(Icons.business_rounded,
+                            size: 22, color: Color(0xFF22C55E)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -654,12 +671,17 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                           const SizedBox(height: 3),
                           Row(
                             children: [
-                              Icon(Icons.location_on_rounded, size: 13, color: Colors.grey.shade500),
+                              Icon(Icons.location_on_rounded,
+                                  size: 13, color: Colors.grey.shade500),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  location.isNotEmpty ? location : 'لا يوجد موقع',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                                  location.isNotEmpty
+                                      ? location
+                                      : 'لا يوجد موقع',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade500),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
@@ -674,7 +696,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: statusColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
@@ -691,12 +714,14 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                         const SizedBox(height: 4),
                         Text(
                           '$studentCount طالب',
-                          style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                          style: TextStyle(
+                              fontSize: 10, color: Colors.grey.shade500),
                         ),
                       ],
                     ),
                     IconButton(
-                      icon: Icon(Icons.more_vert_rounded, color: Colors.grey.shade400),
+                      icon: Icon(Icons.more_vert_rounded,
+                          color: Colors.grey.shade400),
                       onPressed: () => _showUniversityOptions(university),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -726,13 +751,15 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                       label: '$programCount تخصص',
                       color: const Color(0xFF3B82F6),
                     ),
-                    if (university['email'] != null && university['email'] != '')
+                    if (university['email'] != null &&
+                        university['email'] != '')
                       _buildInfoChip(
                         icon: Icons.email_rounded,
                         label: university['email'],
                         color: const Color(0xFFF97316),
                       ),
-                    if (university['phone'] != null && university['phone'] != '')
+                    if (university['phone'] != null &&
+                        university['phone'] != '')
                       _buildInfoChip(
                         icon: Icons.phone_rounded,
                         label: university['phone'],
@@ -768,7 +795,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
             constraints: const BoxConstraints(maxWidth: 140),
             child: Text(
               label,
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: color),
+              style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w500, color: color),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -784,7 +812,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.business_outlined, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.business_outlined,
+                size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               _searchQuery.isEmpty ? 'لا توجد جامعات' : 'لا توجد نتائج مطابقة',
@@ -876,7 +905,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85),
         padding: EdgeInsets.only(
           left: 24,
           right: 24,
@@ -912,7 +942,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                       shape: BoxShape.circle,
                     ),
                     child: const Center(
-                      child: Icon(Icons.business_rounded, size: 28, color: Color(0xFF22C55E)),
+                      child: Icon(Icons.business_rounded,
+                          size: 28, color: Color(0xFF22C55E)),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -930,13 +961,15 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                         ),
                         Text(
                           university['location'] ?? 'لا يوجد موقع',
-                          style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.grey.shade500),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -957,11 +990,15 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
               _buildDetailRow('الموقع', university['location'] ?? '-'),
               _buildDetailRow('البريد الإلكتروني', university['email'] ?? '-'),
               _buildDetailRow('رقم الهاتف', university['phone'] ?? '-'),
-              _buildDetailRow('الموقع الإلكتروني', university['website_url'] ?? '-'),
-              _buildDetailRow('عدد الطلاب', (university['students_count'] ?? 0).toString()),
-              _buildDetailRow('عدد التخصصات', (university['programs_count'] ?? 0).toString()),
+              _buildDetailRow(
+                  'الموقع الإلكتروني', university['website_url'] ?? '-'),
+              _buildDetailRow(
+                  'عدد الطلاب', (university['students_count'] ?? 0).toString()),
+              _buildDetailRow('عدد التخصصات',
+                  (university['programs_count'] ?? 0).toString()),
               _buildDetailRow('الحالة', statusDisplay),
-              _buildDetailRow('تاريخ الإنشاء', _formatDate(university['created_at'])),
+              _buildDetailRow(
+                  'تاريخ الإنشاء', _formatDate(university['created_at'])),
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -971,7 +1008,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.primaryContainer,
                         side: BorderSide(color: Colors.grey.shade300),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('إغلاق'),
@@ -988,7 +1026,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
                         backgroundColor: const Color(0xFF22C55E),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('تعديل'),
@@ -1066,7 +1105,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('حذف'),
           ),
@@ -1084,7 +1124,8 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
   }) {
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(title, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+      title: Text(title,
+          style: TextStyle(color: color, fontWeight: FontWeight.w600)),
       onTap: onTap,
     );
   }
@@ -1097,12 +1138,15 @@ class _AdminUniversitiesScreenState extends State<AdminUniversitiesScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: color ?? const Color(0xFF22C55E),
           content: Row(
             children: [
               Icon(
-                color == Colors.red ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+                color == Colors.red
+                    ? Icons.error_outline_rounded
+                    : Icons.check_circle_outline_rounded,
                 color: Colors.white,
                 size: 20,
               ),

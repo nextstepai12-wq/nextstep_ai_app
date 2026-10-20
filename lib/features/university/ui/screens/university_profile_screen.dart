@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:nextstep_ai_app/core/helpers/session_helper.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_dialogs.dart';
+import 'package:nextstep_ai_app/core/widgets/app_snack.dart';
 import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Dummy data — replace with API models later.
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class UniversityProfile {
   const UniversityProfile({
@@ -28,7 +31,7 @@ class UniversityProfile {
   final int studentsCount;
   final double rating;
 
-  /// Profile completion ratio between 0.0 and 1.0.
+  
   final double completion;
   final String plan;
   final String renewalDate;
@@ -37,8 +40,8 @@ class UniversityProfile {
 const UniversityProfile _university = UniversityProfile(
   name: 'جامعة العلوم والتكنولوجيا',
   city: 'صنعاء، اليمن',
-  facultiesCount: 8,
-  programsCount: 24,
+  facultiesCount: 5,
+  programsCount: 8,
   studentsCount: 1250,
   rating: 4.8,
   completion: 0.65,
@@ -46,9 +49,9 @@ const UniversityProfile _university = UniversityProfile(
   renewalDate: 'تتجدد في 15 مارس 2025',
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Screen
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class UniversityProfileScreen extends StatelessWidget {
   const UniversityProfileScreen({super.key});
@@ -90,12 +93,12 @@ class UniversityProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 _ProfileHeader(
-                  onEdit: () => _showMessage(context, 'تعديل الملف الشخصي'),
+                  onEdit: () => _showComingSoon(context, 'تعديل الملف الشخصي'),
                 ),
                 _HeroCard(
                   university: _university,
                   onCameraTap: () =>
-                      _showMessage(context, 'تغيير شعار الجامعة'),
+                      _showComingSoon(context, 'تغيير شعار الجامعة'),
                 ),
                 const _QuickStats(university: _university),
                 _SettingsSection(
@@ -107,7 +110,7 @@ class UniversityProfileScreen extends StatelessWidget {
                       iconBackground: c.primarySoft,
                       label: 'إدارة الكليات',
                       value: '${_university.facultiesCount} كليات',
-                      onTap: () => _showMessage(context, 'إدارة الكليات'),
+                      onTap: () => context.push('/university/faculties'),
                     ),
                     _SettingTile(
                       icon: Icons.account_circle,
@@ -115,15 +118,16 @@ class UniversityProfileScreen extends StatelessWidget {
                       iconBackground: c.purpleSoft,
                       label: 'معلومات الجامعة',
                       value: 'تعديل',
-                      onTap: () => _showMessage(context, 'معلومات الجامعة'),
+                      onTap: () =>
+                          _showComingSoon(context, 'تعديل معلومات الجامعة'),
                     ),
                     _SettingTile(
                       icon: Icons.notifications,
                       iconColor: c.accent,
                       iconBackground: c.accentSoft,
-                      label: 'الإشعارات',
-                      value: 'مفعّلة',
-                      onTap: () => _showMessage(context, 'إعدادات الإشعارات'),
+                      label: 'مركز الإشعارات',
+                      value: 'عرض',
+                      onTap: () => context.push('/university/notifications'),
                     ),
                     _SettingTile(
                       icon: Icons.language,
@@ -131,7 +135,8 @@ class UniversityProfileScreen extends StatelessWidget {
                       iconBackground: c.successSoft,
                       label: 'اللغة',
                       value: 'العربية',
-                      onTap: () => _showMessage(context, 'تغيير اللغة'),
+                      onTap: () =>
+                          _showComingSoon(context, 'تغيير لغة الواجهة'),
                     ),
                     _SettingTile(
                       icon: Icons.dark_mode,
@@ -154,28 +159,29 @@ class UniversityProfileScreen extends StatelessWidget {
                       iconColor: c.primary,
                       iconBackground: c.primarySoft,
                       label: 'مركز المساعدة',
-                      onTap: () => _showMessage(context, 'مركز المساعدة'),
+                      onTap: () =>
+                          _showComingSoon(context, 'مركز مساعدة الجامعات'),
                     ),
                     _SettingTile(
                       icon: Icons.chat_bubble_outline,
                       iconColor: c.purple,
                       iconBackground: c.purpleSoft,
                       label: 'تواصل معنا',
-                      onTap: () => _showMessage(context, 'تواصل معنا'),
+                      onTap: () => context.push('/contact-us'),
                     ),
                     _SettingTile(
                       icon: Icons.description,
                       iconColor: c.success,
                       iconBackground: c.successSoft,
                       label: 'الشروط والأحكام',
-                      onTap: () => _showMessage(context, 'الشروط والأحكام'),
+                      onTap: () => context.push('/terms-conditions'),
                     ),
                     _SettingTile(
                       icon: Icons.lock_outline,
                       iconColor: c.accent,
                       iconBackground: c.accentSoft,
                       label: 'سياسة الخصوصية',
-                      onTap: () => _showMessage(context, 'سياسة الخصوصية'),
+                      onTap: () => context.push('/privacy-policy'),
                     ),
                   ],
                 ),
@@ -210,9 +216,9 @@ class UniversityProfileScreen extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (1) Header
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({required this.onEdit});
@@ -237,17 +243,20 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          DecoratedBox(
-            decoration: _cardDecoration(c, radius: 16),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onEdit,
-                borderRadius: BorderRadius.circular(16),
-                child: SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: Icon(Icons.edit, size: 20, color: c.primary),
+          Tooltip(
+            message: 'تعديل الملف الشخصي',
+            child: DecoratedBox(
+              decoration: _cardDecoration(c, radius: 16),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onEdit,
+                  borderRadius: BorderRadius.circular(16),
+                  child: SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Icon(Icons.edit, size: 20, color: c.primary),
+                  ),
                 ),
               ),
             ),
@@ -258,9 +267,9 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (2) Profile hero card
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _HeroCard extends StatelessWidget {
   const _HeroCard({required this.university, required this.onCameraTap});
@@ -431,23 +440,33 @@ class _Avatar extends StatelessWidget {
             ),
             child: Icon(icon, size: 34, color: c.primary),
           ),
-          Positioned(
+          PositionedDirectional(
             bottom: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: onCameraTap,
-              child: Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: c.primary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: c.surface, width: 2.5),
-                ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  size: 13,
-                  color: Colors.white,
+            end: 0,
+            child: Tooltip(
+              message: 'تغيير شعار الجامعة',
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onCameraTap,
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(
+                    child: Container(
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        color: c.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: c.surface, width: 2.5),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        size: 13,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -548,9 +567,9 @@ class _CompletionCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (3) Quick stats
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _QuickStats extends StatelessWidget {
   const _QuickStats({required this.university});
@@ -659,9 +678,9 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (4 & 6) Settings / support sections
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _SettingsSection extends StatelessWidget {
   const _SettingsSection({required this.title, required this.tiles});
@@ -800,9 +819,9 @@ class _SettingTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (5) Subscription
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _SubscriptionCard extends StatelessWidget {
   const _SubscriptionCard({required this.university});
@@ -874,7 +893,7 @@ class _SubscriptionCard extends StatelessWidget {
               foreground: c.accent,
               horizontalPadding: 12,
               verticalPadding: 6,
-              onTap: () => _showMessage(context, 'إدارة الاشتراك'),
+              onTap: () => _showComingSoon(context, 'إدارة الاشتراك'),
             ),
           ],
         ),
@@ -883,9 +902,9 @@ class _SubscriptionCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (7) Logout button
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _LogoutButton extends StatelessWidget {
   const _LogoutButton({required this.onTap});
@@ -930,127 +949,13 @@ class _LogoutButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (8) Logout confirmation dialog
-// ─────────────────────────────────────────────────────────────────────────────
 
-class _LogoutDialog extends StatelessWidget {
-  const _LogoutDialog();
 
-  @override
-  Widget build(BuildContext context) {
-    final AppColors c = context.appColors;
 
-    return AlertDialog(
-      backgroundColor: c.surface,
-      surfaceTintColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-      contentPadding: const EdgeInsets.all(24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: c.dangerSoft,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.logout, size: 28, color: c.danger),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'تسجيل الخروج؟',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: c.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'هل أنت متأكد من رغبتك في الخروج من حساب الجامعة؟',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              fontSize: 13,
-              height: 1.6,
-              color: c.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: _DialogButton(
-                  label: 'إلغاء',
-                  background: c.isDark ? c.surfaceAlt : c.background,
-                  foreground: c.textPrimary,
-                  onTap: () => Navigator.of(context).pop(false),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _DialogButton(
-                  label: 'خروج',
-                  background: c.danger,
-                  foreground: Colors.white,
-                  onTap: () => Navigator.of(context).pop(true),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
 
-class _DialogButton extends StatelessWidget {
-  const _DialogButton({
-    required this.label,
-    required this.background,
-    required this.foreground,
-    required this.onTap,
-  });
 
-  final String label;
-  final Color background;
-  final Color foreground;
-  final VoidCallback onTap;
 
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: background,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: foreground,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared pieces
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _Pill extends StatelessWidget {
   const _Pill({
@@ -1154,31 +1059,24 @@ String _formatThousands(int value) {
   return buffer.toString();
 }
 
+void _showComingSoon(BuildContext context, String feature) {
+  _showMessage(context, '$feature غير متاح في النسخة الحالية');
+}
+
 void _showMessage(BuildContext context, String message) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: context.appColors.textPrimary,
-        content: Text(
-          message,
-          style: TextStyle(
-            fontFamily: AppTheme.fontFamily,
-            fontSize: 13,
-            color: context.appColors.background,
-          ),
-        ),
-      ),
-    );
+  AppSnack.info(context, message);
 }
 
 Future<void> _confirmLogout(BuildContext context) async {
-  final bool? confirmed = await showDialog<bool>(
-    context: context,
-    builder: (BuildContext context) => const _LogoutDialog(),
+  final confirmed = await showAppConfirmDialog(
+    context,
+    title: 'تسجيل الخروج؟',
+    message: 'هل أنت متأكد من رغبتك في الخروج من حساب الجامعة؟',
+    confirmLabel: 'خروج',
+    destructive: true,
+    icon: Icons.logout_rounded,
   );
-  if (confirmed == true && context.mounted) {
-    _showMessage(context, 'تم تسجيل الخروج بنجاح');
+  if (confirmed && context.mounted) {
+    await logoutToLogin(context);
   }
 }

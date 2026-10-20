@@ -1,6 +1,6 @@
 import 'dart:async';
-// import 'package:flutter/foundation.dart';
-// import 'package:nextstep_ai_app/core/models/user_model.dart';
+
+
 import 'package:nextstep_ai_app/core/models/student_profile_model.dart';
 
 class DummyAuth {
@@ -8,11 +8,27 @@ class DummyAuth {
 }
 
 class DummySingle implements Future<Map<String, dynamic>> {
-  @override Stream<Map<String,dynamic>> asStream() => Stream.value({});
-  @override Future<Map<String,dynamic>> catchError(Function onError, {bool Function(Object)? test}) async => {};
-  @override Future<R> then<R>(FutureOr<R> Function(Map<String,dynamic>) onValue, {Function? onError}) => Future.value(<String,dynamic>{}).then(onValue, onError: onError);
-  @override Future<Map<String,dynamic>> whenComplete(FutureOr<void> Function() action) async { action(); return {}; }
-  @override Future<Map<String,dynamic>> timeout(Duration timeLimit, {FutureOr<Map<String,dynamic>> Function()? onTimeout}) async => {};
+  @override
+  Stream<Map<String, dynamic>> asStream() => Stream.value({});
+  @override
+  Future<Map<String, dynamic>> catchError(Function onError,
+          {bool Function(Object)? test}) async =>
+      {};
+  @override
+  Future<R> then<R>(FutureOr<R> Function(Map<String, dynamic>) onValue,
+          {Function? onError}) =>
+      Future.value(<String, dynamic>{}).then(onValue, onError: onError);
+  @override
+  Future<Map<String, dynamic>> whenComplete(
+      FutureOr<void> Function() action) async {
+    action();
+    return {};
+  }
+
+  @override
+  Future<Map<String, dynamic>> timeout(Duration timeLimit,
+          {FutureOr<Map<String, dynamic>> Function()? onTimeout}) async =>
+      {};
 }
 
 class DummyBuilder implements Future<List<Map<String, dynamic>>> {
@@ -24,13 +40,24 @@ class DummyBuilder implements Future<List<Map<String, dynamic>>> {
   @override
   Stream<List<Map<String, dynamic>>> asStream() => Stream.value([]);
   @override
-  Future<List<Map<String, dynamic>>> catchError(Function onError, {bool Function(Object)? test}) async => [];
+  Future<List<Map<String, dynamic>>> catchError(Function onError,
+          {bool Function(Object)? test}) async =>
+      [];
   @override
-  Future<R> then<R>(FutureOr<R> Function(List<Map<String, dynamic>>) onValue, {Function? onError}) => Future.value(<Map<String, dynamic>>[]).then(onValue, onError: onError);
+  Future<R> then<R>(FutureOr<R> Function(List<Map<String, dynamic>>) onValue,
+          {Function? onError}) =>
+      Future.value(<Map<String, dynamic>>[]).then(onValue, onError: onError);
   @override
-  Future<List<Map<String, dynamic>>> whenComplete(FutureOr<void> Function() action) async { action(); return []; }
+  Future<List<Map<String, dynamic>>> whenComplete(
+      FutureOr<void> Function() action) async {
+    action();
+    return [];
+  }
+
   @override
-  Future<List<Map<String, dynamic>>> timeout(Duration timeLimit, {FutureOr<List<Map<String, dynamic>>> Function()? onTimeout}) async => [];
+  Future<List<Map<String, dynamic>>> timeout(Duration timeLimit,
+          {FutureOr<List<Map<String, dynamic>>> Function()? onTimeout}) async =>
+      [];
 }
 
 class DummyClient {
@@ -71,7 +98,7 @@ class DummyUserData {
   final int currentUniversityId = 0;
   final int currentMajorId = 0;
   final String academicLevel = '';
-  
+
   dynamic operator [](String key) => '';
 }
 
@@ -87,8 +114,10 @@ class SupabaseService {
   bool get isAuthenticated => false;
 
   Future<dynamic> getUser(String id) async => DummyUserData();
-  Future<StudentProfileModel?> getStudentProfileByUuid(String uuid) async => null;
-  Future<void> upsertStudentProfileWithUuid(StudentProfileModel profile) async {}
+  Future<StudentProfileModel?> getStudentProfileByUuid(String uuid) async =>
+      null;
+  Future<void> upsertStudentProfileWithUuid(
+      StudentProfileModel profile) async {}
 
   Future<void> signOut() async {}
 
@@ -115,7 +144,7 @@ class SupabaseService {
   Future<void> deleteUser(String id) async {}
   Future<List<dynamic>> getAuthUsers() async => [];
   Future<void> deleteAuthUser(String id) async {}
-  
+
   Future<List<Map<String, dynamic>>> getUniversities() async => [];
   Future<void> createUniversity(Map<String, dynamic> data) async {}
   Future<void> updateUniversity(String id, Map<String, dynamic> data) async {}
@@ -125,11 +154,10 @@ class SupabaseService {
   Future<void> updateProgram(String id, Map<String, dynamic> data) async {}
   Future<void> deleteProgram(String id) async {}
   Future<Map<String, dynamic>> getDashboardStats() async => {
-      'totalUsers': 0,
-      'totalUniversities': 0,
-      'totalPrograms': 0,
-      'totalTrainingCenters': 0,
-    };
+        'totalUsers': 0,
+        'totalUniversities': 0,
+        'totalPrograms': 0,
+        'totalTrainingCenters': 0,
+      };
   Future<List<Map<String, dynamic>>> getLlmUsageLogs() async => [];
 }
-

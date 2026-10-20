@@ -114,16 +114,20 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
           _maxLLMCallsPerUser = settings['max_llm_calls_per_user'] ?? 50;
           _maxTokensPerUser = settings['max_tokens_per_user'] ?? 10000;
           _enableRAG = settings['enable_rag'] ?? true;
-          _selectedLLMModel = settings['llm_model'] ?? 'claude-3-sonnet-20240229';
-          _enableAutoRecommendations = settings['enable_auto_recommendations'] ?? true;
+          _selectedLLMModel =
+              settings['llm_model'] ?? 'claude-3-sonnet-20240229';
+          _enableAutoRecommendations =
+              settings['enable_auto_recommendations'] ?? true;
           _minCompatibilityScore = settings['min_compatibility_score'] ?? 60;
 
           if (settings['dimension_weights'] != null) {
-            final weights = Map<String, double>.from(settings['dimension_weights']);
+            final weights =
+                Map<String, double>.from(settings['dimension_weights']);
             _dimensionWeights.updateAll((key, value) => weights[key] ?? 1.0);
           }
 
-          _requireEmailVerification = settings['require_email_verification'] ?? true;
+          _requireEmailVerification =
+              settings['require_email_verification'] ?? true;
           _enableTwoFactorAuth = settings['enable_two_factor_auth'] ?? false;
           _autoBlockSuspicious = settings['auto_block_suspicious'] ?? true;
           _enableMaintenanceMode = settings['enable_maintenance_mode'] ?? false;
@@ -188,7 +192,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: _buildAppBar(),
         body: _isLoading
             ? const Center(
@@ -236,7 +240,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
       backgroundColor: Colors.white,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.primaryContainer),
+        icon: const Icon(Icons.arrow_back_rounded,
+            color: AppTheme.primaryContainer),
         onPressed: () => Navigator.pop(context),
       ),
       title: const Text(
@@ -583,7 +588,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
           children: [
             Text(
               label,
-              style: const TextStyle(fontSize: 13, color: AppTheme.primaryContainer),
+              style: const TextStyle(
+                  fontSize: 13, color: AppTheme.primaryContainer),
             ),
             Text(
               getDisplayValue(),
@@ -646,13 +652,14 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 13, color: AppTheme.primaryContainer),
+          style:
+              const TextStyle(fontSize: 13, color: AppTheme.primaryContainer),
         ),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFF7F8FB),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: Colors.grey.shade200, width: 1.2),
           ),
@@ -696,7 +703,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
           foregroundColor: Colors.white,
           disabledBackgroundColor: AppTheme.primary.withValues(alpha: 0.6),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
         child: _isSaving
             ? const SizedBox(
@@ -729,7 +737,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 64, color: Colors.grey.shade400),
+            Icon(Icons.error_outline_rounded,
+                size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
@@ -763,7 +772,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           backgroundColor: color,
           content: Text(
             message,

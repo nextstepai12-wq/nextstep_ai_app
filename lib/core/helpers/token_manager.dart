@@ -3,11 +3,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class TokenManager {
   static const _storage = FlutterSecureStorage();
   static const String _tokenKey = 'access_token';
-  // static const String _refreshTokenKey = 'refresh_token';
+  
   static const String _userIdKey = 'user_id';
   static const String _roleKey = 'user_role';
   static const String _userNameKey = 'user_name';
   static const String _userEmailKey = 'user_email';
+  static const String _userPhoneKey = 'user_phone';
 
   static Future<void> saveToken(String token) async {
     await _storage.write(key: _tokenKey, value: token);
@@ -22,11 +23,15 @@ class TokenManager {
     required String role,
     required String name,
     required String email,
+    String? phone,
   }) async {
     await _storage.write(key: _userIdKey, value: userId);
     await _storage.write(key: _roleKey, value: role);
     await _storage.write(key: _userNameKey, value: name);
     await _storage.write(key: _userEmailKey, value: email);
+    if (phone != null) {
+      await _storage.write(key: _userPhoneKey, value: phone);
+    }
   }
 
   static Future<Map<String, String?>> getUserData() async {
@@ -34,11 +39,13 @@ class TokenManager {
     final role = await _storage.read(key: _roleKey);
     final name = await _storage.read(key: _userNameKey);
     final email = await _storage.read(key: _userEmailKey);
+    final phone = await _storage.read(key: _userPhoneKey);
     return {
       'userId': userId,
       'role': role,
       'name': name,
       'email': email,
+      'phone': phone,
     };
   }
 
