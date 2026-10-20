@@ -163,7 +163,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
                             _buildSection(
                               title: 'مقدمة',
                               icon: Icons.waving_hand_rounded,
-                              color: c.primaryContainer,
+                              color: c.primary,
                               items: [
                                 'مرحباً بك في شروط الاستخدام الخاصة بتطبيق NextStep AI',
                                 'يتم استخدام التطبيق وتوظيفه من قِبلك يُشكّل موافقة كاملة على هذه الشروط',
@@ -199,7 +199,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
                             _buildSection(
                               title: 'استخدام التطبيق',
                               icon: Icons.phone_android_rounded,
-                              color: c.primaryContainer,
+                              color: c.primary,
                               items: [
                                 'التطبيق مخصص للاستخدام الشخصي والتعليمي فقط',
                                 'يُمنع استخدام التطبيق لأغراض تجارية دون إذن مسبق مكتوب',
@@ -275,7 +275,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
                             _buildSection(
                               title: 'التعديلات على الشروط',
                               icon: Icons.edit_note_rounded,
-                              color: c.primaryContainer,
+                              color: c.primary,
                               items: [
                                 'نحتفظ بحق تعديل هذه الشروط والأحكام في أي وقت',
                                 'ستُنشر التعديلات على التطبيق مباشرة عند توفرها',
@@ -339,7 +339,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
         child: IconButton(
           icon: Icon(
             Icons.arrow_back_rounded,
-            color: c.primaryContainer,
+            color: c.primary,
           ),
           onPressed: () => Navigator.pop(context),
           splashRadius: 24,
@@ -350,7 +350,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          color: c.primaryContainer,
+          color: c.primary,
         ),
       ),
       centerTitle: true,
@@ -362,7 +362,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
       height: 3,
       color: c.surfaceAlt,
       child: Align(
-        alignment: Alignment.centerLeft,
+        alignment: AlignmentDirectional.centerStart,
         child: FractionallySizedBox(
           widthFactor: _scrollProgress,
           child: Container(
@@ -370,9 +370,9 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
               gradient: LinearGradient(
                 colors: [c.gradientStart, c.gradientEnd],
               ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(2),
-                bottomLeft: Radius.circular(2),
+              borderRadius: const BorderRadiusDirectional.only(
+                topStart: Radius.circular(2),
+                bottomStart: Radius.circular(2),
               ),
             ),
           ),
@@ -525,14 +525,14 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
         color: c.primarySoft,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: c.primaryContainer.withValues(alpha: 0.2), width: 1.2),
+            color: c.primary.withValues(alpha: 0.2), width: 1.2),
       ),
       child: Row(
         children: [
           Icon(
             Icons.update_rounded,
             size: 20,
-            color: c.primaryContainer,
+            color: c.primary,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -541,7 +541,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
               style: TextStyle(
                 fontSize: (13 * _fontSizeScale).clamp(10.0, 19.5),
                 fontWeight: FontWeight.w600,
-                color: c.primaryContainer,
+                color: c.primary,
               ),
             ),
           ),
@@ -592,7 +592,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
                   style: TextStyle(
                     fontSize: (15 * _fontSizeScale).clamp(11.0, 22.5),
                     fontWeight: FontWeight.w700,
-                    color: c.primaryContainer,
+                    color: c.primary,
                   ),
                 ),
               ),
@@ -670,7 +670,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
                 style: TextStyle(
                   fontSize: (15 * _fontSizeScale).clamp(11.0, 22.5),
                   fontWeight: FontWeight.w700,
-                  color: c.primaryContainer,
+                  color: c.primary,
                 ),
               ),
             ],
@@ -733,7 +733,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen>
           child: OutlinedButton(
             onPressed: () => Navigator.pop(context),
             style: OutlinedButton.styleFrom(
-              foregroundColor: c.primaryContainer,
+              foregroundColor: c.primary,
               side: BorderSide(color: c.divider),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),

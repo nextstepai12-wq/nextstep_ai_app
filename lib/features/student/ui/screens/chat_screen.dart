@@ -299,9 +299,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Ambient background
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildAmbientBackground(AppColors c) {
     return IgnorePointer(
@@ -325,9 +325,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Header
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildHeader(AppColors c) {
     return SafeArea(
@@ -345,7 +345,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         ),
         child: Row(
           children: [
-            // AI Avatar
+            
             Container(
               width: 44,
               height: 44,
@@ -373,7 +373,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               ),
             ),
             const SizedBox(width: 12),
-            // Title + status
+            
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,7 +389,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      // Pulsing online dot
+                      
                       AnimatedBuilder(
                         animation: _onlineDotController,
                         builder: (_, __) {
@@ -431,7 +431,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 ],
               ),
             ),
-            // Action buttons
+            
             _buildHeaderAction(
               c: c,
               icon: Icons.delete_outline_rounded,
@@ -538,9 +538,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Messages list
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildMessagesList(AppColors c) {
     return ListView.builder(
@@ -571,9 +571,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Date pill
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildDatePill(DateTime time, AppColors c) {
     return Padding(
@@ -598,9 +598,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // AI message bubble
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildAIMessage(_ChatMessage message, AppColors c) {
     return Padding(
@@ -608,7 +608,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // AI avatar
+          
           Container(
             width: 34,
             height: 34,
@@ -636,12 +636,12 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(width: 10),
-          // Message content
+          
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Message bubble
+                
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -682,7 +682,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     ],
                   ),
                 ),
-                // Major match card
+                
                 if (message.majorMatch != null) ...[
                   const SizedBox(height: 10),
                   _buildMajorMatchCard(message.majorMatch!, c),
@@ -695,9 +695,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // User message bubble
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildUserMessage(_ChatMessage message, AppColors c) {
     return Padding(
@@ -758,7 +758,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(width: 10),
-          // User avatar
+          
           Container(
             width: 34,
             height: 34,
@@ -782,9 +782,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Major match card
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildMajorMatchCard(_MajorMatch match, AppColors c) {
     return Container(
@@ -810,7 +810,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with match percentage
+          
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -821,7 +821,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
             child: Row(
               children: [
-                // Match circle
+                
                 Container(
                   width: 48,
                   height: 48,
@@ -872,7 +872,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
-          // Explanation
+          
           Padding(
             padding: const EdgeInsets.all(14),
             child: Text(
@@ -884,7 +884,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-          // Action button
+          
           Padding(
             padding: const EdgeInsets.only(left: 14, right: 14, bottom: 14),
             child: GestureDetector(
@@ -927,9 +927,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Typing indicator
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildTypingIndicator(AppColors c) {
     return Padding(
@@ -1001,9 +1001,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Suggestion chips
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildSuggestionChips(AppColors c) {
     return Container(
@@ -1060,9 +1060,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Input bar (glassmorphism)
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildInputBar(AppColors c) {
     return Container(
@@ -1117,7 +1117,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(width: 10),
-          // Send button
+          
           GestureDetector(
             onTap: () => _sendMessage(_messageController.text),
             child: AnimatedContainer(
@@ -1153,9 +1153,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Scroll to bottom FAB
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildScrollToBottomFAB(AppColors c) {
     return Positioned(
@@ -1190,9 +1190,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Helpers
-  // ─────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   String _formatTime(DateTime time) {
     final now = DateTime.now();
@@ -1220,9 +1220,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Data models
-// ─────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _ChatMessage {
   final bool isUser;
@@ -1252,9 +1252,9 @@ class _MajorMatch {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Painters
-// ─────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _AmbientGlowPainter extends CustomPainter {
   final Color color;

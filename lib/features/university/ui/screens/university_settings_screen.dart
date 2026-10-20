@@ -3,13 +3,16 @@ import 'package:go_router/go_router.dart';
 
 import 'package:nextstep_ai_app/core/helpers/session_helper.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_buttons.dart';
 import 'package:nextstep_ai_app/core/widgets/app_card.dart';
+import 'package:nextstep_ai_app/core/widgets/app_dialogs.dart';
 import 'package:nextstep_ai_app/core/widgets/app_section_header.dart';
+import 'package:nextstep_ai_app/core/widgets/app_snack.dart';
 import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
-/// University settings surface. Profile data lives in
-/// [UniversityProfileScreen]; this screen only exposes device-level and
-/// account controls that are actually supported today.
+
+
+
 class UniversitySettingsScreen extends StatelessWidget {
   const UniversitySettingsScreen({super.key});
 
@@ -32,37 +35,19 @@ class UniversitySettingsScreen extends StatelessWidget {
   }
 
   void _showUnavailable(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    AppSnack.info(context, message);
   }
 
   Future<void> _confirmLogout(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('تسجيل الخروج؟'),
-        content: const Text(
-          'هل أنت متأكد من رغبتك في الخروج من حساب الجامعة؟',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('خروج'),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirmDialog(
+      context,
+      title: 'تسجيل الخروج؟',
+      message: 'هل أنت متأكد من رغبتك في الخروج من حساب الجامعة؟',
+      confirmLabel: 'خروج',
+      destructive: true,
+      icon: Icons.logout_rounded,
     );
-    if (confirmed == true && context.mounted) {
+    if (confirmed && context.mounted) {
       await logoutToLogin(context);
     }
   }
@@ -78,7 +63,11 @@ class UniversitySettingsScreen extends StatelessWidget {
         backgroundColor: c.background,
         body: SafeArea(
           bottom: false,
-          child: ListView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints:
+                  const BoxConstraints(maxWidth: AppLayout.maxContentWidth),
+              child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
             children: [
               const AppSectionHeader(
@@ -90,9 +79,10 @@ class UniversitySettingsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'إعدادات الحساب',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                      style: context.textStyles.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     _SettingsTile(
@@ -121,9 +111,10 @@ class UniversitySettingsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'المظهر والعرض',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                      style: context.textStyles.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     _ThemeTile(
@@ -148,9 +139,10 @@ class UniversitySettingsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'الدعم والمساعدة',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                      style: context.textStyles.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     _SettingsTile(
@@ -172,17 +164,15 @@ class UniversitySettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              OutlinedButton.icon(
+              AppSecondaryButton(
+                label: 'تسجيل الخروج',
+                icon: Icons.logout_rounded,
+                danger: true,
                 onPressed: () => _confirmLogout(context),
-                icon: const Icon(Icons.logout, size: 20),
-                label: const Text('تسجيل الخروج'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: c.danger,
-                  side: BorderSide(color: c.danger.withValues(alpha: 0.4)),
-                  minimumSize: const Size.fromHeight(52),
-                ),
               ),
             ],
+              ),
+            ),
           ),
         ),
         bottomNavigationBar: UniversityBottomNav(
@@ -221,7 +211,13 @@ class _SettingsTile extends StatelessWidget {
             Text(value!, style: context.textStyles.bodySmall),
             const SizedBox(width: 4),
           ],
-          Icon(Icons.chevron_left_rounded, color: c.textSecondary, size: 20),
+          Icon(
+            Directionality.of(context) == TextDirection.rtl
+                ? Icons.chevron_left_rounded
+                : Icons.chevron_right_rounded,
+            color: c.textSecondary,
+            size: 20,
+          ),
         ],
       ),
       onTap: onTap,

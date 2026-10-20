@@ -116,9 +116,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 1. Header (compact navy gradient)
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildHeader(BuildContext context, int unreadCount) {
     final double topInset = MediaQuery.of(context).padding.top;
@@ -303,9 +303,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 2. Filter chips
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildFilterTabs() {
     return SizedBox(
@@ -391,9 +391,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return _notifications.where((n) => n['type'] == filter).length;
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 3. Grouped notifications list
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildNotificationsList() {
     final filteredNotifications = _notifications.where((notification) {
@@ -692,9 +692,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Helpers
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   IconData _getNotificationIcon(String type) {
     switch (type) {

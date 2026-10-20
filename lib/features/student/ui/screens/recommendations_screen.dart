@@ -300,7 +300,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ─── Loading ──────────────────────────────────────────────────────────────
+  
 
   Widget _buildLoading(AppColors c) {
     return Stack(
@@ -313,7 +313,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ─── Gradient BG ─────────────────────────────────────────────────────────
+  
 
   Widget _gradientBg(AppColors c) {
     return Positioned(
@@ -337,7 +337,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ─── Content ──────────────────────────────────────────────────────────────
+  
 
   Widget _buildContent(AppColors c) {
     return Stack(
@@ -387,7 +387,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ─── Header ───────────────────────────────────────────────────────────────
+  
 
   Widget _buildHeader(AppColors c) {
     final canPop = ModalRoute.of(context)?.canPop ?? false;
@@ -512,7 +512,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ─── Dimensions Summary ───────────────────────────────────────────────────
+  
 
   Widget _buildDimensionsSummary(AppColors c) {
     return Container(
@@ -616,7 +616,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ─── Filter ───────────────────────────────────────────────────────────────
+  
 
   Widget _buildFilter(AppColors c) {
     return Row(
@@ -676,7 +676,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ─── Recommendation Card ──────────────────────────────────────────────────
+  
 
   Widget _buildRecommendationCard(
       AppColors c, Map<String, dynamic> recommendation) {
@@ -917,7 +917,7 @@ class _RecommendationsScreenState extends State<RecommendationsScreen>
     );
   }
 
-  // ─── Empty State ──────────────────────────────────────────────────────────
+  
 
   Widget _buildEmptyState(AppColors c, {required bool isFiltered}) {
     return Padding(

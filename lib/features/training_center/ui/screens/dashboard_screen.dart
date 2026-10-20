@@ -83,7 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------------- Header
+  
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
@@ -196,7 +196,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------- Status Banner
+  
 
   Widget _buildStatusBanner() {
     return BlocBuilder<TrainingCenterBloc, TrainingCenterState>(
@@ -357,7 +357,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (mounted) setState(() => _isRefreshing = false);
   }
 
-  // -------------------------------------------------------------- KPI Grid
+  
 
   Widget _buildKpiGrid() {
     final stats = _mockStats;
@@ -614,7 +614,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // -------------------------------------------------------- Revenue Chart
+  
 
   Widget _buildRevenueChartCard() {
     const monthly = [
@@ -781,7 +781,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ----------------------------------------------------- Enrollment Chart
+  
 
   Widget _buildEnrollmentChartCard() {
     return Container(
@@ -890,7 +890,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------- Top Courses
+  
 
   Widget _buildTopCoursesCard() {
     const courses = [
@@ -1036,7 +1036,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // --------------------------------------------------- Upcoming Activities
+  
 
   Widget _buildUpcomingActivitiesCard() {
     return Container(
@@ -1219,7 +1219,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // -------------------------------------------------------- Recent Reviews
+  
 
   Widget _buildRecentReviewsCard() {
     const reviews = [
@@ -1348,7 +1348,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------------- Colors
+  
 
   static const Color _primaryContainer = Color(0xFF1E3A8A);
   static const Color _secondaryContainer = Color(0xFFC2410C);
@@ -1372,7 +1372,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   );
 }
 
-// ---------------------------------------------------------- Spline Painter
+
 
 class _SplineChartPainter extends CustomPainter {
   const _SplineChartPainter({
@@ -1401,7 +1401,7 @@ class _SplineChartPainter extends CustomPainter {
       final points = rawPoints.map(map).toList();
       final curved = _createSmoothPath(points);
 
-      // Gradient area fill under the curve.
+      
       final fillPath = Path.from(curved)
         ..lineTo(points.last.dx, size.height)
         ..lineTo(points.first.dx, size.height)
@@ -1414,7 +1414,7 @@ class _SplineChartPainter extends CustomPainter {
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
       canvas.drawPath(fillPath, fillPaint);
 
-      // Line stroke.
+      
       canvas.drawPath(
         curved,
         Paint()
@@ -1424,7 +1424,7 @@ class _SplineChartPainter extends CustomPainter {
           ..strokeCap = StrokeCap.round,
       );
 
-      // Highlight points.
+      
       for (final index in highlightIndices) {
         final isLast = index == points.length - 1;
         if (isLast) {
@@ -1450,7 +1450,7 @@ class _SplineChartPainter extends CustomPainter {
       }
     }
 
-    // Subtle dashed grid lines.
+    
     final gridPaint = Paint()
       ..color = const Color(0xFFE1E8FD)
       ..style = PaintingStyle.stroke

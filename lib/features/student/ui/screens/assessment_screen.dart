@@ -79,7 +79,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     super.dispose();
   }
 
-  // ─── Data helpers ────────────────────────────────────────────────────────
+  
 
   String _dimName(String key) => switch (key) {
         'programming' => 'البرمجة',
@@ -124,7 +124,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
   double get _progress =>
       _totalQuestions > 0 ? _answers.length / _totalQuestions : 0;
 
-  // ─── Load / Save ─────────────────────────────────────────────────────────
+  
 
   List<Map<String, dynamic>> _getDefaultQuestions() {
     return [
@@ -232,7 +232,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     await HiveStorage.saveData('assessment_cache', 'answers', _answers);
   }
 
-  // ─── Actions ─────────────────────────────────────────────────────────────
+  
 
   void _selectAnswer(int qIndex, int value) {
     HapticFeedback.lightImpact();
@@ -439,7 +439,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
       );
   }
 
-  // ─── Build ───────────────────────────────────────────────────────────────
+  
 
   @override
   Widget build(BuildContext context) {
@@ -463,7 +463,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ─── Loading / Empty ─────────────────────────────────────────────────────
+  
 
   Widget _buildLoading(AppColors c) {
     return Stack(
@@ -517,7 +517,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ─── Gradient BG ─────────────────────────────────────────────────────────
+  
 
   Widget _gradientBg(AppColors c) {
     return Positioned(
@@ -540,7 +540,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ─── Custom AppBar ───────────────────────────────────────────────────────
+  
 
   Widget _buildHeader(AppColors c) {
     return Positioned(
@@ -619,7 +619,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ─── Question Flow ───────────────────────────────────────────────────────
+  
 
   Widget _buildQuestionFlow(AppColors c) {
     final q = _questions[_currentQuestionIndex];
@@ -655,7 +655,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ─── Progress Card ───────────────────────────────────────────────────────
+  
 
   Widget _buildProgressCard(AppColors c, String dim) {
     final pct = (_progress * 100).toInt();
@@ -753,7 +753,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ─── Question Card ───────────────────────────────────────────────────────
+  
 
   Widget _buildQuestionCard(
       AppColors c, Map<String, dynamic> q, String dim, int? selected) {
@@ -819,7 +819,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ─── Likert Scale ────────────────────────────────────────────────────────
+  
 
   Widget _likertScale(AppColors c, int? selected) {
     const labels = [
@@ -906,7 +906,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ─── Nav Buttons ─────────────────────────────────────────────────────────
+  
 
   Widget _buildNavButtons(AppColors c) {
     final isLast = _currentQuestionIndex == _totalQuestions - 1;
@@ -995,7 +995,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ─── AI Analyzing Screen ─────────────────────────────────────────────────
+  
 
   Widget _buildAnalyzing(AppColors c) {
     return Stack(
@@ -1148,7 +1148,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
     );
   }
 
-  // ─── Results Screen ──────────────────────────────────────────────────────
+  
 
   Widget _buildResults(AppColors c) {
     final sorted = _dimensions.entries.toList()
@@ -1568,7 +1568,7 @@ class _AssessmentScreenState extends State<AssessmentScreen>
   }
 }
 
-// ─── Radar Chart Painter ─────────────────────────────────────────────────────
+
 
 class _RadarChartPainter extends CustomPainter {
   final Map<String, double> dimensions;
@@ -1600,7 +1600,7 @@ class _RadarChartPainter extends CustomPainter {
     ];
     final angles = List.generate(6, (i) => (pi / 3) * i - pi / 2);
 
-    // Draw web
+    
     final webPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
@@ -1618,7 +1618,7 @@ class _RadarChartPainter extends CustomPainter {
       canvas.drawPath(path, webPaint);
     }
 
-    // Draw axes
+    
     final axisPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
@@ -1631,7 +1631,7 @@ class _RadarChartPainter extends CustomPainter {
       );
     }
 
-    // Draw data polygon
+    
     final dataPaint = Paint()
       ..style = PaintingStyle.fill
       ..color = c.primary.withValues(alpha: 0.2);
@@ -1651,7 +1651,7 @@ class _RadarChartPainter extends CustomPainter {
     canvas.drawPath(dataPath, dataPaint);
     canvas.drawPath(dataPath, strokePaint);
 
-    // Draw data points
+    
     final dotPaint = Paint()..color = c.primary;
     for (int i = 0; i < 6; i++) {
       final val = (dimensions[keys[i]] ?? 50) / 100;
@@ -1660,7 +1660,7 @@ class _RadarChartPainter extends CustomPainter {
       canvas.drawCircle(Offset(x, y), 4, dotPaint);
     }
 
-    // Draw labels
+    
     final labelPainter = TextPainter(textDirection: TextDirection.rtl);
     for (int i = 0; i < 6; i++) {
       final val = (dimensions[keys[i]] ?? 50).toInt();
@@ -1688,7 +1688,7 @@ class _RadarChartPainter extends CustomPainter {
   bool shouldRepaint(covariant _RadarChartPainter old) => true;
 }
 
-// ─── Confetti Painter ────────────────────────────────────────────────────────
+
 
 class _ConfettiPainter extends CustomPainter {
   final double progress;

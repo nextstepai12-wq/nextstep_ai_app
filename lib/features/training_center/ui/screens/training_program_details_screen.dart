@@ -81,9 +81,9 @@ class _TrainingProgramDetailsScreenState
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Hero + overlapping title card
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildHeroAndTitle(BuildContext context, _ProgramDetailsMock details) {
     final double topInset = MediaQuery.of(context).padding.top;
@@ -409,9 +409,9 @@ class _TrainingProgramDetailsScreenState
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Tab: overview
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildOverviewTab(
     BuildContext context,
@@ -834,9 +834,9 @@ class _TrainingProgramDetailsScreenState
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Tab: curriculum
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildCurriculumTab(_ProgramDetailsMock details) {
     return ListView(
@@ -927,9 +927,9 @@ class _TrainingProgramDetailsScreenState
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Tab: instructor
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildInstructorTab(_ProgramDetailsMock details) {
     final instructor = details.instructor;
@@ -1075,9 +1075,9 @@ class _TrainingProgramDetailsScreenState
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Tab: reviews
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildReviewsTab(_ProgramDetailsMock details) {
     return ListView(
@@ -1270,9 +1270,9 @@ class _TrainingProgramDetailsScreenState
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Sticky bottom action bar
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildBottomBar(BuildContext context, _ProgramDetailsMock details) {
     return Container(
@@ -1557,9 +1557,9 @@ class _TrainingProgramDetailsScreenState
   }
 }
 
-// ───────────────────────────────────────────────────────────────────────────
-// Sticky tab header
-// ───────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
@@ -1596,9 +1596,9 @@ class _TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
       oldDelegate.tabBar != tabBar;
 }
 
-// ───────────────────────────────────────────────────────────────────────────
-// Mock data
-// ───────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _InstructorDetailsMock {
   final String name;

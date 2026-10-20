@@ -137,9 +137,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 1. Header (navy gradient + floating tab switcher)
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildHeader(BuildContext context) {
     final double topInset = MediaQuery.of(context).padding.top;
@@ -354,9 +354,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 2. Center settings tab
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildCenterTab() {
     return Padding(
@@ -750,9 +750,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 3. Team management tab
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildTeamTab() {
     return Padding(
@@ -1263,9 +1263,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 4. Invite dialog
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   void _showInviteDialog() {
     showDialog(
@@ -1546,9 +1546,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 5. Member details / delete / invite dialogs & actions
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   void _showMemberDetails(Map<String, dynamic> member) {
     final isAdmin = member['roleType'] == 'admin';
@@ -1904,9 +1904,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Helpers
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   String _avatarLetters(String name) {
     final parts = name.trim().split(RegExp(r'\s+'));

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theming/app_theme.dart';
 
-/// Search input with a clear action and RTL-safe icon placement.
+
 class AppSearchField extends StatelessWidget {
   const AppSearchField({
     super.key,

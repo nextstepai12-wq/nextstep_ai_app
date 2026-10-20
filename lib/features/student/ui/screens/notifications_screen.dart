@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 
-// ─── Notification Model ──────────────────────────────────────────────────────
+
 enum NotificationType { assessment, recommendation, favorite, system }
 
 class AppNotification {
@@ -50,7 +50,7 @@ class AppNotification {
   }
 }
 
-// ─── NotificationsScreen ─────────────────────────────────────────────────────
+
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -131,7 +131,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     super.dispose();
   }
 
-  // ── Data ───────────────────────────────────────────────────────────────────
+  
 
   Future<void> _loadNotifications() async {
     setState(() {
@@ -187,7 +187,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         : _notifications.where((n) => !n.isRead && n.type == t).length;
   }
 
-  // ── Actions ────────────────────────────────────────────────────────────────
+  
 
   void _markAsRead(int id) {
     setState(() {
@@ -327,7 +327,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
+  
 
   @override
   Widget build(BuildContext context) {
@@ -365,7 +365,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  // ── Header ─────────────────────────────────────────────────────────────────
+  
 
   Widget _buildHeader(AppColors c) {
     return Container(
@@ -499,7 +499,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  // ── Filter Chips ───────────────────────────────────────────────────────────
+  
 
   Widget _buildFilterChips(AppColors c) {
     return SizedBox(
@@ -599,7 +599,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  // ── Notifications List ─────────────────────────────────────────────────────
+  
 
   Widget _buildNotificationsList(AppColors c) {
     final grouped = _groupByTime(_filteredNotifications);
@@ -732,7 +732,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     return '${days[d.weekday]}، ${d.day} ${months[d.month]}';
   }
 
-  // ── Notification Card ──────────────────────────────────────────────────────
+  
 
   Widget _notificationCard(AppNotification n, AppColors c) {
     final isSel = _selectedIds.contains(n.id);
@@ -970,7 +970,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  // ── Empty State ────────────────────────────────────────────────────────────
+  
 
   Widget _buildEmptyState(AppColors c) {
     final isFiltered = _selectedFilter != 'الكل';
@@ -1051,7 +1051,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  // ── Error State ────────────────────────────────────────────────────────────
+  
 
   Widget _buildErrorState(AppColors c) {
     return Center(
@@ -1098,7 +1098,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  // ── Skeleton Loading ───────────────────────────────────────────────────────
+  
 
   Widget _buildSkeleton(AppColors c) {
     return ListView.builder(
@@ -1163,7 +1163,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  // ── Multi-Select Bar ───────────────────────────────────────────────────────
+  
 
   Widget _buildMultiSelectBar(AppColors c) {
     return Positioned(
@@ -1274,7 +1274,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  
 
   String _formatTime(DateTime time) {
     final now = DateTime.now();
@@ -1354,7 +1354,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   }
 }
 
-// ─── Shimmer Widget ──────────────────────────────────────────────────────────
+
 
 class ShimmerWidget extends StatefulWidget {
   final Widget child;

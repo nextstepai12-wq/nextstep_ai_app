@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theming/app_theme.dart';
 
-/// Soft decorative background used behind auth and splash screens.
+
 class GradientBackground extends StatelessWidget {
   final Widget child;
 
@@ -32,7 +32,7 @@ class GradientBackground extends StatelessWidget {
   }
 }
 
-/// Circular brand glow used as a decorative accent (never interactive).
+
 class AppBackgroundOrb extends StatelessWidget {
   const AppBackgroundOrb({
     super.key,

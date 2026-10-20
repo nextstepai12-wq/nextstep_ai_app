@@ -78,9 +78,9 @@ class TrainingCenterShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The training-center blocs are provided above the router in `MyApp`
-    // so that they are also accessible from drawers, dialogs and overlays,
-    // not only from the routes nested inside this shell.
+    
+    
+    
     return child;
   }
 }

@@ -133,7 +133,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── Skeleton Loading ─────────────────────────────────────────────────────
+  
 
   Widget _buildSkeleton(AppColors c) {
     return Stack(
@@ -191,7 +191,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── Gradient Background ──────────────────────────────────────────────────
+  
 
   Widget _buildGradientBg(AppColors c) {
     return Positioned(
@@ -215,7 +215,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── Error State ──────────────────────────────────────────────────────────
+  
 
   Widget _buildErrorState(AppColors c) {
     return Stack(
@@ -256,7 +256,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── Main Content ─────────────────────────────────────────────────────────
+  
 
   Widget _buildContent(AppColors c) {
     return Stack(
@@ -314,7 +314,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── AppBar ───────────────────────────────────────────────────────────────
+  
 
   Widget _buildAppBar(AppColors c) {
     return Row(
@@ -424,7 +424,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── Welcome Section ──────────────────────────────────────────────────────
+  
 
   Widget _buildWelcomeSection(AppColors c) {
     final studentType =
@@ -553,7 +553,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── Search Bar ───────────────────────────────────────────────────────────
+  
 
   Widget _buildSearchBar(AppColors c) {
     return GestureDetector(
@@ -618,7 +618,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── Progress Reminder Card ───────────────────────────────────────────────
+  
 
   Widget _buildProgressCard(AppColors c) {
     final remaining =
@@ -786,7 +786,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── Stats Section ────────────────────────────────────────────────────────
+  
 
   Widget _buildStatsSection(AppColors c) {
     return AppAdaptiveGrid(
@@ -950,7 +950,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── Quick Services ───────────────────────────────────────────────────────
+  
 
   Widget _buildQuickServices(AppColors c) {
     return Column(
@@ -1174,7 +1174,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── Recommendations ──────────────────────────────────────────────────────
+  
 
   Widget _buildRecommendations(AppColors c) {
     return Column(
@@ -1436,7 +1436,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     );
   }
 
-  // ─── FAB ──────────────────────────────────────────────────────────────────
+  
 
   Widget _buildFAB(AppColors c) {
     return GestureDetector(

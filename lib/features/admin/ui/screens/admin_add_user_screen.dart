@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_buttons.dart';
+import 'package:nextstep_ai_app/core/widgets/app_card.dart';
+import 'package:nextstep_ai_app/core/widgets/app_page_header.dart';
+import 'package:nextstep_ai_app/core/widgets/app_snack.dart';
 
 class AdminAddUserScreen extends StatefulWidget {
   final bool isEditing;
@@ -38,19 +42,16 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
       value: 'student',
       label: 'طالب',
       icon: Icons.school_rounded,
-      color: Color(0xFF3B82F6),
     ),
     _RoleOption(
       value: 'university',
       label: 'جامعة',
       icon: Icons.business_rounded,
-      color: Color(0xFF22C55E),
     ),
     _RoleOption(
       value: 'admin',
       label: 'إدارة',
       icon: Icons.admin_panel_settings_rounded,
-      color: Color(0xFF8B5CF6),
     ),
   ];
 
@@ -104,28 +105,7 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
   }
 
   void _showResultSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          backgroundColor: const Color(0xFF22C55E),
-          content: Row(
-            children: [
-              const Icon(Icons.check_circle_outline_rounded,
-                  color: Colors.white, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(message,
-                    style: const TextStyle(color: Colors.white, fontSize: 13)),
-              ),
-            ],
-          ),
-        ),
-      );
+    AppSnack.success(context, message);
   }
 
   @override
@@ -137,14 +117,23 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
         body: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            _buildSliverHeader(context),
+            AppSliverPageHeader(
+              title: widget.isEditing
+                  ? 'تعديل بيانات المستخدم'
+                  : 'إضافة مستخدم جديد',
+              subtitle: 'إدارة حساب المستخدم وصلاحياته',
+              expandedHeight: 140,
+            ),
             SliverToBoxAdapter(
               child: FadeTransition(
                 opacity: _fadeAnim,
                 child: SlideTransition(
                   position: _slideAnim,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                    padding: context.pagePadding.copyWith(
+                      top: AppSpacing.lg,
+                      bottom: AppSpacing.xxl,
+                    ),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -170,123 +159,81 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
     );
   }
 
-  Widget _buildSliverHeader(BuildContext context) {
-    return SliverAppBar(
-      pinned: true,
-      elevation: 0,
-      backgroundColor: AppTheme.primary,
-      expandedHeight: 150,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
-        onPressed: () => Navigator.pop(context),
-      ),
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(right: 56, bottom: 16),
-        title: Text(
-          widget.isEditing ? 'تعديل بيانات المستخدم' : 'إضافة مستخدم جديد',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppTheme.primary, AppTheme.primaryContainer],
-            ),
-          ),
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, bottom: 14),
-              child: Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  widget.isEditing
-                      ? Icons.edit_rounded
-                      : Icons.person_add_alt_1_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _sectionLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 13,
+      style: context.textStyles.labelLarge?.copyWith(
+        color: context.appColors.textPrimary,
         fontWeight: FontWeight.w700,
-        color: AppTheme.primaryContainer,
       ),
     );
   }
 
   Widget _buildRoleSelector() {
+    final AppColors c = context.appColors;
     return Row(
       children: _roles.map((role) {
         final isSelected = _selectedRole == role.value;
+        final Color roleColor = switch (role.value) {
+          'university' => c.success,
+          'admin' => c.purple,
+          _ => c.info,
+        };
         return Expanded(
           child: Padding(
-            padding: EdgeInsets.only(
-              left: role == _roles.last ? 0 : 10,
+            padding: EdgeInsetsDirectional.only(
+              start: role == _roles.last ? 0 : 10,
             ),
-            child: GestureDetector(
-              onTap: () => setState(() => _selectedRole = role.value),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOut,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? role.color.withValues(alpha: 0.1)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected ? role.color : Colors.grey.shade200,
-                    width: isSelected ? 1.8 : 1.2,
+            child: Semantics(
+              button: true,
+              selected: isSelected,
+              label: role.label,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(() => _selectedRole = role.value),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? roleColor.withValues(alpha: 0.1)
+                        : c.surface,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(
+                      color: isSelected ? roleColor : c.divider,
+                      width: isSelected ? 1.8 : 1.2,
+                    ),
+                    boxShadow: isSelected
+                        ? <BoxShadow>[
+                            BoxShadow(
+                              color: c.shadow,
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ]
+                        : const <BoxShadow>[],
                   ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: role.color.withValues(alpha: 0.18),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
-                          ),
-                        ]
-                      : [],
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      role.icon,
-                      color: isSelected ? role.color : Colors.grey.shade400,
-                      size: 24,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      role.label,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? role.color : Colors.grey.shade500,
+                  child: Column(
+                    children: <Widget>[
+                      Icon(
+                        role.icon,
+                        color: isSelected ? roleColor : c.textSecondary,
+                        size: 24,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+                      Text(
+                        role.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.textStyles.labelMedium?.copyWith(
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected ? roleColor : c.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -297,20 +244,8 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
   }
 
   Widget _buildFormCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -353,11 +288,14 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
             obscure: _obscurePassword,
             ltr: true,
             suffix: IconButton(
+              tooltip: _obscurePassword
+                  ? 'إظهار كلمة المرور'
+                  : 'إخفاء كلمة المرور',
               icon: Icon(
                 _obscurePassword
                     ? Icons.visibility_off_rounded
                     : Icons.visibility_rounded,
-                color: Colors.grey.shade500,
+                color: context.appColors.textSecondary,
                 size: 20,
               ),
               onPressed: () =>
@@ -380,11 +318,14 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
             obscure: _obscureConfirm,
             ltr: true,
             suffix: IconButton(
+              tooltip: _obscureConfirm
+                  ? 'إظهار كلمة المرور'
+                  : 'إخفاء كلمة المرور',
               icon: Icon(
                 _obscureConfirm
                     ? Icons.visibility_off_rounded
                     : Icons.visibility_rounded,
-                color: Colors.grey.shade500,
+                color: context.appColors.textSecondary,
                 size: 20,
               ),
               onPressed: () =>
@@ -406,10 +347,9 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
   Widget _fieldLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 12.5,
+      style: context.textStyles.labelMedium?.copyWith(
         fontWeight: FontWeight.w600,
-        color: AppTheme.primaryContainer,
+        color: context.appColors.textPrimary,
       ),
     );
   }
@@ -430,31 +370,12 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
       keyboardType: keyboardType,
       textDirection: ltr ? TextDirection.ltr : TextDirection.rtl,
       textAlign: ltr ? TextAlign.left : TextAlign.right,
-      style: const TextStyle(fontSize: 14, color: AppTheme.primaryContainer),
+      style: context.textStyles.bodyMedium,
       validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
-        prefixIcon: Icon(icon, color: AppTheme.onSurfaceVariant, size: 20),
+        prefixIcon: Icon(icon, size: 20),
         suffixIcon: suffix,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFECEDF3), width: 1.4),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.secondary, width: 1.8),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.6),
-        ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
@@ -462,46 +383,11 @@ class _AdminAddUserScreenState extends State<AdminAddUserScreen>
   }
 
   Widget _buildSubmitButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: _isSubmitting ? null : _submit,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primary,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: AppTheme.primary.withValues(alpha: 0.6),
-          elevation: 0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ).copyWith(
-          shadowColor: WidgetStateProperty.all(Colors.transparent),
-        ),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: _isSubmitting
-              ? const SizedBox(
-                  key: ValueKey('loading'),
-                  height: 22,
-                  width: 22,
-                  child: CircularProgressIndicator(
-                      color: Colors.white, strokeWidth: 2.4),
-                )
-              : Row(
-                  key: const ValueKey('label'),
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.check_circle_outline_rounded, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      widget.isEditing ? 'حفظ التعديلات' : 'إنشاء الحساب',
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-        ),
-      ),
+    return AppPrimaryButton(
+      label: widget.isEditing ? 'حفظ التعديلات' : 'إنشاء الحساب',
+      icon: Icons.check_circle_outline_rounded,
+      loading: _isSubmitting,
+      onPressed: _submit,
     );
   }
 }
@@ -510,12 +396,10 @@ class _RoleOption {
   final String value;
   final String label;
   final IconData icon;
-  final Color color;
 
   const _RoleOption({
     required this.value,
     required this.label,
     required this.icon,
-    required this.color,
   });
 }

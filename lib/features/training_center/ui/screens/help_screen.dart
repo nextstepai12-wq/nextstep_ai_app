@@ -145,9 +145,9 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 1. Header (navy gradient + floating search)
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildHeader(BuildContext context) {
     final double topInset = MediaQuery.of(context).padding.top;
@@ -401,9 +401,9 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 2. Quick contact actions
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildQuickContact(BuildContext context) {
     final items = [
@@ -487,9 +487,9 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 3. Support stats
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildSupportStats() {
     return Container(
@@ -563,9 +563,9 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 4. Help categories
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildHelpCategories(BuildContext context) {
     return Column(
@@ -689,9 +689,9 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 5. FAQs
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildFAQs() {
     final filteredFaqs = _searchQuery.isEmpty
@@ -853,9 +853,9 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 6. Active tickets
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildActiveTicketsSection(BuildContext context) {
     return Column(
@@ -1028,9 +1028,9 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 7. Contact CTA banner + bottom sheet
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildContactBanner(BuildContext context) {
     return Container(
@@ -1358,9 +1358,9 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Helpers
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildSectionHeader({
     required String title,

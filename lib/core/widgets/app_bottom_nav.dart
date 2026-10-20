@@ -14,7 +14,7 @@ class AppNavItem {
   final String? semanticLabel;
 }
 
-/// Floating pill bottom navigation shared by role shells.
+
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     super.key,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theming/app_theme.dart';
 
-/// The NextStep AI logo lockup used on auth, splash and empty surfaces.
+
 class AppBrandMark extends StatelessWidget {
   const AppBrandMark({
     super.key,

@@ -8,9 +8,9 @@ import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
 import 'package:nextstep_ai_app/core/networking/supabase_service.dart';
 import 'package:nextstep_ai_app/features/admin/ui/screens/admin_notifications_screen.dart';
 
-/// ─────────────────────────────────────────────────────────────────────────
-/// Mock data models — structured so they can be wired to an API later.
-/// ─────────────────────────────────────────────────────────────────────────
+
+
+
 
 class AdminStat {
   final String id;
@@ -96,9 +96,9 @@ class AdminActivity {
   });
 }
 
-/// ─────────────────────────────────────────────────────────────────────────
-/// Screen
-/// ─────────────────────────────────────────────────────────────────────────
+
+
+
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -109,7 +109,7 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     with TickerProviderStateMixin {
-  // Design-system colors (match the approved mockup)
+  
   static const Color _indigo = Color(0xFF6366F1);
   static const Color _indigoDark = Color(0xFF4F46E5);
   static const Color _blue = Color(0xFF3B82F6);
@@ -133,7 +133,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   String _adminName = 'System Admin';
   String _adminEmail = '';
 
-  // ── Mock data (API-ready, labeled as sample in the UI) ──
+  
   final List<AdminStat> _stats = const [
     AdminStat(
       id: 'users',
@@ -507,7 +507,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── Top bar ──
+  
 
   PreferredSizeWidget _buildTopBar(bool en, AppColors c) {
     return AppBar(
@@ -556,7 +556,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         ],
       ),
       actions: [
-        // Search (compact chip that expands on tap — mobile-friendly)
+        
         _buildSearchChip(en, c),
         _buildLangToggle(en, c),
         IconButton(
@@ -760,7 +760,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── Drawer ──
+  
 
   Widget _buildDrawer(bool en, AppColors c) {
     final Widget? notifBadge = _unreadNotifications > 0
@@ -787,7 +787,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       child: SafeArea(
         child: Column(
           children: [
-            // Header
+            
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -991,7 +991,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── Body ──
+  
 
   Widget _buildBody(bool en, AppColors c) {
     if (_isLoading) return _buildSkeleton(c);
@@ -1013,7 +1013,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Page title + Admin badge
+                
                 Row(
                   children: [
                     Expanded(
@@ -1051,31 +1051,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 ),
                 const SizedBox(height: 14),
 
-                // 1. Welcome gradient banner
+                
                 _buildWelcomeCard(en, c),
                 const SizedBox(height: 20),
 
-                // 2. Stats grid (2x2 on mobile, 4-up on desktop)
+                
                 _buildStatsGrid(en, c),
                 const SizedBox(height: 20),
 
-                // 3. Quick actions
+                
                 _buildQuickActions(en, c),
                 const SizedBox(height: 20),
 
-                // 4. Sales Overview (weekly bar chart)
+                
                 _buildSalesOverview(en, c),
                 const SizedBox(height: 20),
 
-                // 5. Top Products
+                
                 _buildTopProducts(en, c),
                 const SizedBox(height: 20),
 
-                // 6. Recent Activity
+                
                 _buildRecentActivity(en, c),
                 const SizedBox(height: 24),
 
-                // Footer
+                
                 _buildFooter(en, c),
                 const SizedBox(height: 64),
               ],
@@ -1086,7 +1086,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── 1. Welcome card ──
+  
 
   Widget _buildWelcomeCard(bool en, AppColors c) {
     return Container(
@@ -1110,7 +1110,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
-            // Decorative blur circles
+            
             Positioned(
               right: en ? -24 : null,
               left: en ? null : -24,
@@ -1137,7 +1137,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 ),
               ),
             ),
-            // Decorative sparkline glyph
+            
             Positioned(
               bottom: 4,
               right: en ? 8 : null,
@@ -1145,11 +1145,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
               child: Icon(Icons.trending_up_rounded,
                   size: 90, color: Colors.white.withValues(alpha: 0.12)),
             ),
-            // Content
+            
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Date badge
+                
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -1199,7 +1199,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   ),
                 ),
                 const SizedBox(height: 14),
-                // CTA
+                
                 Material(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -1242,7 +1242,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── Sparkline helper ──
+  
 
   Widget _sparkline(List<double> points, Color color,
       {double width = 64, double height = 20, double strokeWidth = 2.2}) {
@@ -1254,7 +1254,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── 2. Stats grid ──
+  
 
   Widget _buildStatsGrid(bool en, AppColors c) {
     final List<Widget> cards = _stats.map((s) => _statCard(en, c, s)).toList();
@@ -1393,7 +1393,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── 3. Quick actions ──
+  
 
   Widget _buildQuickActions(bool en, AppColors c) {
     return Column(
@@ -1513,7 +1513,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── 4. Sales overview ──
+  
 
   Widget _buildSalesOverview(bool en, AppColors c) {
     return Container(
@@ -1579,7 +1579,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             ],
           ),
           const SizedBox(height: 16),
-          // Bar chart
+          
           SizedBox(
             height: 120,
             child: Row(
@@ -1598,7 +1598,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   }
 
   Widget _bar(bool en, AppColors c, int i) {
-    final bool peak = i == 4; // Friday
+    final bool peak = i == 4; 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -1639,7 +1639,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── 5. Top products ──
+  
 
   Widget _buildTopProducts(bool en, AppColors c) {
     return Container(
@@ -1732,7 +1732,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── 6. Recent activity ──
+  
 
   Color _activityColor(AdminActivityType t) {
     switch (t) {
@@ -1866,7 +1866,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── Footer ──
+  
 
   Widget _buildFooter(bool en, AppColors c) {
     return Column(
@@ -1903,7 +1903,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── Error state ──
+  
 
   Widget _buildErrorState(bool en, AppColors c) {
     return Center(
@@ -1961,7 +1961,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
-  // ── Skeleton loading ──
+  
 
   Widget _buildSkeleton(AppColors c) {
     final bool isDark = c.isDark;
@@ -2016,7 +2016,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   }
 }
 
-/// Simple polyline sparkline painter used in stat cards.
+
 class _SparklinePainter extends CustomPainter {
   final List<double> points;
   final Color color;

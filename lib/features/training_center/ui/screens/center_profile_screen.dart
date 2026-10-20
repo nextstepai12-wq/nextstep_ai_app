@@ -39,9 +39,9 @@ class CenterProfileScreen extends StatelessWidget {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 1 & 2. Company header + overlapping stats
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildHeaderWithStats(BuildContext context) {
     return Padding(
@@ -411,9 +411,9 @@ class CenterProfileScreen extends StatelessWidget {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 3. Profile completion strip
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildCompletionStrip(BuildContext context) {
     return Container(
@@ -495,9 +495,9 @@ class CenterProfileScreen extends StatelessWidget {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Quick access bento
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildQuickAccess(BuildContext context) {
     return Padding(
@@ -616,9 +616,9 @@ class CenterProfileScreen extends StatelessWidget {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Menu sections
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildManagementSection(BuildContext context) {
     return _menuSection(
@@ -882,9 +882,9 @@ class CenterProfileScreen extends StatelessWidget {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Logout + footer
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildLogout(BuildContext context) {
     return Padding(
@@ -962,9 +962,9 @@ class CenterProfileScreen extends StatelessWidget {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Actions
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   void _showLogoutDialog(BuildContext context) {
     showDialog<void>(

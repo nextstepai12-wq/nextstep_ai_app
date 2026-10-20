@@ -241,9 +241,9 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 1. Smart header (gradient + floating search)
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildHeader(BuildContext context) {
     final double topInset = MediaQuery.of(context).padding.top;
@@ -483,9 +483,9 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 2. Category chips
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildCategories() {
     return SizedBox(
@@ -540,9 +540,9 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 3. Active program card
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildActiveProgramCard(BuildContext context) {
     return GestureDetector(
@@ -758,9 +758,9 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 4. Programs carousel
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildProgramsSection(BuildContext context) {
     final programs = _filteredPrograms;
@@ -1030,9 +1030,9 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 5. Instructors
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildInstructorsSection(BuildContext context) {
     final instructors = _filteredInstructors;
@@ -1171,9 +1171,9 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 6. Upgrade / limited offer banner
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildOfferBanner(BuildContext context) {
     return Container(
@@ -1360,9 +1360,9 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // 7. Upcoming sessions
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildSessionsSection(BuildContext context) {
     return Padding(
@@ -1499,9 +1499,9 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Helpers
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _sectionHeader(
     BuildContext context, {
@@ -1592,9 +1592,9 @@ class _TrainingCenterHomeScreenState extends State<TrainingCenterHomeScreen>
   }
 }
 
-// ───────────────────────────────────────────────────────────────────────────
-// Mock models
-// ───────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _ProgramMock {
   final String id;

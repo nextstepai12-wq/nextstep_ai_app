@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theming/app_theme.dart';
 
-/// Initials or network avatar with a graceful fallback.
+
 class AppAvatar extends StatelessWidget {
   const AppAvatar({
     super.key,

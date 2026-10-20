@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class TokenManager {
   static const _storage = FlutterSecureStorage();
   static const String _tokenKey = 'access_token';
-  // static const String _refreshTokenKey = 'refresh_token';
+  
   static const String _userIdKey = 'user_id';
   static const String _roleKey = 'user_role';
   static const String _userNameKey = 'user_name';

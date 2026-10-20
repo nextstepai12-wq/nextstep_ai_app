@@ -4,7 +4,7 @@ import 'package:shimmer/shimmer.dart';
 import '../theming/app_theme.dart';
 import 'app_buttons.dart';
 
-/// Empty state with a clear next step. Never show a fake button.
+
 class AppEmptyState extends StatelessWidget {
   const AppEmptyState({
     super.key,
@@ -79,7 +79,7 @@ class AppEmptyState extends StatelessWidget {
   }
 }
 
-/// Error state with retry. The retry callback is always functional.
+
 class AppErrorState extends StatelessWidget {
   const AppErrorState({
     super.key,
@@ -157,7 +157,7 @@ class AppErrorState extends StatelessWidget {
   }
 }
 
-/// Centered loading state that keeps the user oriented.
+
 class AppLoadingState extends StatelessWidget {
   const AppLoadingState({super.key, this.message});
 
@@ -191,7 +191,7 @@ class AppLoadingState extends StatelessWidget {
   }
 }
 
-/// Single skeleton block with a shimmer that adapts to the theme.
+
 class AppSkeleton extends StatelessWidget {
   const AppSkeleton({
     super.key,
@@ -222,7 +222,7 @@ class AppSkeleton extends StatelessWidget {
   }
 }
 
-/// Standard list skeleton used while a collection is loading.
+
 class AppListSkeleton extends StatelessWidget {
   const AppListSkeleton({super.key, this.itemCount = 5, this.itemHeight = 92});
 

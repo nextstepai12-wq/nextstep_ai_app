@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../theming/app_theme.dart';
 import 'app_buttons.dart';
 
-/// Theme-aware confirmation dialog. Returns `true` only when confirmed.
+
 Future<bool> showAppConfirmDialog(
   BuildContext context, {
   required String title,
@@ -64,7 +64,7 @@ Future<bool> showAppConfirmDialog(
   return result ?? false;
 }
 
-/// Informational dialog used for "coming later" explanations and notices.
+
 Future<void> showAppInfoDialog(
   BuildContext context, {
   required String title,
@@ -100,7 +100,7 @@ Future<void> showAppInfoDialog(
   );
 }
 
-/// A standard bottom-sheet option tile.
+
 class AppSheetOption extends StatelessWidget {
   const AppSheetOption({
     super.key,
@@ -152,7 +152,7 @@ class AppSheetOption extends StatelessWidget {
   }
 }
 
-/// Reusable sheet header.
+
 class AppSheetHeader extends StatelessWidget {
   const AppSheetHeader({
     super.key,
@@ -210,7 +210,7 @@ class AppSheetHeader extends StatelessWidget {
   }
 }
 
-/// Inline action used inside sheets/dialogs without looking like a dead link.
+
 class AppInlineAction extends StatelessWidget {
   const AppInlineAction({
     super.key,
@@ -239,7 +239,7 @@ class AppInlineAction extends StatelessWidget {
   }
 }
 
-/// Small dismiss/back affordance for gradient headers.
+
 class AppCloseButton extends StatelessWidget {
   const AppCloseButton({
     super.key,

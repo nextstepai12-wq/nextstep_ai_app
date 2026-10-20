@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../theming/app_theme.dart';
 import 'app_badge.dart';
 
-/// Primary call-to-action with an accessible loading state.
+
 class AppPrimaryButton extends StatelessWidget {
   const AppPrimaryButton({
     super.key,
@@ -80,7 +80,7 @@ class AppPrimaryButton extends StatelessWidget {
   }
 }
 
-/// Secondary outlined action.
+
 class AppSecondaryButton extends StatelessWidget {
   const AppSecondaryButton({
     super.key,
@@ -136,7 +136,7 @@ class AppSecondaryButton extends StatelessWidget {
   }
 }
 
-/// Tappable icon with a guaranteed 44x44 touch target.
+
 class AppIconAction extends StatelessWidget {
   const AppIconAction({
     super.key,

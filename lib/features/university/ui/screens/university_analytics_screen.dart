@@ -8,9 +8,9 @@ import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Models & dummy data — swap with API responses later.
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 enum MetricTone { primary, success, purple, accent, danger }
 
@@ -249,9 +249,9 @@ Color _toneSoft(AppColors c, MetricTone tone) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Screen
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class UniversityAnalyticsScreen extends StatefulWidget {
   const UniversityAnalyticsScreen({super.key});
@@ -641,9 +641,9 @@ class _UniversityAnalyticsScreenState extends State<UniversityAnalyticsScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (1) Export / header button
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _IconCircleButton extends StatelessWidget {
   const _IconCircleButton({required this.icon, required this.onTap});
@@ -685,9 +685,9 @@ class _IconCircleButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (2) Time range selector
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _RangeSelector extends StatelessWidget {
   const _RangeSelector({required this.selected, required this.onChanged});
@@ -777,9 +777,9 @@ class _RangeSegment extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (3) KPI cards
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _KpiCard extends StatelessWidget {
   const _KpiCard({required this.metric});
@@ -891,9 +891,9 @@ class _TrendPill extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (4) Interest trend line chart
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _InterestChartCard extends StatelessWidget {
   const _InterestChartCard({required this.data});
@@ -1153,9 +1153,9 @@ class _LegendDot extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared progress bar
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _ProgressBar extends StatelessWidget {
   const _ProgressBar({
@@ -1209,9 +1209,9 @@ class _ProgressBar extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (5) Ranked programs
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _RankRow extends StatelessWidget {
   const _RankRow({required this.program});
@@ -1300,9 +1300,9 @@ class _RankRow extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (6) Student funnel
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _FunnelStep extends StatelessWidget {
   const _FunnelStep({required this.stage});
@@ -1386,9 +1386,9 @@ class _FunnelStep extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (7) AI insights card
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _InsightCard extends StatelessWidget {
   const _InsightCard({required this.onContact});
@@ -1567,9 +1567,9 @@ class _WhitePillButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (8) Export bottom sheet
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _ExportSheet extends StatelessWidget {
   const _ExportSheet();

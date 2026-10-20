@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../theming/app_theme.dart';
 
-/// A theme-aware surface with a subtle border. Prefer this over raw
-/// `Container(decoration: BoxDecoration(color: Colors.white, ...))`.
+
+
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
@@ -72,7 +72,7 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Small highlighted strip used for notices, tips and sample-data badges.
+
 class AppNoticeCard extends StatelessWidget {
   const AppNoticeCard({
     super.key,

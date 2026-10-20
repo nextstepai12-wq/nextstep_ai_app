@@ -431,7 +431,9 @@ class TrainingCenterDrawer extends StatelessWidget {
                   )
                 else if (!isLogout)
                   Icon(
-                    Icons.arrow_forward_ios_rounded,
+                    Directionality.of(context) == TextDirection.rtl
+                        ? Icons.chevron_left_rounded
+                        : Icons.chevron_right_rounded,
                     size: 12.sp,
                     color: TrainingColors.textMuted.withValues(alpha: 0.6),
                   ),

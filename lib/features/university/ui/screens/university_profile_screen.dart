@@ -3,11 +3,13 @@ import 'package:go_router/go_router.dart';
 
 import 'package:nextstep_ai_app/core/helpers/session_helper.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_dialogs.dart';
+import 'package:nextstep_ai_app/core/widgets/app_snack.dart';
 import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Dummy data — replace with API models later.
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class UniversityProfile {
   const UniversityProfile({
@@ -29,7 +31,7 @@ class UniversityProfile {
   final int studentsCount;
   final double rating;
 
-  /// Profile completion ratio between 0.0 and 1.0.
+  
   final double completion;
   final String plan;
   final String renewalDate;
@@ -47,9 +49,9 @@ const UniversityProfile _university = UniversityProfile(
   renewalDate: 'تتجدد في 15 مارس 2025',
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Screen
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class UniversityProfileScreen extends StatelessWidget {
   const UniversityProfileScreen({super.key});
@@ -214,9 +216,9 @@ class UniversityProfileScreen extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (1) Header
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({required this.onEdit});
@@ -241,17 +243,20 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          DecoratedBox(
-            decoration: _cardDecoration(c, radius: 16),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onEdit,
-                borderRadius: BorderRadius.circular(16),
-                child: SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: Icon(Icons.edit, size: 20, color: c.primary),
+          Tooltip(
+            message: 'تعديل الملف الشخصي',
+            child: DecoratedBox(
+              decoration: _cardDecoration(c, radius: 16),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onEdit,
+                  borderRadius: BorderRadius.circular(16),
+                  child: SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Icon(Icons.edit, size: 20, color: c.primary),
+                  ),
                 ),
               ),
             ),
@@ -262,9 +267,9 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (2) Profile hero card
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _HeroCard extends StatelessWidget {
   const _HeroCard({required this.university, required this.onCameraTap});
@@ -435,23 +440,33 @@ class _Avatar extends StatelessWidget {
             ),
             child: Icon(icon, size: 34, color: c.primary),
           ),
-          Positioned(
+          PositionedDirectional(
             bottom: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: onCameraTap,
-              child: Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: c.primary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: c.surface, width: 2.5),
-                ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  size: 13,
-                  color: Colors.white,
+            end: 0,
+            child: Tooltip(
+              message: 'تغيير شعار الجامعة',
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onCameraTap,
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(
+                    child: Container(
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        color: c.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: c.surface, width: 2.5),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        size: 13,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -552,9 +567,9 @@ class _CompletionCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (3) Quick stats
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _QuickStats extends StatelessWidget {
   const _QuickStats({required this.university});
@@ -663,9 +678,9 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (4 & 6) Settings / support sections
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _SettingsSection extends StatelessWidget {
   const _SettingsSection({required this.title, required this.tiles});
@@ -804,9 +819,9 @@ class _SettingTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (5) Subscription
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _SubscriptionCard extends StatelessWidget {
   const _SubscriptionCard({required this.university});
@@ -887,9 +902,9 @@ class _SubscriptionCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (7) Logout button
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _LogoutButton extends StatelessWidget {
   const _LogoutButton({required this.onTap});
@@ -934,127 +949,13 @@ class _LogoutButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (8) Logout confirmation dialog
-// ─────────────────────────────────────────────────────────────────────────────
 
-class _LogoutDialog extends StatelessWidget {
-  const _LogoutDialog();
 
-  @override
-  Widget build(BuildContext context) {
-    final AppColors c = context.appColors;
 
-    return AlertDialog(
-      backgroundColor: c.surface,
-      surfaceTintColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-      contentPadding: const EdgeInsets.all(24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: c.dangerSoft,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.logout, size: 28, color: c.danger),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'تسجيل الخروج؟',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: c.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'هل أنت متأكد من رغبتك في الخروج من حساب الجامعة؟',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              fontSize: 13,
-              height: 1.6,
-              color: c.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: _DialogButton(
-                  label: 'إلغاء',
-                  background: c.isDark ? c.surfaceAlt : c.background,
-                  foreground: c.textPrimary,
-                  onTap: () => Navigator.of(context).pop(false),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _DialogButton(
-                  label: 'خروج',
-                  background: c.danger,
-                  foreground: Colors.white,
-                  onTap: () => Navigator.of(context).pop(true),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
 
-class _DialogButton extends StatelessWidget {
-  const _DialogButton({
-    required this.label,
-    required this.background,
-    required this.foreground,
-    required this.onTap,
-  });
 
-  final String label;
-  final Color background;
-  final Color foreground;
-  final VoidCallback onTap;
 
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: background,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: foreground,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared pieces
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _Pill extends StatelessWidget {
   const _Pill({
@@ -1163,30 +1064,19 @@ void _showComingSoon(BuildContext context, String feature) {
 }
 
 void _showMessage(BuildContext context, String message) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: context.appColors.textPrimary,
-        content: Text(
-          message,
-          style: TextStyle(
-            fontFamily: AppTheme.fontFamily,
-            fontSize: 13,
-            color: context.appColors.background,
-          ),
-        ),
-      ),
-    );
+  AppSnack.info(context, message);
 }
 
 Future<void> _confirmLogout(BuildContext context) async {
-  final bool? confirmed = await showDialog<bool>(
-    context: context,
-    builder: (BuildContext context) => const _LogoutDialog(),
+  final confirmed = await showAppConfirmDialog(
+    context,
+    title: 'تسجيل الخروج؟',
+    message: 'هل أنت متأكد من رغبتك في الخروج من حساب الجامعة؟',
+    confirmLabel: 'خروج',
+    destructive: true,
+    icon: Icons.logout_rounded,
   );
-  if (confirmed == true && context.mounted) {
+  if (confirmed && context.mounted) {
     await logoutToLogin(context);
   }
 }

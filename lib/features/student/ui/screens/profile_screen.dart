@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/helpers/token_manager.dart';
+import 'package:nextstep_ai_app/core/widgets/app_snack.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -92,52 +93,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isSaving = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              backgroundColor: AppColors.light.success,
-              content: Row(
-                children: [
-                  const Icon(Icons.check_circle_outline_rounded,
-                      color: Colors.white, size: 20),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                      child: Text('تم حفظ التغييرات على هذا الجهاز',
-                          style: TextStyle(color: Colors.white, fontSize: 13))),
-                ],
-              ),
-            ),
-          );
+        AppSnack.success(context, 'تم حفظ التغييرات على هذا الجهاز');
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              backgroundColor: AppColors.light.danger,
-              content: const Row(
-                children: [
-                  Icon(Icons.error_outline_rounded,
-                      color: Colors.white, size: 20),
-                  SizedBox(width: 10),
-                  Expanded(
-                      child: Text('حدث خطأ أثناء الحفظ',
-                          style: TextStyle(color: Colors.white, fontSize: 13))),
-                ],
-              ),
-            ),
-          );
+        AppSnack.error(context, 'حدث خطأ أثناء الحفظ');
       }
     }
   }
@@ -152,14 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showUnavailable(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    AppSnack.info(context, message);
   }
 
   @override
@@ -209,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Center(child: CircularProgressIndicator(color: c.primary));
   }
 
-  // ─── Hero Header ─────────────────────────────────────────────────────
+  
 
   Widget _buildHero(AppColors c, String initials, String roleLabel) {
     return Container(
@@ -267,7 +221,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          // Avatar with glow ring
+          
           Stack(
             children: [
               Container(
@@ -369,7 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ─── Stats Card ──────────────────────────────────────────────────────
+  
 
   Widget _buildStats(AppColors c) {
     return Padding(
@@ -429,7 +383,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ─── Personal Info Section ───────────────────────────────────────────
+  
 
   Widget _buildPersonalInfo(AppColors c) {
     return Padding(
@@ -617,7 +571,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ─── Academic Info Section ───────────────────────────────────────────
+  
 
   Widget _buildAcademicInfo(AppColors c) {
     return Padding(
@@ -811,7 +765,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ─── Campus Card ─────────────────────────────────────────────────────
+  
 
   Widget _buildCampusCard(AppColors c) {
     return Padding(
@@ -911,7 +865,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ─── Floating Action Bar ─────────────────────────────────────────────
+  
 
   Widget _buildFloatingActionBar(AppColors c) {
     return Container(

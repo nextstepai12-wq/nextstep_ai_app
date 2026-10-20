@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theming/app_theme.dart';
 
-/// Section title used inside cards and page bodies.
+
 class AppSectionHeader extends StatelessWidget {
   const AppSectionHeader({
     super.key,

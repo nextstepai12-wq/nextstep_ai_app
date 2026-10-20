@@ -15,12 +15,12 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
 
-  // Notification switches
+  
   bool _recommendations = true;
   bool _assessmentDeadlines = true;
   bool _hapticSound = false;
 
-  // Theme: 0 = light, 1 = dark, 2 = auto
+  
   int _themeMode = _themeModeIndex(AppTheme.themeMode);
 
   String _userName = '';
@@ -335,7 +335,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Top Bar ─────────────────────────────────────────────────────────
+  
 
   Widget _buildTopBar(AppColors c) {
     return Padding(
@@ -378,7 +378,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Profile Card ────────────────────────────────────────────────────
+  
 
   Widget _buildProfileCard(AppColors c, String initials) {
     return Padding(
@@ -470,7 +470,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Notifications Section ───────────────────────────────────────────
+  
 
   Widget _buildNotificationsSection(AppColors c) {
     return _section(
@@ -510,7 +510,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Appearance Section ──────────────────────────────────────────────
+  
 
   Widget _buildAppearanceSection(AppColors c) {
     return _section(
@@ -519,7 +519,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       icon: Icons.palette_rounded,
       iconColor: c.primaryContainer,
       children: [
-        // Theme segmented control
+        
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
           child: Column(
@@ -550,7 +550,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        // Language
+        
         _navTile(c, Icons.translate_rounded, 'لغة التطبيق',
             'واجهة التوجيه ونصوص الذكاء الاصطناعي', () => _showLanguagePicker(),
             trailing: _selectedLanguage),
@@ -599,7 +599,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Support Section ─────────────────────────────────────────────────
+  
 
   Widget _buildSupportSection(AppColors c) {
     return _section(
@@ -636,7 +636,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Privacy Section ─────────────────────────────────────────────────
+  
 
   Widget _buildPrivacySection(AppColors c) {
     return _section(
@@ -661,7 +661,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Logout Button ───────────────────────────────────────────────────
+  
 
   Widget _buildLogoutButton(AppColors c) {
     return Padding(
@@ -691,7 +691,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Footer ──────────────────────────────────────────────────────────
+  
 
   Widget _buildFooter(AppColors c) {
     return Padding(
@@ -721,7 +721,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Shared Section Builder ──────────────────────────────────────────
+  
 
   Widget _section(AppColors c,
       {required String title,
@@ -770,7 +770,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Shared Switch Tile ──────────────────────────────────────────────
+  
 
   Widget _switchTile(AppColors c, IconData icon, String title, String subtitle,
       bool value, ValueChanged<bool> onChanged) {
@@ -805,31 +805,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => onChanged(!value),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 48,
-              height: 28,
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: value ? c.primary : c.surfaceAlt,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: AnimatedAlign(
-                duration: const Duration(milliseconds: 200),
-                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4)
-                    ],
+          Semantics(
+            toggled: value,
+            button: true,
+            label: title,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onChanged(!value),
+              child: SizedBox(
+                width: 52,
+                height: 44,
+                child: Center(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 48,
+                    height: 28,
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: value ? c.primary : c.surfaceAlt,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: AnimatedAlign(
+                      duration: const Duration(milliseconds: 200),
+                      alignment: value
+                          ? AlignmentDirectional.centerEnd
+                          : AlignmentDirectional.centerStart,
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: c.onPrimary,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                                color: c.shadow,
+                                blurRadius: 4)
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -840,7 +854,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ─── Shared Nav Tile ─────────────────────────────────────────────────
+  
 
   Widget _navTile(AppColors c, IconData icon, String title, String subtitle,
       VoidCallback onTap,

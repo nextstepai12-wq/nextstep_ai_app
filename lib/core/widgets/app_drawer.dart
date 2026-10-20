@@ -4,7 +4,7 @@ import '../theming/app_theme.dart';
 import 'app_avatar.dart';
 import 'app_badge.dart';
 
-/// Gradient drawer header shared by all roles.
+
 class AppDrawerHeader extends StatelessWidget {
   const AppDrawerHeader({
     super.key,
@@ -128,7 +128,7 @@ class AppDrawerHeader extends StatelessWidget {
   }
 }
 
-/// Drawer entry with a selected state, badge and 48dp minimum height.
+
 class AppDrawerItem extends StatelessWidget {
   const AppDrawerItem({
     super.key,
@@ -234,7 +234,7 @@ class AppDrawerItem extends StatelessWidget {
   }
 }
 
-/// Section label inside a drawer.
+
 class AppDrawerSectionLabel extends StatelessWidget {
   const AppDrawerSectionLabel({super.key, required this.label});
 
@@ -274,7 +274,7 @@ class AppDrawerSectionLabel extends StatelessWidget {
   }
 }
 
-/// Drawer shell with themed background and safe padding.
+
 class AppDrawer extends StatelessWidget {
   const AppDrawer({
     super.key,

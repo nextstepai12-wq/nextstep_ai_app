@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theming/app_theme.dart';
 
-/// Centers content, applies responsive padding and caps line length.
+
 class AppPageBody extends StatelessWidget {
   const AppPageBody({
     super.key,
@@ -31,7 +31,7 @@ class AppPageBody extends StatelessWidget {
   }
 }
 
-/// Wraps stat cards into a responsive grid without fixed aspect ratios.
+
 class AppAdaptiveGrid extends StatelessWidget {
   const AppAdaptiveGrid({
     super.key,
@@ -73,8 +73,8 @@ class AppAdaptiveGrid extends StatelessWidget {
   }
 }
 
-/// A row that stacks vertically on phones and lays out horizontally on
-/// tablets/desktops. Useful for paired form fields.
+
+
 class AppAdaptiveRow extends StatelessWidget {
   const AppAdaptiveRow({
     super.key,
@@ -119,7 +119,7 @@ class AppAdaptiveRow extends StatelessWidget {
   }
 }
 
-/// Small inline label that marks demo/sample content in this prototype.
+
 class SampleDataBadge extends StatelessWidget {
   const SampleDataBadge({super.key, this.label = 'بيانات تجريبية'});
 

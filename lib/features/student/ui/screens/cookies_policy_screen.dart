@@ -290,7 +290,7 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
       height: 3,
       decoration: BoxDecoration(color: c.divider),
       child: Align(
-        alignment: Alignment.centerRight,
+        alignment: AlignmentDirectional.centerStart,
         child: FractionallySizedBox(
           widthFactor: _scrollProgress,
           child: Container(
@@ -466,7 +466,7 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
                   style: TextStyle(
                       fontSize: 15 * _fontSizeScale,
                       fontWeight: FontWeight.w700,
-                      color: c.primaryContainer),
+                      color: c.textPrimary),
                 ),
               ),
             ],
@@ -524,7 +524,7 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
                   style: TextStyle(
                       fontSize: 15 * _fontSizeScale,
                       fontWeight: FontWeight.w700,
-                      color: c.primaryContainer),
+                      color: c.textPrimary),
                 ),
               ),
             ],
@@ -619,7 +619,7 @@ class _CookiesPolicyScreenState extends State<CookiesPolicyScreen>
                 style: TextStyle(
                     fontSize: 15 * _fontSizeScale,
                     fontWeight: FontWeight.w700,
-                    color: c.primaryContainer),
+                    color: c.textPrimary),
               ),
             ],
           ),

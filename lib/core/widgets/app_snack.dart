@@ -4,7 +4,7 @@ import '../theming/app_theme.dart';
 
 enum AppSnackTone { success, error, info, warning }
 
-/// Consistent floating snackbars with an icon and accessible contrast.
+
 abstract final class AppSnack {
   static void show(
     BuildContext context,

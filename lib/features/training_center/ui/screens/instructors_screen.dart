@@ -17,11 +17,11 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   String _searchQuery = '';
-  String _selectedStatusFilter = 'all'; // 'all', 'active', 'inactive'
+  String _selectedStatusFilter = 'all'; 
   bool _onlyTopRated = false;
   bool _onlyVerified = false;
 
-  // Initial list of trainers matching the provided HTML mock data
+  
   final List<InstructorModel> _instructors = [
     const InstructorModel(
       id: '1',
@@ -171,7 +171,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle bar
+              
               Container(
                 width: 48.w,
                 height: 5.h,
@@ -225,7 +225,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               ),
               SizedBox(height: 20.h),
 
-              // Option 1: Edit profile
+              
               _buildModalOption(
                 icon: Icons.edit_rounded,
                 iconColor: TrainingColors.primary,
@@ -237,7 +237,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               ),
               SizedBox(height: 8.h),
 
-              // Option 2: Toggle Active Status / Vacation
+              
               _buildModalOption(
                 icon: Icons.pause_circle_rounded,
                 iconColor: TrainingColors.accent,
@@ -269,7 +269,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               ),
               SizedBox(height: 8.h),
 
-              // Option 3: Schedule
+              
               _buildModalOption(
                 icon: Icons.calendar_month_rounded,
                 iconColor: Colors.blue.shade700,
@@ -281,7 +281,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               ),
               SizedBox(height: 8.h),
 
-              // Option 4: Delete Trainer
+              
               _buildModalOption(
                 icon: Icons.delete_rounded,
                 iconColor: Colors.red,
@@ -295,7 +295,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               ),
               SizedBox(height: 16.h),
 
-              // Cancel button
+              
               SizedBox(
                 width: double.infinity,
                 height: 46.h,
@@ -600,7 +600,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                           },
                         ),
                       SizedBox(
-                          height: 80.h), // Space for floating bottom button
+                          height: 80.h), 
                     ],
                   ),
                 ),
@@ -608,7 +608,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
             ],
           ),
 
-          // Pinned Floating Bottom Action Button matching HTML layout
+          
           Positioned(
             left: 16.w,
             right: 16.w,
@@ -951,7 +951,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar with status dot
+              
               Stack(
                 children: [
                   Container(
@@ -1047,7 +1047,7 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
           ),
           SizedBox(height: 12.h),
 
-          // Metrics strip
+          
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

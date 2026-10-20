@@ -4,9 +4,9 @@ import 'package:nextstep_ai_app/core/theming/app_theme.dart';
 import 'package:nextstep_ai_app/core/widgets/app_responsive.dart';
 import 'package:nextstep_ai_app/features/university/ui/widgets/university_bottom_nav.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Dummy data — replace with API models later.
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _StatData {
   const _StatData({
@@ -124,9 +124,9 @@ const List<_StudentData> _students = <_StudentData>[
   ),
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Screen
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class UniversityHomeScreen extends StatefulWidget {
   const UniversityHomeScreen({super.key});
@@ -370,9 +370,9 @@ class _UniversityHomeScreenState extends State<UniversityHomeScreen>
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (1) Hero header
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _HeaderCard extends StatelessWidget {
   const _HeaderCard({
@@ -537,9 +537,9 @@ class _NotificationButton extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (2) Floating stats strip
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _StatsStrip extends StatelessWidget {
   const _StatsStrip({required this.items});
@@ -611,9 +611,9 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (3) Quick actions
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _QuickActionsSection extends StatelessWidget {
   const _QuickActionsSection({required this.actions});
@@ -699,9 +699,9 @@ class _QuickAction extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (4) Top programs
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _TopProgramsSection extends StatelessWidget {
   const _TopProgramsSection({
@@ -887,9 +887,9 @@ class _TopProgramCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// (5) Interested students
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
 
 class _InterestedStudentsSection extends StatelessWidget {
   const _InterestedStudentsSection({
@@ -1090,11 +1090,11 @@ class _StudentRow extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared pieces
-// ─────────────────────────────────────────────────────────────────────────────
 
-/// Fades and slides a section in as part of the screen's entrance sequence.
+
+
+
+
 class _SectionEntrance extends StatelessWidget {
   const _SectionEntrance({
     required this.opacity,
@@ -1115,7 +1115,7 @@ class _SectionEntrance extends StatelessWidget {
   }
 }
 
-/// Adds a subtle press-down scale animation without touching gestures.
+
 class _ScaleTap extends StatefulWidget {
   const _ScaleTap({required this.onTap, required this.child});
 
@@ -1149,8 +1149,8 @@ class _ScaleTapState extends State<_ScaleTap> {
   }
 }
 
-/// Ripple + press-scale feedback. To be used inside a [Material] ancestor so
-/// the ink splash stays clipped to the widget's bounds.
+
+
 class _PressScale extends StatefulWidget {
   const _PressScale({
     required this.onTap,

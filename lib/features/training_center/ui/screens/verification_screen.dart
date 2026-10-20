@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'package:nextstep_ai_app/core/widgets/app_snack.dart';
+
 import '../widgets/training_center_drawer.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -48,6 +51,7 @@ class _VerificationScreenState extends State<VerificationScreen>
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: IconButton(
+        tooltip: 'القائمة',
         icon: const Icon(Icons.menu_rounded),
         onPressed: () {
           Scaffold.of(context).openDrawer();
@@ -76,6 +80,7 @@ class _VerificationScreenState extends State<VerificationScreen>
       ),
       actions: [
         IconButton(
+          tooltip: 'الإشعارات',
           icon: Icon(
             Icons.notifications_outlined,
             size: 22.sp,
@@ -523,12 +528,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                 color: Colors.blue.shade700,
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('جاري الاتصال بالدعم عبر الدردشة 💬'),
-                      backgroundColor: Colors.blue,
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  AppSnack.info(
+                    context,
+                    'الدردشة المباشرة غير متاحة في هذه النسخة',
                   );
                 },
               ),
@@ -540,12 +542,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                 color: Colors.green.shade700,
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('جاري فتح البريد الإلكتروني 📧'),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  AppSnack.info(
+                    context,
+                    'البريد الإلكتروني غير متاح في هذه النسخة',
                   );
                 },
               ),
@@ -557,12 +556,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                 color: Colors.orange.shade700,
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('جاري الاتصال بالدعم 📞'),
-                      backgroundColor: Colors.orange,
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  AppSnack.info(
+                    context,
+                    'الاتصال الهاتفي غير متاح في هذه النسخة',
                   );
                 },
               ),
@@ -648,7 +644,9 @@ class _VerificationScreenState extends State<VerificationScreen>
               ),
             ),
             Icon(
-              Icons.arrow_forward_ios_rounded,
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left_rounded
+                  : Icons.chevron_right_rounded,
               color: Colors.grey.shade400,
               size: 14.sp,
             ),

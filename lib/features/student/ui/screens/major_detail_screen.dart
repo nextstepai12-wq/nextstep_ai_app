@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nextstep_ai_app/core/helpers/hive_storage.dart';
 import 'package:nextstep_ai_app/core/theming/app_theme.dart';
+import 'package:nextstep_ai_app/core/widgets/app_dialogs.dart';
+import 'package:nextstep_ai_app/core/widgets/app_snack.dart';
 
 class MajorDetailScreen extends StatefulWidget {
   final Map<String, dynamic> majorData;
@@ -62,7 +64,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
         setState(() => _isFavorite = true);
       }
     } catch (_) {
-      // Favorites are a local convenience; the screen still works without them.
+      
     }
   }
 
@@ -111,39 +113,11 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
   }
 
   void _showApplicationUnavailable() {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            'التقديم الإلكتروني غير متاح',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.primaryContainer,
-            ),
-          ),
-          content: Text(
-            'هذه النسخة تجريبية ولم يتم ربط التقديم بالجامعة بعد. '
-            'يمكنك حفظ التخصص في المفضلة أو مشاركته للرجوع إليه لاحقاً.',
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.6,
-              color: AppTheme.onSurfaceVariant,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('حسناً'),
-            ),
-          ],
-        ),
-      ),
+    showAppInfoDialog(
+      context,
+      title: 'التقديم الإلكتروني غير متاح',
+      message: 'هذه النسخة تجريبية ولم يتم ربط التقديم بالجامعة بعد. '
+          'يمكنك حفظ التخصص في المفضلة أو مشاركته للرجوع إليه لاحقاً.',
     );
   }
 
@@ -213,20 +187,20 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
       leading: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.appColors.surface,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: context.appColors.shadow,
               blurRadius: 12,
               spreadRadius: 2,
             ),
           ],
         ),
         child: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_rounded,
-            color: AppTheme.primaryContainer,
+            color: context.appColors.textPrimary,
           ),
           onPressed: () => Navigator.pop(context),
           splashRadius: 24,
@@ -235,12 +209,12 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
       actions: [
         Container(
           margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
+            decoration: BoxDecoration(
+              color: context.appColors.surface,
+              shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
+                color: context.appColors.shadow,
                 blurRadius: 12,
                 spreadRadius: 2,
               ),
@@ -252,7 +226,9 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
               _isFavorite
                   ? Icons.favorite_rounded
                   : Icons.favorite_border_rounded,
-              color: _isFavorite ? Colors.red : AppTheme.primaryContainer,
+              color: _isFavorite
+                ? context.appColors.danger
+                : context.appColors.textPrimary,
             ),
             onPressed: _toggleFavorite,
             splashRadius: 24,
@@ -260,12 +236,12 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
         ),
         Container(
           margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
+            decoration: BoxDecoration(
+              color: context.appColors.surface,
+              shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
+                color: context.appColors.shadow,
                 blurRadius: 12,
                 spreadRadius: 2,
               ),
@@ -273,9 +249,9 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
           ),
           child: IconButton(
             tooltip: 'مشاركة التخصص',
-            icon: const Icon(
+            icon: Icon(
               Icons.share_rounded,
-              color: AppTheme.primaryContainer,
+              color: context.appColors.textPrimary,
             ),
             onPressed: _shareMajor,
             splashRadius: 24,
@@ -304,14 +280,14 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.primary,
-            AppTheme.primaryContainer,
+            context.appColors.gradientStart,
+            context.appColors.gradientEnd,
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withValues(alpha: 0.25),
+            color: context.appColors.shadow,
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -437,12 +413,12 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        border: Border.all(color: context.appColors.divider, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: context.appColors.shadow,
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -477,7 +453,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
                   'نسبة التوافق',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey.shade500,
+                    color: context.appColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -486,7 +462,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.primaryContainer,
+                    color: context.appColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -494,7 +470,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: match / 100,
-                    backgroundColor: Colors.grey.shade200,
+                    backgroundColor: context.appColors.surfaceAlt,
                     valueColor: AlwaysStoppedAnimation<Color>(color),
                     minHeight: 6,
                   ),
@@ -508,21 +484,21 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
   }
 
   Color _getMatchColor(int match) {
-    if (match >= 80) return const Color(0xFF22C55E);
-    if (match >= 60) return const Color(0xFFF97316);
-    return const Color(0xFFDC2626);
+    if (match >= 80) return context.appColors.success;
+    if (match >= 60) return context.appColors.warning;
+    return context.appColors.danger;
   }
 
   Widget _buildOverview(Map<String, dynamic> data) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        border: Border.all(color: context.appColors.divider, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: context.appColors.shadow,
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -536,22 +512,22 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.08),
+                  color: context.appColors.primarySoft,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.info_outline_rounded,
-                  color: AppTheme.primary,
+                  color: context.appColors.primary,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
+              Text(
                 'نظرة عامة',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.primaryContainer,
+                  color: context.appColors.textPrimary,
                 ),
               ),
             ],
@@ -562,7 +538,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
             style: TextStyle(
               fontSize: 14,
               height: 1.7,
-              color: AppTheme.onSurfaceVariant,
+              color: context.appColors.textSecondary,
             ),
           ),
         ],
@@ -613,12 +589,12 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
         return Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.appColors.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200, width: 1.2),
+            border: Border.all(color: context.appColors.divider, width: 1.2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: context.appColors.shadow,
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -645,14 +621,14 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.primaryContainer,
+                  color: context.appColors.textPrimary,
                 ),
               ),
               Text(
                 item['label'] as String,
                 style: TextStyle(
                   fontSize: 11,
-                  color: Colors.grey.shade500,
+                  color: context.appColors.textSecondary,
                 ),
               ),
             ],
@@ -666,12 +642,12 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        border: Border.all(color: context.appColors.divider, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: context.appColors.shadow,
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -685,22 +661,22 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.08),
+                  color: context.appColors.primarySoft,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.description_rounded,
-                  color: AppTheme.primary,
+                  color: context.appColors.primary,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
+              Text(
                 'الوصف التفصيلي',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.primaryContainer,
+                  color: context.appColors.textPrimary,
                 ),
               ),
             ],
@@ -715,7 +691,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
             style: TextStyle(
               fontSize: 14,
               height: 1.7,
-              color: AppTheme.onSurfaceVariant,
+              color: context.appColors.textSecondary,
             ),
           ),
         ],
@@ -736,12 +712,12 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        border: Border.all(color: context.appColors.divider, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: context.appColors.shadow,
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -755,22 +731,22 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.08),
+                  color: context.appColors.primarySoft,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.work_rounded,
-                  color: AppTheme.primary,
+                  color: context.appColors.primary,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
+              Text(
                 'فرص العمل',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.primaryContainer,
+                  color: context.appColors.textPrimary,
                 ),
               ),
             ],
@@ -783,7 +759,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
                     Icon(
                       Icons.check_circle_rounded,
                       size: 18,
-                      color: const Color(0xFF22C55E),
+                      color: context.appColors.success,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -791,7 +767,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
                         career.trim(),
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppTheme.onSurfaceVariant,
+                          color: context.appColors.textSecondary,
                         ),
                       ),
                     ),
@@ -815,12 +791,12 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        border: Border.all(color: context.appColors.divider, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: context.appColors.shadow,
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -834,22 +810,22 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.08),
+                  color: context.appColors.primarySoft,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.rule_rounded,
-                  color: AppTheme.primary,
+                  color: context.appColors.primary,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
+              Text(
                 'متطلبات القبول',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.primaryContainer,
+                  color: context.appColors.textPrimary,
                 ),
               ),
             ],
@@ -865,7 +841,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: AppTheme.primary,
+                        color: context.appColors.primary,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -875,7 +851,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
                         req.toString(),
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppTheme.onSurfaceVariant,
+                          color: context.appColors.textSecondary,
                         ),
                       ),
                     ),
@@ -901,12 +877,12 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        border: Border.all(color: context.appColors.divider, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: context.appColors.shadow,
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -920,22 +896,22 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.08),
+                  color: context.appColors.primarySoft,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.sync_alt_rounded,
-                  color: AppTheme.primary,
+                  color: context.appColors.primary,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
+              Text(
                 'تخصصات مشابهة',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.primaryContainer,
+                  color: context.appColors.textPrimary,
                 ),
               ),
             ],
@@ -945,7 +921,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: context.appColors.surfaceAlt,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
@@ -956,17 +932,17 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
                         children: [
                           Text(
                             item['name'] as String,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: AppTheme.primaryContainer,
+                              color: context.appColors.textPrimary,
                             ),
                           ),
                           Text(
                             item['university'] as String,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade500,
+                              color: context.appColors.textSecondary,
                             ),
                           ),
                         ],
@@ -1006,8 +982,8 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
           child: OutlinedButton(
             onPressed: () => Navigator.pop(context),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.primaryContainer,
-              side: BorderSide(color: Colors.grey.shade300),
+              foregroundColor: context.appColors.textPrimary,
+              side: BorderSide(color: context.appColors.divider),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -1027,7 +1003,7 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
           child: ElevatedButton(
             onPressed: _showApplicationUnavailable,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
+              backgroundColor: context.appColors.primary,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -1055,36 +1031,10 @@ class _MajorDetailScreenState extends State<MajorDetailScreen>
   }
 
   void _showSnackBar(String message, {bool isSuccess = true}) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          backgroundColor:
-              isSuccess ? const Color(0xFF22C55E) : const Color(0xFFDC2626),
-          content: Row(
-            children: [
-              Icon(
-                isSuccess
-                    ? Icons.check_circle_outline_rounded
-                    : Icons.error_outline_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  message,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+    if (isSuccess) {
+      AppSnack.success(context, message);
+    } else {
+      AppSnack.error(context, message);
+    }
   }
 }

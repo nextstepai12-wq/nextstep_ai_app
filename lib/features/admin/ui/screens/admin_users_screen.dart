@@ -26,19 +26,19 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
   String _searchQuery = '';
   String? _errorMessage;
 
-  // Filters
-  String _roleFilter = 'all'; // all | student | university | admin
-  String _statusFilter = 'all'; // all | verified | unverified
+  
+  String _roleFilter = 'all'; 
+  String _statusFilter = 'all'; 
   _SortMode _sortMode = _SortMode.newest;
   bool _isTableView = false;
 
-  // Search debounce
+  
   Timer? _debounce;
 
-  // Bulk selection
+  
   final Set<String> _selectedIds = {};
 
-  // Pagination
+  
   int _rowsPerPage = 10;
   int _currentPage = 0;
 
@@ -129,9 +129,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     return null;
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Filtering / Sorting / Pagination
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   List<Map<String, dynamic>> get _filteredUsers {
     var filtered = _users;
@@ -204,9 +204,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     });
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Data loading (Supabase + Hive cache fallback)
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   Future<void> _loadUsers() async {
     if (!mounted) return;
@@ -286,9 +286,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     await _loadUsers();
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Navigation & actions
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   Future<void> _goToAddUser() async {
     final result = await Navigator.push(
@@ -485,9 +485,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Lifecycle
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   @override
   void initState() {
@@ -518,9 +518,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     super.dispose();
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Build
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   @override
   Widget build(BuildContext context) {
@@ -573,9 +573,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Header
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildSliverHeader() {
     return SliverAppBar(
@@ -629,9 +629,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Stats strip
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildStatsRow() {
     final total = _users.length;
@@ -735,16 +735,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Search + Filters toolbar
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildSearchAndFilter() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Column(
         children: [
-          // Search field (with clear button)
+          
           TextField(
             controller: _searchController,
             onChanged: (value) {
@@ -797,7 +797,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
             ),
           ),
           const SizedBox(height: 10),
-          // Role filter chips + toggle
+          
           SizedBox(
             height: 36,
             child: Row(
@@ -848,10 +848,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
             ),
           ),
           const SizedBox(height: 8),
-          // Status / sort / view toggle row
+          
           Row(
             children: [
-              // Status dropdown
+              
               Expanded(
                 child: _buildDropdown(
                   value: _statusFilter,
@@ -867,7 +867,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                 ),
               ),
               const SizedBox(width: 8),
-              // Sort dropdown
+              
               Expanded(
                 child: _buildDropdown<_SortMode>(
                   value: _sortMode,
@@ -883,7 +883,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
                 ),
               ),
               const SizedBox(width: 8),
-              // View toggle
+              
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -909,7 +909,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               ),
             ],
           ),
-          // Reset filters button (only when active)
+          
           if (_hasActiveFilters)
             Align(
               alignment: AlignmentDirectional.centerStart,
@@ -989,9 +989,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // List bodies (table & cards) + pagination
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   List<Map<String, dynamic>> get _pagedUsers {
     final filtered = _filteredUsers;
@@ -1115,7 +1115,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ── Table row (desktop-density look within card container) ──
+  
 
   Widget _buildUserRow(Map<String, dynamic> user, bool isLast) {
     final role = (user['role'] ?? 'student').toString();
@@ -1287,7 +1287,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ── Card item ──
+  
 
   Widget _buildUserCard(Map<String, dynamic> user) {
     final role = (user['role'] ?? 'student').toString();
@@ -1452,7 +1452,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ── Pagination ──
+  
 
   Widget _buildPaginationFooter(int start, int end, int total) {
     final isFirst = _currentPage == 0;
@@ -1509,7 +1509,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
             ),
           ),
           const SizedBox(width: 8),
-          // Rows per page
+          
           Container(
             height: 32,
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -1547,7 +1547,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
             ),
           ),
           const SizedBox(width: 8),
-          // Prev / next
+          
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -1604,9 +1604,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Bulk actions floating bar
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildBulkActionsBar() {
     return Positioned(
@@ -1673,7 +1673,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
               TextButton.icon(
                 onPressed: () {
                   _showSnackBar('⏳ جاري حذف ${_selectedIds.length} مستخدم...');
-                  // TODO: implement bulk delete
+                  
                 },
                 icon: const Icon(Icons.delete_rounded,
                     size: 16, color: Color(0xFFFCA5A5)),
@@ -1701,16 +1701,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Skeleton / error / empty
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildSkeletonLoading() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 140, 16, 16),
       child: Column(
         children: [
-          // Stats skeleton
+          
           Row(
             children: List.generate(
               4,
@@ -1839,9 +1839,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Details bottom sheet
-  // ─────────────────────────────────────────────────────────────
+  
+  
+  
 
   void _showUserDetails(Map<String, dynamic> user) {
     final role = (user['role'] ?? 'student').toString();

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../theming/app_theme.dart';
 import 'app_buttons.dart';
 
-/// Gradient page header used at the top of primary screens.
-///
-/// For scroll views that need a collapsing header use [AppSliverPageHeader].
+
+
+
 class AppPageHeader extends StatelessWidget {
   const AppPageHeader({
     super.key,
@@ -27,7 +27,7 @@ class AppPageHeader extends StatelessWidget {
   final bool gradient;
   final Widget? bottom;
 
-  /// Optional content rendered below the title row inside the header.
+  
   final Widget? child;
 
   @override
@@ -129,7 +129,7 @@ class AppPageHeader extends StatelessWidget {
   }
 }
 
-/// Collapsing gradient header for sliver-based screens.
+
 class AppSliverPageHeader extends StatelessWidget {
   const AppSliverPageHeader({
     super.key,

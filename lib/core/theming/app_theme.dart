@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../helpers/hive_storage.dart';
 
-/// Central design tokens and themes for NextStep AI.
-///
-/// Every screen should consume [AppColors] through [AppColorsX.appColors]
-/// (or `Theme.of(context).extension<AppColors>()`) instead of hard-coding
-/// colours. The palette is shared by light and dark mode and is intentionally
-/// calm and academic: deep blue for trust, teal for growth, amber for caution.
+
+
+
+
+
+
 class AppTheme {
   AppTheme._();
 
   static const String fontFamily = 'Cairo';
 
-  // ── Legacy static palette (kept for screens not yet migrated) ────────────
+  
   static const Color primary = Color(0xFF1E3A8A);
   static const Color primaryContainer = Color(0xFF2E4EA8);
   static const Color onPrimary = Color(0xFFFFFFFF);
@@ -43,7 +43,7 @@ class AppTheme {
     _persistThemeMode(mode);
   }
 
-  /// Restores the theme choice saved on this device, if any.
+  
   static Future<void> loadPersistedThemeMode() async {
     try {
       final settings = await HiveStorage.getSettings();
@@ -55,7 +55,7 @@ class AppTheme {
         _ => ThemeMode.light,
       };
     } catch (_) {
-      // A missing/corrupt preference should never block app startup.
+      
     }
   }
 
@@ -65,14 +65,14 @@ class AppTheme {
       settings['themeMode'] = mode.name;
       await HiveStorage.saveSettings(settings);
     } catch (_) {
-      // Theme still applies for this session even if persistence fails.
+      
     }
   }
 
   static final ThemeData light = _buildTheme(Brightness.light, AppColors.light);
   static final ThemeData dark = _buildTheme(Brightness.dark, AppColors.dark);
 
-  /// Retained for backwards compatibility. Prefer [light].
+  
   static final ThemeData lightTheme = light;
 
   static ThemeData _buildTheme(Brightness brightness, AppColors c) {
@@ -687,7 +687,7 @@ class AppTheme {
   }
 }
 
-/// Semantic colour tokens shared by all features.
+
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
@@ -920,7 +920,7 @@ class AppColors extends ThemeExtension<AppColors> {
 }
 
 extension AppColorsX on BuildContext {
-  /// Active semantic colours for the current [Theme].
+  
   AppColors get appColors =>
       Theme.of(this).extension<AppColors>() ?? AppColors.light;
 
@@ -938,7 +938,7 @@ extension AppColorsX on BuildContext {
   bool get isDesktopWidth =>
       MediaQuery.sizeOf(this).width >= AppBreakpoints.desktop;
 
-  /// Horizontal page padding that grows with the viewport.
+  
   EdgeInsets get pagePadding {
     final double width = MediaQuery.sizeOf(this).width;
     if (width >= AppBreakpoints.desktop) {
@@ -951,7 +951,7 @@ extension AppColorsX on BuildContext {
   }
 }
 
-/// Shared spacing scale (multiples of 4).
+
 abstract final class AppSpacing {
   static const double xxs = 4;
   static const double xs = 8;
@@ -964,7 +964,7 @@ abstract final class AppSpacing {
   static const double huge = 56;
 }
 
-/// Shared corner radii.
+
 abstract final class AppRadius {
   static const double xs = 8;
   static const double sm = 10;
@@ -975,7 +975,7 @@ abstract final class AppRadius {
   static const double pill = 999;
 }
 
-/// Responsive breakpoints.
+
 abstract final class AppBreakpoints {
   static const double mobile = 0;
   static const double tablet = 720;
@@ -983,7 +983,7 @@ abstract final class AppBreakpoints {
   static const double wide = 1280;
 }
 
-/// Shared elevation tokens. Borders are preferred over heavy shadows.
+
 abstract final class AppShadows {
   static List<BoxShadow> soft(AppColors c) => <BoxShadow>[
         BoxShadow(
@@ -1002,7 +1002,7 @@ abstract final class AppShadows {
       ];
 }
 
-/// Convenience constraints for readable content on tablets and desktops.
+
 abstract final class AppLayout {
   static const double maxContentWidth = 1080;
   static const double maxFormWidth = 640;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theming/app_theme.dart';
 
-/// Compact status/label chip with accessible semantic colours.
+
 class AppBadge extends StatelessWidget {
   const AppBadge({
     super.key,
@@ -79,7 +79,7 @@ class AppBadge extends StatelessWidget {
 
 enum AppBadgeTone { neutral, brand, success, info, warning, danger, purple }
 
-/// Count bubble used for notification and navigation indicators.
+
 class AppCountBadge extends StatelessWidget {
   const AppCountBadge({
     super.key,

@@ -269,9 +269,9 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Search + type tabs
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildSearchBar() {
     return Container(
@@ -428,9 +428,9 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Program card
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildProgramCard(BuildContext context, _ProgramMock program) {
     final bool isField = program.type == _ProgramType.field;
@@ -755,9 +755,9 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Empty state + load more
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _buildEmptyState() {
     return Padding(
@@ -818,9 +818,9 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Sort sheet
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Future<void> _showFilterSheet() async {
     _ProgramSort selected = _sort;
@@ -975,9 +975,9 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
     );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Helpers
-  // ───────────────────────────────────────────────────────────────────────────
+  
+  
+  
 
   Widget _remoteImage(String seed) {
     return Image.network(
@@ -1013,9 +1013,9 @@ class _TrainingProgramsScreenState extends State<TrainingProgramsScreen> {
   }
 }
 
-// ───────────────────────────────────────────────────────────────────────────
-// Mock model
-// ───────────────────────────────────────────────────────────────────────────
+
+
+
 
 enum _ProgramType { all, course, field }
 
